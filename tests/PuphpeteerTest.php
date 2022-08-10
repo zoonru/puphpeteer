@@ -162,13 +162,13 @@ class PuphpeteerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::atLeastOnce())
             ->method('log')
-            ->willReturn(self::returnCallback(function (string $level, string $message) use ($onBrowserLog) {
+            ->willReturnCallback(function (string $level, string $message) use ($onBrowserLog) {
                 if (\strpos($message, "Received a Browser log:") === 0) {
                     $onBrowserLog();
                 }
 
                 return null;
-            }));
+            });
 
         return $logger;
     }
