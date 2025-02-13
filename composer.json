@@ -23,8 +23,7 @@
     "ext-json": "*",
     "composer/semver": "^3.0",
     "zoon/rialto": "^1.5",
-    "psr/log": "^3.0",
-    "thecodingmachine/safe": "^2.5"
+    "psr/log": "^3.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.2",
@@ -34,8 +33,7 @@
     "symfony/console": "^7",
     "symfony/filesystem": "^7",
     "symfony/process": "^7",
-    "symfony/var-dumper": "^7",
-    "thecodingmachine/phpstan-safe-rule": "^1.2"
+    "symfony/var-dumper": "^7"
   },
   "autoload": {
     "psr-4": {

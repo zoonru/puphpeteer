@@ -1,5 +1,3 @@
-includes:
-    - vendor/thecodingmachine/phpstan-safe-rule/phpstan-safe-rule.neon
 parameters:
     level: 4
     fileExtensions:

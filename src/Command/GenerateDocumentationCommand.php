@@ -66,7 +66,11 @@ final class GenerateDocumentationCommand extends Command
     {
         self::buildDocumentationGenerator();
 
-        $files = \Safe\glob($puppeteerPath . '/lib/esm/puppeteer/{common,node,api,cdp}/*.d.ts', GLOB_BRACE);
+        $files = glob($puppeteerPath . '/lib/esm/puppeteer/{common,node,api,cdp}/*.d.ts', GLOB_BRACE);
+        if ($files === false) {
+            $error = error_get_last();
+            throw new \ErrorException($error['message'] ?? 'An error occurred', 0, $error['type'] ?? 1);
+        }
 
         $result = [];
         foreach (self::DOC_FORMATS as $format) {
@@ -82,7 +86,12 @@ final class GenerateDocumentationCommand extends Command
 
             echo $process->getErrorOutput().\PHP_EOL;
 
-            foreach (\Safe\json_decode($process->getOutput(), true) as &$class) {
+            $data = json_decode($process->getOutput(), true);
+            if (JSON_ERROR_NONE !== json_last_error()) {
+                throw new \JsonException(json_last_error_msg(), json_last_error());
+            }
+
+            foreach ($data as &$class) {
                 $result[$class['name']]['name'] = $class['name'];
                 $result[$class['name']][$format] = [
                     'properties' => $class['properties'],
