@@ -47,6 +47,8 @@
   },
   "scripts": {
     "post-install-cmd": "npm install",
+    "upstream-report": "node tools/upstream/ignore.cjs report",
+    "test-tooling": "node --test tests/Tooling/*.test.cjs",
     "test": "./vendor/bin/phpunit",
     "update-docs": "php bin/console doc:generate",
     "stan": "vendor/bin/phpstan analyze src",
