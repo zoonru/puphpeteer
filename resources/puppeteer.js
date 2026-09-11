@@ -39953,11 +39953,42 @@ ${sourceUrlComment}
   var puppeteer_core_browser_default = puppeteer;
 
   // js/guest.js
+  var publicTypes = new Map(Object.entries({
+    Accessibility,
+    Browser,
+    BrowserContext,
+    CDPSession,
+    ConsoleMessage,
+    Coverage,
+    Dialog,
+    ElementHandle,
+    FileChooser,
+    Frame,
+    HTTPRequest,
+    HTTPResponse,
+    JSHandle,
+    Keyboard,
+    Mouse,
+    Page,
+    SecurityDetails,
+    Target,
+    Touchscreen,
+    Tracing,
+    WebWorker
+  }).map(([name, type]) => [type.prototype, name]));
+  function remoteClass(value) {
+    for (let prototype = Object.getPrototypeOf(value); prototype; prototype = Object.getPrototypeOf(prototype)) {
+      const name = publicTypes.get(prototype);
+      if (name) return name;
+    }
+    return value.constructor?.name ?? "Object";
+  }
   var objects = /* @__PURE__ */ new Map();
   var identities = /* @__PURE__ */ new WeakMap();
   var nextObject = 0;
   var nextCallback = 0;
   var callbacks = /* @__PURE__ */ new Map();
+  var decodedFunctions = /* @__PURE__ */ new Map();
   var emit = (kind, value) => __quickjsEmit(kind, value);
   var errorData = (error) => ({ name: error?.name ?? "Error", message: error?.message ?? String(error), stack: error?.stack ?? "" });
   function encode(value) {
@@ -39975,7 +40006,7 @@ ${sourceUrlComment}
           identities.set(value, id);
         }
         objects.set(id, value);
-        return { $quickjs: "object", id, class: value.constructor?.name ?? "Object" };
+        return { $quickjs: "object", id, class: remoteClass(value) };
       }
       return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, encode(val)]));
     }
@@ -39988,12 +40019,22 @@ ${sourceUrlComment}
         if (!objects.has(value.id)) throw new Error(`Unknown remote object ${value.id}`);
         return objects.get(value.id);
       }
-      if (value.$quickjs === "function") return (0, eval)(`(${value.source})`);
-      if (value.$quickjs === "callback") return (...args) => new Promise((resolve, reject) => {
-        const id = ++nextCallback;
-        callbacks.set(id, { resolve, reject });
-        emit("callback", { id, callback: value.id, args: args.map(encode) });
-      });
+      if (value.$quickjs === "function") {
+        const key = `function:${value.id}`;
+        if (!decodedFunctions.has(key)) decodedFunctions.set(key, (0, eval)(`(${value.source})`));
+        return decodedFunctions.get(key);
+      }
+      if (value.$quickjs === "callback") {
+        const key = `callback:${value.id}`;
+        if (decodedFunctions.has(key)) return decodedFunctions.get(key);
+        const fn = (...args) => new Promise((resolve, reject) => {
+          const id = ++nextCallback;
+          callbacks.set(id, { resolve, reject });
+          emit("callback", { id, callback: value.id, args: args.map(encode) });
+        });
+        decodedFunctions.set(key, fn);
+        return fn;
+      }
       if (value.$quickjs === "undefined") return void 0;
       if (value.$quickjs === "bigint") return BigInt(value.value);
       return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, decode(val)]));
@@ -40006,10 +40047,11 @@ ${sourceUrlComment}
   };
   async function call(request) {
     if (request.method === "connect" && request.object === 0) {
-      return puppeteer_core_browser_default.connect({ transport, defaultViewport: null, protocolTimeout: 1e4 });
+      return puppeteer_core_browser_default.connect({ ...decode(request.args[0] || {}), transport });
     }
     const object = objects.get(request.object);
     if (!object) throw new Error(`Unknown remote object ${request.object}`);
+    if (request.operation === "get") return object[request.method];
     const fn = object[request.method];
     if (typeof fn !== "function") throw new Error(`Not a method: ${request.method}`);
     return Reflect.apply(fn, object, request.args.map(decode));

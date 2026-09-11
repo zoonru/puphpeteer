@@ -9,11 +9,14 @@
   "scripts": {
     "build": "node tools/build.cjs",
     "build:check": "node tools/build.cjs --check",
-    "benchmark": "node benchmarks/run.cjs",
-    "test-smoke": "node tests/Browser/run-smoke.cjs"
+    "test-generator": "node --test tools/upstream/*.test.cjs",
+    "browser:install": "node tools/install-browser.cjs",
+    "postinstall": "node tools/install-browser.cjs"
   },
   "devDependencies": {
+    "@puppeteer/browsers": "2.11.2",
     "esbuild": "0.25.12",
-    "puppeteer-core": "24.36.1"
+    "puppeteer-core": "24.36.1",
+    "typescript": "5.9.3"
   }
 }

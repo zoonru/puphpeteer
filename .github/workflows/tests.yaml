@@ -23,5 +23,7 @@ jobs:
         run: composer update --prefer-stable --ignore-platform-req=ext-php_quickjs --no-interaction --no-progress --prefer-dist
       - run: npm ci
       - run: npm run build:check
+      - run: npm run test-generator
+      - run: composer verify-php
       - run: composer test-unit
       - run: composer psalm

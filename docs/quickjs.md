@@ -2,14 +2,18 @@
 
 Рабочий прототип: оригинальный Puppeteer 24.36.1 выполняется внутри PHP-процесса
 в QuickJS-NG. Amp обслуживает WebSocket, таймеры и PHP-callbacks. Node.js нужен
-для сборки bundle и тестового runner, но не для исполнения PHP-клиента.
+для сборки bundle и генерации API. Клиент, smoke и benchmark работают через PHP.
 
-Нужна сборка форка `php-quickjs` с прямым мостом и `dispatch()`.
+Нужна release-сборка [нашего форка php-quickjs](https://github.com/xtrime-ru/php-quickjs)
+с прямым мостом `__quickjsEmit` и `Js\Callback::dispatch()`.
+[Сборка, установка и проверка расширения](../README-RU.md#сборка-и-установка-php-quickjs)
+([English](../README.md#build-and-install-php-quickjs)).
 Обычного upstream-релиза недостаточно. Composer проверяет наличие расширения
 `php_quickjs`; поддержку методов проверяет клиент при создании.
 
 ## Запуск
 
+Для установки браузера и сборки используйте Node.js **22+**.
 Все зависимости устанавливаются из **корня репозитория**:
 
 ```sh
@@ -17,14 +21,16 @@ composer update --prefer-stable
 npm ci
 npm run build
 export QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so
-export CHROME_BIN=/absolute/path/to/chrome
-npm run test-smoke
-BENCH_TRIALS=5 BENCH_ITERATIONS=1000 npm run benchmark
+composer test-browser
+BENCH_TRIALS=5 BENCH_ITERATIONS=1000 composer benchmark
 ```
 
 На macOS расширение может иметь суффикс `.dylib`. `PHP_BIN` задаёт PHP CLI;
-по умолчанию используется `php` из PATH. Runner запускает PHP с `-n` и загружает
-только указанную сборку расширения. `QUICKJS_EXTENSION` и `CHROME_BIN` обязательны.
+по умолчанию используется PHP текущего runner. Runner запускает тестовый PHP с `-n` и загружает
+только указанную сборку расширения. `QUICKJS_EXTENSION` обязательна. `npm ci` устанавливает совместимый Chrome в
+`node_modules/.puphpeteer/`; `npm run browser:install` повторяет установку.
+Для другого браузера задайте `PUPPETEER_EXECUTABLE_PATH` (либо прежнюю `CHROME_BIN`).
+Системные браузеры автоматически не выбираются.
 
 Для PHP unit-тестов и Psalm без расширения:
 `composer install --ignore-platform-req=ext-php_quickjs`, затем `composer check`.
@@ -38,29 +44,20 @@ BENCH_TRIALS=5 BENCH_ITERATIONS=1000 npm run benchmark
 
 ```php
 require 'vendor/autoload.php';
+use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\JsFunction as JS;
 
-use Nesk\Puphpeteer\Client;
-use Nesk\Puphpeteer\JavaScriptFunction as JS;
-
-$client = new Client();
+$browser = (new Puppeteer())->connect(['browserWSEndpoint' => $browserWebSocketEndpoint]);
+$context = $browser->createBrowserContext();
 try {
-    $browser = $client->connect($browserWebSocketEndpoint)->await();
-    $context = $browser->createBrowserContext()->await();
-    try {
-        $page = $context->newPage()->await();
-        $page->goto('https://example.com')->await();
-        echo $page->title()->await();
-
-        $page->exposeFunction('phpDouble', fn($n) => Amp\async(function () use ($n) {
-            Amp\delay(0.01);
-            return $n * 2;
-        }))->await();
-        echo $page->evaluate(new JS('() => window.phpDouble(21)'))->await();
-    } finally {
-        $context->close()->await();
-    }
+    $page = $context->newPage();
+    $page->goto('https://example.com');
+    echo $page->title();
+    $page->exposeFunction('phpDouble', function ($n) { Amp\delay(0.01); return $n * 2; });
+    echo $page->evaluate(new JS('() => window.phpDouble(21)'));
 } finally {
-    $client->close();
+    $context->close();
+    $browser->disconnect();
 }
 ```
 
@@ -73,8 +70,9 @@ try {
 - `src/Client.php`: один reader, последовательный writer, таблица Future,
   ограниченная обработка JS jobs. Продолжение очереди переносится на следующий
   оборот Revolt через `defer`, чтобы не вытеснять I/O бесконечными microtasks.
-- `RemoteObject`: динамическая PHP-обёртка; даже синхронный JS-метод возвращает
-  PHP Future. `JavaScriptFunction` явно обозначает функцию, выполняемую в браузере.
+- `RemoteObject`: общий мост для сгенерированных методов и свойств; автоматически
+  ожидает внутренний Future. `JsFunction` явно обозначает JS-функцию: в браузере для `evaluate`,
+  в QuickJS для событий Puppeteer.
 - Host callbacks внутри расширения только кладут сообщения в очередь. Асинхронный
   PHP-код запускается после возврата из QuickJS; Fiber не приостанавливается
   внутри нативного JS-вызова.
@@ -83,12 +81,15 @@ try {
 
 Smoke проверяет две страницы, навигацию/title, evaluate с аргументами, конкурентные
 ожидания 250/30 мс, асинхронный PHP-callback и его отказ, JSHandle/dispose,
-восстановление после JS-ошибки, click в активной вкладке, console event и PNG screenshot.
+восстановление после JS-ошибки, click в активной вкладке, console events on/once/off с повторным входом в клиент, PNG screenshot в файл,
+PHP launch, browserURL и три examples.
 
-Это прототип, а не полноценная замена публичного клиента. Пока нет генерации
-типизированных обёрток, полного набора Web API, Firefox/BiDi, Node.js-плагинов,
-запуска/скачивания Chrome из PHP, API отмены операций и полного отображения типов.
-Специальные значения (`undefined`, BigInt, non-finite numbers) возвращаются
+Это разрабатываемая версия, а не полноценная замена публичного клиента.
+Типизированные обёртки и запуск Chrome из PHP реализованы; покрытие API частичное.
+Пока нет полного набора Web API, Firefox/BiDi, Node.js-плагинов,
+API отмены операций и полного отображения типов. Chrome устанавливается на этапе
+подготовки через npm, а не при PHP-вызове `launch()`.
+`undefined` преобразуется в `null`. Специальные значения (BigInt, non-finite numbers) возвращаются
 явными tagged-массивами; входные специальные значения и произвольные циклические
 PHP/JS структуры не образуют полноценный API. Ключ `$quickjs` зарезервирован протоколом.
 

@@ -15,7 +15,9 @@ composer check
 The extension exception above is for unit tests and Psalm only. Integration
 requires the async/native-bridge php-quickjs fork with `dispatch()`.
 Run `composer test-integration` with that extension loaded. For browser tests,
-set `QUICKJS_EXTENSION` and `CHROME_BIN`, then run `npm run test-smoke`.
+set `QUICKJS_EXTENSION`, then run `composer test-browser`. Chrome is installed
+under `node_modules` by `npm ci`; `PUPPETEER_EXECUTABLE_PATH` is an optional
+explicit override. Smoke and benchmark runners use PHP.
 See `docs/quickjs.md` for runner details.
 
 Commit package-lock.json and resources/puppeteer.js + resources/manifest.json when

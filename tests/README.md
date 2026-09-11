@@ -8,12 +8,24 @@ Client codec/lifecycle tests construct a client without its constructor to isola
 PHP behavior; they do not claim to verify dispatch, Promise pumping or the
 browser transport. `composer test-integration` checks the native batch bridge
 with the optimized extension loaded; missing extension support is an error.
-Browser integration must be run separately using the smoke test under `tests/Browser/`; it requires the optimized extension,
-the built JavaScript bundle and a Chrome endpoint. Missing prerequisites must not
-be treated as an integration pass.
+`composer test-browser` runs the PHP smoke runner and the three examples. It
+requires the optimized extension (`QUICKJS_EXTENSION`), the built JavaScript bundle
+and the project Chrome installed under `node_modules`. The runner starts Chrome
+and a local HTTP fixture itself. `PUPPETEER_EXECUTABLE_PATH` can explicitly override
+the browser; system installations are never selected automatically. See the
+[installation instructions](../README.md#requirements-and-installation).
+Missing prerequisites must not be treated as an integration pass.
 
-`composer psalm` checks the PHP runtime and unit tests at level 3, as in the native
-branch, without a baseline. Broader API coverage belongs to the runtime and
-generator implementation steps.
+`composer benchmark` also uses a PHP runner. On macOS it measures a separate PHP
+process with `/usr/bin/time -l` and `ps`; runner and Chrome resource usage are
+excluded. `BENCH_TRIALS` defaults to 5 and `BENCH_ITERATIONS` to 1000.
+`PHP_BIN` overrides the PHP executable used by either runner.
 
-Psalm covers `src/`, `tests/Unit/` and `tests/Integration/`. The browser smoke script is executed separately; it is not included in static analysis.
+`composer test-generator` runs PHP generator fixtures: signatures, omitted and
+explicit-null arguments, variadics, full regeneration and removal of obsolete methods.
+These fixtures also run as part of the default PHPUnit suite. `npm run test-generator`
+checks extraction/type mapping and upstream method/class removal, including read-only checks; `composer verify-php` checks generated artifacts.
+
+`composer psalm` checks `src/`, `tools/php/`, `tests/Generator/`, `tests/Unit/`
+and `tests/Integration/`, plus the shared `tests/Browser/BrowserRunner.php`, at level 3 without a baseline. The browser smoke script
+is executed separately and is not included in static analysis.

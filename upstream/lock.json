@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "puppeteer-core",
+    "version": "24.36.1",
+    "resolved": "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-24.36.1.tgz",
+    "integrity": "sha512-L7ykMWc3lQf3HS7ME3PSjp7wMIjJeW6+bKfH/RSTz5l6VUDGubnrC2BKj3UvM28Y5PMDFW0xniJOZHBZPpW1dQ==",
+    "entry": "lib/types.d.ts",
+    "declarationSha256": "14e80a1988e66556246539f351025ec5a1f6f15230fa4afb52ba2247771159aa"
+  },
+  "npmLockSha256": "feac38478ace0398483bd81d0b34fd2d22965d3be60af0805a85e29d700c610b",
+  "tools": {
+    "esbuild": {
+      "version": "0.25.12",
+      "integrity": "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg=="
+    },
+    "puppeteer-core": {
+      "version": "24.36.1",
+      "integrity": "sha512-L7ykMWc3lQf3HS7ME3PSjp7wMIjJeW6+bKfH/RSTz5l6VUDGubnrC2BKj3UvM28Y5PMDFW0xniJOZHBZPpW1dQ=="
+    },
+    "typescript": {
+      "version": "5.9.3",
+      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="
+    }
+  },
+  "tests": {
+    "repository": "https://github.com/puppeteer/puppeteer.git",
+    "tag": "puppeteer-v24.36.1",
+    "revision": "5d820f2872cdec366fbf6069d03ebc094d8b97f2",
+    "packageManifest": "packages/puppeteer-core/package.json",
+    "verifiedPackageVersion": "24.36.1",
+    "testsPath": "test/src",
+    "evidence": "Version-specific repository tag resolved to a commit; package manifest at that commit matches the npm package name and version."
+  }
+}

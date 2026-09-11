@@ -5,6 +5,9 @@
         <directory name="src" />
         <directory name="tests/Unit" />
         <directory name="tests/Integration" />
+        <file name="tests/Browser/BrowserRunner.php" />
+        <directory name="tests/Generator" />
+        <directory name="tools/php" />
         <ignoreFiles><directory name="vendor" /></ignoreFiles>
     </projectFiles>
     <stubs><file name="stubs/php_quickjs.php" /></stubs>

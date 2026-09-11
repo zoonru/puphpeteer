@@ -1,21 +1,19 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__) . '/vendor/autoload.php';
-use Amp\Future;
 use function Amp\async;
 use function Amp\Future\await;
 $backend = 'quickjs';
 $count = (int) (getenv('BENCH_ITERATIONS') ?: 1000);
-$resolve = static fn($value) => $value instanceof Future ? $value->await() : $value;
 $cpu = static function (): float { $r = getrusage(); return $r['ru_utime.tv_sec'] + $r['ru_utime.tv_usec'] / 1e6 + $r['ru_stime.tv_sec'] + $r['ru_stime.tv_usec'] / 1e6; };
 $started = hrtime(true);
-$client = new Nesk\Puphpeteer\Client();
-$browser = $client->connect(getenv('BROWSER_WS'))->await();
-$context = $resolve($browser->createBrowserContext());
-$page = $resolve($context->newPage());
-$resolve($page->goto(getenv('FIXTURE_URL')));
-$resolve($page->bringToFront());
-if ($resolve($page->title()) !== 'QuickJS fixture') { throw new RuntimeException('Wrong fixture'); }
+$puppeteer = new Nesk\Puphpeteer\Puppeteer();
+$browser = $puppeteer->connect(['browserWSEndpoint' => getenv('BROWSER_WS')]);
+$context = $browser->createBrowserContext();
+$page = $context->newPage();
+$page->goto(getenv('FIXTURE_URL'));
+$page->bringToFront();
+if ($page->title() !== 'QuickJS fixture') { throw new RuntimeException('Wrong fixture'); }
 $setupMs = (hrtime(true) - $started) / 1e6;
 $phases = [];
 $measure = function (string $name, int $operations, callable $fn) use (&$phases, $cpu): void {
@@ -24,41 +22,41 @@ $measure = function (string $name, int $operations, callable $fn) use (&$phases,
     $phases[$name] = ['operations' => $operations, 'wall_ms' => (hrtime(true) - $start) / 1e6, 'php_cpu_ms' => ($cpu() - $cpuStart) * 1000];
 };
 try {
-    for ($i = 0; $i < 50; $i++) { if ($resolve($page->evaluate('21 * 2')) !== 42) { throw new RuntimeException('Warmup mismatch'); } }
+    for ($i = 0; $i < 50; $i++) { if ($page->evaluate('21 * 2') !== 42) { throw new RuntimeException('Warmup mismatch'); } }
     echo "BENCH_READY\n"; flush();
     $latencies = [];
-    $measure('evaluate', $count, function () use ($page, $resolve, $count, &$latencies): void {
+    $measure('evaluate', $count, function () use ($page, $count, &$latencies): void {
         for ($i = 0; $i < $count; $i++) {
             $start = hrtime(true);
-            if ($resolve($page->evaluate('21 * 2')) !== 42) { throw new RuntimeException('Evaluate mismatch'); }
+            if ($page->evaluate('21 * 2') !== 42) { throw new RuntimeException('Evaluate mismatch'); }
             $latencies[] = (hrtime(true) - $start) / 1e6;
         }
     });
     sort($latencies);
     $phases['evaluate']['p50_ms'] = $latencies[(int) floor((count($latencies) - 1) * .5)];
     $phases['evaluate']['p95_ms'] = $latencies[(int) floor((count($latencies) - 1) * .95)];
-    $measure('payload_64k', 100, function () use ($page, $resolve): void {
+    $measure('payload_64k', 100, function () use ($page): void {
         for ($i = 0; $i < 100; $i++) {
-            $value = $resolve($page->evaluate('"x".repeat(65536)'));
+            $value = $page->evaluate('"x".repeat(65536)');
             if (strlen($value) !== 65536) { throw new RuntimeException('Payload mismatch'); }
         }
     });
-    $measure('concurrent_20x25ms', 20, function () use ($page, $resolve): void {
+    $measure('concurrent_20x25ms', 20, function () use ($page): void {
         $tasks = [];
         for ($i = 0; $i < 20; $i++) {
-            $tasks[] = async(fn() => $resolve($page->evaluate('new Promise(r => setTimeout(() => r(42), 25))')));
+            $tasks[] = async(fn() => $page->evaluate('new Promise(r => setTimeout(() => r(42), 25))'));
         }
         foreach (await($tasks) as $value) { if ($value !== 42) { throw new RuntimeException('Concurrent mismatch'); } }
     });
-    $measure('navigate_title', 20, function () use ($page, $resolve): void {
+    $measure('navigate_title', 20, function () use ($page): void {
         for ($i = 0; $i < 20; $i++) {
-            $resolve($page->goto(getenv('FIXTURE_URL') . '?i=' . $i));
-            if ($resolve($page->title()) !== 'QuickJS fixture') { throw new RuntimeException('Navigation mismatch'); }
+            $page->goto(getenv('FIXTURE_URL') . '?i=' . $i);
+            if ($page->title() !== 'QuickJS fixture') { throw new RuntimeException('Navigation mismatch'); }
         }
     });
     echo 'BENCH_RESULT ', json_encode(['backend' => $backend, 'php' => PHP_VERSION, 'setup_ms' => $setupMs, 'phases' => $phases, 'php_peak_allocated_bytes' => memory_get_peak_usage(true)], JSON_THROW_ON_ERROR), "\n";
     flush();
 } finally {
-    $resolve($context->close());
-    $client->close();
+    $context->close();
+    $browser->disconnect();
 }

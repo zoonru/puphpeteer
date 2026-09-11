@@ -4,12 +4,13 @@ namespace Nesk\Puphpeteer;
 
 use Amp\DeferredFuture;
 use Amp\Future;
+use Nesk\Puphpeteer\Internal\RemoteObjectFactory;
 use Amp\Websocket\Client\WebsocketConnection;
 use Revolt\EventLoop;
 use function Amp\async;
 use function Amp\Websocket\Client\connect;
 
-/** Experimental generic PHP facade over upstream Puppeteer in QuickJS. */
+/** @internal Async transport over upstream Puppeteer in QuickJS. Use Puppeteer as the public entry point. */
 final class Client
 {
     private \QuickJS $js;
@@ -19,10 +20,15 @@ final class Client
     private bool $writing = false;
     private bool $pumpQueued = false;
     private bool $closed = false;
+    private string $endpoint = '';
     private int $sequence = 0;
     /** @var array<int, DeferredFuture<mixed>> */
     private array $pending = [];
     private array $callbacks = [];
+    /** @var null|\WeakMap<\Closure|JsFunction, int> */
+    private ?\WeakMap $functionIds = null;
+    private int $functionSequence = 0;
+    private ?Internal\BrowserProcess $browserProcess = null;
     private array $timers = [];
     private array $objects = [];
 
@@ -39,10 +45,11 @@ final class Client
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
     }
 
-    /** @return Future<RemoteObject> */
-    public function connect(string $endpoint): Future
+    /** @return Future<Browser> */
+    public function connect(string $endpoint, array $options = []): Future
     {
-        return async(function () use ($endpoint): RemoteObject {
+        return async(function () use ($endpoint, $options): Browser {
+            $this->endpoint = $endpoint;
             $socket = $this->socket = connect($endpoint);
             async(function () use ($socket): void {
                 try {
@@ -52,18 +59,22 @@ final class Client
                     if (!$this->closed) { $this->stop(new \RuntimeException('Browser transport closed')); }
                 } catch (\Throwable $e) { $this->stop($e); }
             })->ignore();
-            return $this->call(0, 'connect', [])->await();
+            $browser = $this->call(0, 'connect', [$options])->await();
+            if (!$browser instanceof Browser) {
+                throw new \UnexpectedValueException('Puppeteer connect did not return a Browser');
+            }
+            return $browser;
         });
     }
 
     /** @return Future<mixed> */
-    public function call(int $object, string $method, array $arguments): Future
+    public function call(int $object, string $method, array $arguments, string $operation = 'call'): Future
     {
         if ($this->closed) { return Future::error(new \RuntimeException('QuickJS client is closed')); }
         $id = ++$this->sequence;
         $deferred = $this->pending[$id] = new DeferredFuture();
         try {
-            $this->deliver('call', ['id' => $id, 'object' => $object, 'method' => $method, 'args' => $this->encode($arguments)]);
+            $this->deliver('call', ['id' => $id, 'object' => $object, 'method' => $method, 'operation' => $operation, 'args' => $this->encode($arguments)]);
         } catch (\Throwable $e) { $this->stop($e); }
         return $deferred->getFuture();
     }
@@ -150,10 +161,16 @@ final class Client
 
     private function encode(mixed $value): mixed
     {
-        if ($value instanceof RemoteObject) { return ['$quickjs' => 'object', 'id' => $value->id]; }
-        if ($value instanceof JavaScriptFunction) { return ['$quickjs' => 'function', 'source' => $value->source]; }
-        if ($value instanceof \Closure) {
-            $id = count($this->callbacks) + 1;
+        if ($value instanceof RemoteObject) { return ['$quickjs' => 'object', 'id' => $value->remoteId()]; }
+        if ($value instanceof JsFunction || $value instanceof \Closure) {
+            if ($this->functionIds === null) {
+                /** @var \WeakMap<\Closure|JsFunction, int> $ids */
+                $ids = new \WeakMap();
+                $this->functionIds = $ids;
+            }
+            $id = $this->functionIds[$value] ?? null;
+            if ($id === null) { $id = ++$this->functionSequence; $this->functionIds[$value] = $id; }
+            if ($value instanceof JsFunction) { return ['$quickjs' => 'function', 'id' => $id, 'source' => $value->source]; }
             $this->callbacks[$id] = $value;
             return ['$quickjs' => 'callback', 'id' => $id];
         }
@@ -168,11 +185,12 @@ final class Client
             $id = $value['id'];
             $object = ($this->objects[$id] ?? null)?->get();
             if ($object === null) {
-                $object = new RemoteObject($this, $id, $value['class']);
+                $object = RemoteObjectFactory::create($this, $id, $value['class']);
                 $this->objects[$id] = \WeakReference::create($object);
             }
             return $object;
         }
+        if (($value['$quickjs'] ?? null) === 'undefined') { return null; }
         if (($value['$quickjs'] ?? null) === 'bytes') { return $value['value']; }
         if (isset($value['$quickjs'])) { return $value; } // Explicit tagged special values in this prototype.
         return array_map($this->decode(...), $value);
@@ -182,6 +200,21 @@ final class Client
     {
         unset($this->objects[$id]);
         if (!$this->closed) { $this->deliver('release', ['id' => $id]); }
+    }
+    /** @internal
+     * @psalm-mutation-free
+     */
+    public function endpoint(): string { return $this->endpoint; }
+    /** @internal
+     * @psalm-external-mutation-free
+     */
+    public function ownBrowser(Internal\BrowserProcess $process): void { $this->browserProcess = $process; }
+    /** @internal */
+    public function browserClosed(): void
+    {
+        $this->browserProcess?->close();
+        $this->browserProcess = null;
+        $this->stop();
     }
     public function close(): void { $this->stop(); }
     private function stop(?\Throwable $error = null): void

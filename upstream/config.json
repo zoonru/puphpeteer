@@ -1,0 +1,800 @@
+{
+  "schemaVersion": 1,
+  "namespace": "Nesk\\Puphpeteer",
+  "wrapperClasses": [
+    "Browser",
+    "BrowserContext",
+    "Page",
+    "JSHandle",
+    "ElementHandle",
+    "Frame",
+    "Target",
+    "ConsoleMessage",
+    "HTTPResponse",
+    "HTTPRequest",
+    "CDPSession",
+    "Keyboard",
+    "Mouse",
+    "Touchscreen",
+    "Coverage",
+    "Accessibility",
+    "FileChooser",
+    "Dialog",
+    "WebWorker",
+    "SecurityDetails",
+    "Tracing"
+  ],
+  "types": {
+    "Uint8Array<ArrayBufferLike>": {
+      "native": "string",
+      "psalm": "string"
+    },
+    "Uint8Array": {
+      "native": "string",
+      "psalm": "string"
+    },
+    "undefined": {
+      "native": "null",
+      "psalm": "null"
+    },
+    "AbortSignal": {
+      "native": "never",
+      "psalm": "never"
+    }
+  },
+  "members": {
+    "Page.evaluate": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "Page.evaluateHandle": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+      }
+    },
+    "Frame.evaluate": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "Frame.evaluateHandle": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+      }
+    },
+    "JSHandle.evaluate": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "JSHandle.evaluateHandle": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+      }
+    },
+    "ElementHandle.evaluate": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "ElementHandle.evaluateHandle": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+      }
+    },
+    "WebWorker.evaluate": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "WebWorker.evaluateHandle": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+      }
+    },
+    "Page.$": {
+      "name": "querySelector",
+      "returnType": {
+        "native": "mixed",
+        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+      }
+    },
+    "Page.$$": {
+      "name": "querySelectorAll",
+      "returnType": {
+        "native": "mixed",
+        "psalm": "list<\\Nesk\\Puphpeteer\\ElementHandle>"
+      }
+    },
+    "Page.$eval": {
+      "name": "querySelectorEval",
+      "parameters": [
+        null,
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "Page.$$eval": {
+      "name": "querySelectorAllEval",
+      "parameters": [
+        null,
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "Page.waitForSelector": {
+      "returnType": {
+        "native": "mixed",
+        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+      }
+    },
+    "Frame.$": {
+      "name": "querySelector",
+      "returnType": {
+        "native": "mixed",
+        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+      }
+    },
+    "Frame.$$": {
+      "name": "querySelectorAll",
+      "returnType": {
+        "native": "mixed",
+        "psalm": "list<\\Nesk\\Puphpeteer\\ElementHandle>"
+      }
+    },
+    "Frame.$eval": {
+      "name": "querySelectorEval",
+      "parameters": [
+        null,
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "Frame.$$eval": {
+      "name": "querySelectorAllEval",
+      "parameters": [
+        null,
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "Frame.waitForSelector": {
+      "returnType": {
+        "native": "mixed",
+        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+      }
+    },
+    "ElementHandle.$": {
+      "name": "querySelector",
+      "returnType": {
+        "native": "mixed",
+        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+      }
+    },
+    "ElementHandle.$$": {
+      "name": "querySelectorAll",
+      "returnType": {
+        "native": "mixed",
+        "psalm": "list<\\Nesk\\Puphpeteer\\ElementHandle>"
+      }
+    },
+    "ElementHandle.$eval": {
+      "name": "querySelectorEval",
+      "parameters": [
+        null,
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "ElementHandle.$$eval": {
+      "name": "querySelectorAllEval",
+      "parameters": [
+        null,
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "mixed",
+        "psalm": "mixed"
+      }
+    },
+    "ElementHandle.waitForSelector": {
+      "returnType": {
+        "native": "mixed",
+        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+      }
+    },
+    "Page.screenshot": {
+      "overload": 1,
+      "returnType": {
+        "native": "string",
+        "psalm": "string"
+      }
+    },
+    "ElementHandle.screenshot": {
+      "overload": 1,
+      "returnType": {
+        "native": "string",
+        "psalm": "string"
+      }
+    },
+    "JSHandle.getProperty": {
+      "overload": 1
+    },
+    "ElementHandle.getProperty": {
+      "overload": 1
+    },
+    "Page.evaluateOnNewDocument": {
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        },
+        {
+          "native": "mixed",
+          "psalm": "mixed"
+        }
+      ]
+    },
+    "Page.exposeFunction": {
+      "parameters": [
+        null,
+        {
+          "native": "\\Closure",
+          "psalm": "\\Closure"
+        }
+      ]
+    },
+    "Browser.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Browser"
+      }
+    },
+    "Browser.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Browser"
+      }
+    },
+    "Browser.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Browser"
+      }
+    },
+    "Browser.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Browser.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "BrowserContext.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\BrowserContext",
+        "psalm": "\\Nesk\\Puphpeteer\\BrowserContext"
+      }
+    },
+    "BrowserContext.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\BrowserContext",
+        "psalm": "\\Nesk\\Puphpeteer\\BrowserContext"
+      }
+    },
+    "BrowserContext.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\BrowserContext",
+        "psalm": "\\Nesk\\Puphpeteer\\BrowserContext"
+      }
+    },
+    "BrowserContext.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "BrowserContext.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Page.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Page",
+        "psalm": "\\Nesk\\Puphpeteer\\Page"
+      }
+    },
+    "Page.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Page",
+        "psalm": "\\Nesk\\Puphpeteer\\Page"
+      }
+    },
+    "Page.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Page",
+        "psalm": "\\Nesk\\Puphpeteer\\Page"
+      }
+    },
+    "Page.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Page.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Frame.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Frame",
+        "psalm": "\\Nesk\\Puphpeteer\\Frame"
+      }
+    },
+    "Frame.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Frame",
+        "psalm": "\\Nesk\\Puphpeteer\\Frame"
+      }
+    },
+    "Frame.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Frame",
+        "psalm": "\\Nesk\\Puphpeteer\\Frame"
+      }
+    },
+    "Frame.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Frame.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "CDPSession.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\CDPSession",
+        "psalm": "\\Nesk\\Puphpeteer\\CDPSession"
+      }
+    },
+    "CDPSession.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\CDPSession",
+        "psalm": "\\Nesk\\Puphpeteer\\CDPSession"
+      }
+    },
+    "CDPSession.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\CDPSession",
+        "psalm": "\\Nesk\\Puphpeteer\\CDPSession"
+      }
+    },
+    "CDPSession.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "CDPSession.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "WebWorker.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\WebWorker",
+        "psalm": "\\Nesk\\Puphpeteer\\WebWorker"
+      }
+    },
+    "WebWorker.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\WebWorker",
+        "psalm": "\\Nesk\\Puphpeteer\\WebWorker"
+      }
+    },
+    "WebWorker.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\WebWorker",
+        "psalm": "\\Nesk\\Puphpeteer\\WebWorker"
+      }
+    },
+    "WebWorker.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "WebWorker.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    }
+  }
+}

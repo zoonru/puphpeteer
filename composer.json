@@ -27,20 +27,29 @@
     "ext-json": "*",
     "ext-php_quickjs": "*",
     "amphp/amp": "^3.1",
-    "amphp/websocket-client": "^2.0"
+    "amphp/websocket-client": "^2.0",
+    "amphp/process": "^2.1",
+    "amphp/http-client": "^5.3",
+    "amphp/byte-stream": "^2.1"
   },
   "require-dev": {
+    "amphp/socket": "^2.4",
     "phpunit/phpunit": "^11",
-    "vimeo/psalm": "^7.0.0-beta19"
+    "vimeo/psalm": "^7.0.0-beta19",
+    "nikic/php-parser": "^5.6"
   },
   "autoload": {
     "psr-4": {
       "Nesk\\Puphpeteer\\": "src/"
-    }
+    },
+    "files": [
+      "src/compatibility.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
-      "Nesk\\Puphpeteer\\Tests\\": "tests/"
+      "Nesk\\Puphpeteer\\Tests\\": "tests/",
+      "Zoon\\Puphpeteer\\Tooling\\": "tools/php/src/"
     }
   },
   "scripts": {
@@ -51,10 +60,13 @@
       "@psalm"
     ],
     "build": "npm run build",
-    "test-browser": "npm run test-smoke",
-    "benchmark": "npm run benchmark",
+    "test-browser": "@php tests/Browser/run-smoke.php",
+    "benchmark": "@php benchmarks/run.php",
     "test-unit": "@php vendor/bin/phpunit",
-    "test-integration": "@php vendor/bin/phpunit tests/Integration"
+    "test-integration": "@php vendor/bin/phpunit tests/Integration",
+    "update-php": "node tools/upstream/update.cjs",
+    "verify-php": "node tools/upstream/update.cjs --check",
+    "test-generator": "@php vendor/bin/phpunit --testsuite Generator"
   },
   "config": {
     "sort-packages": true

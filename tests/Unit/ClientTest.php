@@ -6,7 +6,7 @@ namespace Nesk\Puphpeteer\Tests\Unit;
 
 use Amp\DeferredFuture;
 use Nesk\Puphpeteer\Client;
-use Nesk\Puphpeteer\JavaScriptFunction;
+use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\RemoteObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -47,12 +47,9 @@ final class ClientTest extends TestCase
         $page = new RemoteObject($client, 7, 'Page');
         $client->close();
         $page->release();
-        $future = $page->__call('title', []);
-
-        self::assertTrue($future->isComplete());
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('QuickJS client is closed');
-        $future->await();
+        $page->__call('title', []);
     }
 
     public function testNestedDataRoundTripsWithoutChangingBinaryOrScalarValues(): void
@@ -67,9 +64,20 @@ final class ClientTest extends TestCase
         $client = $this->client();
         $page = new RemoteObject($client, 7, 'Page');
         self::assertSame(
-            [['$quickjs' => 'function', 'source' => '(value) => value'], ['$quickjs' => 'object', 'id' => 7]],
-            $this->codec($client, 'encode', [new JavaScriptFunction('(value) => value'), $page]),
+            [['$quickjs' => 'function', 'id' => 1, 'source' => '(value) => value'], ['$quickjs' => 'object', 'id' => 7]],
+            $this->codec($client, 'encode', [new JsFunction('(value) => value'), $page]),
         );
+    }
+
+    public function testCallbackAndFunctionIdentityIsStable(): void
+    {
+        $client = $this->client();
+        $callback = static fn(): int => 42;
+        $function = new JsFunction('() => 42');
+        foreach ([$callback, $function] as $value) {
+            self::assertSame($this->codec($client, 'encode', $value), $this->codec($client, 'encode', $value));
+        }
+        self::assertNotSame($this->codec($client, 'encode', $function), $this->codec($client, 'encode', new JsFunction('() => 42')));
     }
 
     public function testDecodedReferencesKeepIdentityUntilRelease(): void
@@ -79,8 +87,8 @@ final class ClientTest extends TestCase
         $first = $this->codec($client, 'decode', $reference);
         self::assertInstanceOf(RemoteObject::class, $first);
         self::assertSame($first, $this->codec($client, 'decode', $reference));
-        self::assertSame('Page', $first->class);
-        self::assertSame(9, $first->id);
+        self::assertSame(\Nesk\Puphpeteer\Page::class, $first::class);
+        self::assertSame(9, $first->remoteId());
 
         $client->close();
         $first->release();
@@ -94,11 +102,11 @@ final class ClientTest extends TestCase
         self::assertSame($bytes, $this->codec($client, 'decode', ['$quickjs' => 'bytes', 'value' => $bytes]));
     }
 
-    public function testUnknownSpecialTagsArePreserved(): void
+    public function testUndefinedBecomesNull(): void
     {
         $client = $this->client();
         $special = ['$quickjs' => 'undefined'];
-        self::assertSame($special, $this->codec($client, 'decode', $special));
+        self::assertSame(null, $this->codec($client, 'decode', $special));
     }
 
     public function testMissingOptimizedExtensionHasActionableError(): void
