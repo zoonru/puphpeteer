@@ -1,17 +1,27 @@
 <?php
 
+/**
+ * Assertions ported from Puppeteer. Copyright Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ * See tests/Support/assets/LICENSE.
+ */
+
 declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
+use Nesk\Puphpeteer\Value\BigInt;
+use Nesk\Puphpeteer\Value\UndefinedValue;
+use Nesk\Puphpeteer\Internal\EvaluationException;
 
-final class EvaluationSpecsTest extends TestCase
+require_once __DIR__ . '/../Support/BrowserTestCase.php';
+
+final class EvaluationSpecsTest extends BrowserTestCase
 {
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should accept "null" as one of multiple parameters
      * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/evaluation.spec.ts#L326 Upstream test
      */
     public function testPageEvaluateShouldAcceptNullAsOneOfMultipleParameters(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertTrue($this->page->evaluate('(a, b) => Object.is(a, null) && Object.is(b, "foo")', null, 'foo')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should accept a string
@@ -19,7 +29,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldAcceptAString(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(3, $this->page->evaluate('1 + 2')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should accept a string with comments
@@ -27,7 +37,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldAcceptAStringWithComments(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(7, $this->page->evaluate("2 + 5;\n// do some math!")->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should accept a string with semi colons
@@ -35,7 +45,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldAcceptAStringWithSemiColons(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(6, $this->page->evaluate('1 + 5;')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should accept element handle as an argument
@@ -43,7 +53,13 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldAcceptElementHandleAsAnArgument(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->evaluate('() => document.body.innerHTML = "<section>42</section>"')->await();
+        $element = $this->element('document.querySelector("section")');
+        try {
+            self::assertSame('42', $this->page->evaluate('e => e.textContent', $element)->await());
+        } finally {
+            $element->dispose()->await();
+        }
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should await promise
@@ -51,7 +67,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldAwaitPromise(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(56, $this->page->evaluate('() => Promise.resolve(8 * 7)')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should evaluate in the page context
@@ -59,7 +75,8 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldEvaluateInThePageContext(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->goto($this->url('/global-var.html'))->await();
+        self::assertSame(123, $this->page->evaluate('globalVar')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should modify global environment
@@ -67,7 +84,8 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldModifyGlobalEnvironment(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->evaluate('() => globalThis.globalVar = 123')->await();
+        self::assertSame(123, $this->page->evaluate('globalVar')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should not throw an error when evaluation does a navigation
@@ -75,7 +93,9 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldNotThrowAnErrorWhenEvaluationDoesANavigation(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->goto($this->url('/one-style.html'))->await();
+        self::assertSame([42], $this->page->evaluate('() => { window.location = "/empty.html"; return [42]; }')->await());
+        $this->waitForRequest('/empty.html');
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should properly serialize null fields
@@ -83,7 +103,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldProperlySerializeNullFields(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame([], $this->page->evaluate('() => ({a: undefined})')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should reject promise with exception
@@ -91,15 +111,19 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldRejectPromiseWithException(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->expectException(\Throwable::class);
+        $this->expectExceptionMessage('notExistingObject');
+        $this->page->evaluate('() => notExistingObject.property')->await();
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should replace symbols with undefined
      * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/evaluation.spec.ts#L108 Upstream test
+     * CDP expectation: upstream marks the BiDi assertion as FAIL; check CDP serialization here.
+     * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/TestExpectations.json#L393
      */
     public function testPageEvaluateShouldReplaceSymbolsWithUndefined(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(UndefinedValue::Value, $this->page->evaluate('() => [Symbol("foo4"), "foo"]')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return -0
@@ -107,7 +131,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturn0(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(-INF, fdiv(1.0, $this->page->evaluate('() => -0')->await()));
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return -Infinity
@@ -115,7 +139,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturnInfinity284ea479(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(-INF, $this->page->evaluate('() => -Infinity')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return BigInt
@@ -123,7 +147,9 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturnBigInt(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $result = $this->page->evaluate('() => BigInt(42)')->await();
+        self::assertInstanceOf(BigInt::class, $result);
+        self::assertSame('42', $result->value);
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return complex objects
@@ -131,7 +157,10 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturnComplexObjects(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $object = (object) ['foo' => 'bar!'];
+        $result = $this->page->evaluate('a => a', $object)->await();
+        self::assertNotSame($object, $result);
+        self::assertSame(['foo' => 'bar!'], $result);
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return Infinity
@@ -139,7 +168,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturnInfinity379ff679(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(INF, $this->page->evaluate('() => Infinity')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return NaN
@@ -147,7 +176,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturnNaN(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertNan($this->page->evaluate('() => NaN')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return promise as empty object
@@ -155,23 +184,28 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturnPromiseAsEmptyObject(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(['promise' => []], $this->page->evaluate('() => ({promise: new Promise(resolve => setTimeout(resolve, 1000))})')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return properly serialize objects with unknown type fields
      * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/evaluation.spec.ts#L506 Upstream test
+     * CDP expectation: upstream marks the BiDi assertion as FAIL; check CDP serialization here.
+     * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/TestExpectations.json#L393
      */
     public function testPageEvaluateShouldReturnProperlySerializeObjectsWithUnknownTypeFields(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->evaluate('async () => { const image = document.createElement("img"); image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="; document.body.append(image); await image.decode(); }')->await();
+        self::assertSame(['a' => 'foo', 'b' => []], $this->page->evaluate('async () => ({a: "foo", b: await createImageBitmap(document.querySelector("img"))})')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return RegEx
      * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/evaluation.spec.ts#L318 Upstream test
+     * CDP expectation: upstream marks the BiDi assertion as FAIL; check CDP serialization here.
+     * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/TestExpectations.json#L393
      */
     public function testPageEvaluateShouldReturnRegEx(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame([], $this->page->evaluate('() => /(.*)/')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should return undefined for non-serializable objects
@@ -179,7 +213,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldReturnUndefinedForNonSerializableObjects(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(UndefinedValue::Value, $this->page->evaluate('() => window')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should simulate a user gesture
@@ -187,7 +221,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldSimulateAUserGesture(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertTrue($this->page->evaluate('() => { document.body.appendChild(document.createTextNode("test")); document.execCommand("selectAll"); return document.execCommand("copy"); }')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should support thrown numbers as error messages
@@ -195,7 +229,12 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldSupportThrownNumbersAsErrorMessages(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        try {
+            $this->page->evaluate('() => { throw 100500; }')->await();
+            self::fail('Expected JavaScript to throw.');
+        } catch (EvaluationException $error) {
+            self::assertSame(100500, $error->value);
+        }
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should support thrown platform objects as error messages
@@ -203,7 +242,9 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldSupportThrownPlatformObjectsAsErrorMessages(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->expectException(\Throwable::class);
+        $this->expectExceptionMessage('some DOMException message');
+        $this->page->evaluate('() => { throw new DOMException("some DOMException message"); }')->await();
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should support thrown strings as error messages
@@ -211,7 +252,12 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldSupportThrownStringsAsErrorMessages(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        try {
+            $this->page->evaluate('() => { throw "qwerty"; }')->await();
+            self::fail('Expected JavaScript to throw.');
+        } catch (EvaluationException $error) {
+            self::assertSame('qwerty', $error->value);
+        }
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should throw error with detailed information on exception inside promise
@@ -219,7 +265,9 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldThrowErrorWithDetailedInformationOnExceptionInsidePromise(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->expectException(\Throwable::class);
+        $this->expectExceptionMessage('Error in promise');
+        $this->page->evaluate('() => new Promise(() => { throw new Error("Error in promise"); })')->await();
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should throw if elementHandles are from other frames
@@ -227,7 +275,20 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldThrowIfElementHandlesAreFromOtherFrames(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->evaluate('url => new Promise(resolve => { const frame = document.createElement("iframe"); frame.id = "frame1"; frame.src = url; frame.onload = resolve; document.body.appendChild(frame); })', $this->url('/empty.html'))->await();
+        $tree = $this->cdp('Page.getFrameTree');
+        $frameId = $tree['frameTree']['childFrames'][0]['frame']['id'];
+        $world = $this->cdp('Page.createIsolatedWorld', ['frameId' => $frameId, 'worldName' => 'test-handle']);
+        $contextId = $world['executionContextId'];
+        $remote = $this->cdp('Runtime.evaluate', ['expression' => 'document.body', 'contextId' => $contextId]);
+        $element = new \Nesk\Puphpeteer\Internal\RemoteObject($this->cdpSession(), $contextId, $remote['result']['objectId']);
+        try {
+            $this->expectException(\Throwable::class);
+            $this->expectExceptionMessage('JSHandles can be evaluated only in the context they were created');
+            $this->page->evaluate('body => body?.innerHTML', $element)->await();
+        } finally {
+            $element->dispose()->await();
+        }
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should throw if underlying element was disposed
@@ -235,7 +296,12 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldThrowIfUnderlyingElementWasDisposed(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->evaluate('() => document.body.innerHTML = "<section>39</section>"')->await();
+        $element = $this->element('document.querySelector("section")');
+        $element->dispose()->await();
+        $this->expectException(\Throwable::class);
+        $this->expectExceptionMessage('JSHandle is disposed');
+        $this->page->evaluate('e => e.textContent', $element)->await();
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should throw when evaluation triggers reload
@@ -243,7 +309,9 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldThrowWhenEvaluationTriggersReload(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->expectException(\Throwable::class);
+        $this->expectExceptionMessage('Execution context was destroyed');
+        $this->page->evaluate('() => { location.reload(); return new Promise(() => {}); }')->await();
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer -0
@@ -251,7 +319,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransfer0(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(-INF, fdiv(1.0, $this->page->evaluate('a => a', -0.0)->await()));
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer -Infinity
@@ -259,7 +327,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransferInfinityd3fd6298(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(-INF, $this->page->evaluate('a => a', -INF)->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer 100Mb of data from page to node.js
@@ -267,7 +335,9 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransfer100MbOfDataFromPageToNodeJs(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $result = $this->page->evaluate('() => Array(100 * 1024 * 1024 + 1).join("a")')->await();
+        self::assertIsString($result);
+        self::assertSame(100 * 1024 * 1024, strlen($result));
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer arrays
@@ -275,7 +345,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransferArrays(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame([1, 2, 3], $this->page->evaluate('a => a', [1, 2, 3])->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer arrays as arrays, not objects
@@ -283,7 +353,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransferArraysAsArraysNotObjects(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertTrue($this->page->evaluate('a => Array.isArray(a)', [1, 2, 3])->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer BigInt
@@ -291,7 +361,9 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransferBigInt(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $result = $this->page->evaluate('a => a', new BigInt('42'))->await();
+        self::assertInstanceOf(BigInt::class, $result);
+        self::assertSame('42', $result->value);
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer Infinity
@@ -299,7 +371,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransferInfinityf640b461(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(INF, $this->page->evaluate('a => a', INF)->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer NaN
@@ -307,15 +379,19 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldTransferNaN(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertNan($this->page->evaluate('a => a', NAN)->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should transfer RegEx
      * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/evaluation.spec.ts#L86 Upstream test
+     * CDP expectation: upstream marks the BiDi assertion as FAIL; check CDP serialization here.
+     * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/TestExpectations.json#L393
      */
     public function testPageEvaluateShouldTransferRegEx(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        // JavaScript RegExp JSON serialization supplies {} to CDP.
+        $regexp = new \stdClass();
+        self::assertSame(UndefinedValue::Value, $this->page->evaluate('a => "Hello World!".match(a)[1]', $regexp)->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work
@@ -323,15 +399,18 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldWork(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(21, $this->page->evaluate('() => 7 * 3')->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work for circular object
      * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/evaluation.spec.ts#L370 Upstream test
+     * CDP expectation: upstream marks the BiDi assertion as FAIL; check CDP serialization here.
+     * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/TestExpectations.json#L393
      */
     public function testPageEvaluateShouldWorkForCircularObject(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $result = $this->page->evaluate('() => { const a = {c: 5, d: {foo: "bar"}}; const b = {a}; a.b = b; return a; }')->await();
+        self::assertSame(UndefinedValue::Value, $result);
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work from-inside an exposed function
@@ -339,7 +418,20 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldWorkFromInsideAnExposedFunction(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        // Install the excluded exposeFunction API through CDP. The PHP callback
+        // must evaluate while the original evaluation is still awaiting its result.
+        $session = $this->cdpSession();
+        $this->cdp('Runtime.addBinding', ['name' => 'callControllerBinding']);
+        $this->page->evaluate('() => { globalThis.callController = (a, b) => new Promise(resolve => { globalThis.resolveController = resolve; callControllerBinding(JSON.stringify([a, b])); }); }')->await();
+        $binding = $session->waitFor('Runtime.bindingCalled', fn (array $event): bool => $event['name'] === 'callControllerBinding');
+        $callback = \Amp\async(function () use ($binding): void {
+            $event = $binding->await(new \Amp\TimeoutCancellation(10));
+            [$a, $b] = json_decode($event['payload'], true, 512, JSON_THROW_ON_ERROR);
+            $result = $this->page->evaluate('(a, b) => a * b', $a, $b)->await();
+            $this->page->evaluate('result => globalThis.resolveController(result)', $result)->await();
+        });
+        self::assertSame(27, $this->page->evaluate('async () => globalThis.callController(9, 3)')->await(new \Amp\TimeoutCancellation(10)));
+        $callback->await();
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work with function shorthands
@@ -347,7 +439,8 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldWorkWithFunctionShorthands(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(3, $this->page->evaluate('sum(a, b) { return a + b; }', 1, 2)->await());
+        self::assertSame(8, $this->page->evaluate('async mult(a, b) { return a * b; }', 2, 4)->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work with function shorthands and nested arrow functions
@@ -355,7 +448,7 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldWorkWithFunctionShorthandsAndNestedArrowFunctions(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(3, $this->page->evaluate('sum(a, b) { const _arrow = () => {}; _arrow(); return a + b; }', 1, 2)->await());
     }
 
     /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work with unicode chars
@@ -363,6 +456,39 @@ final class EvaluationSpecsTest extends TestCase
      */
     public function testPageEvaluateShouldWorkWithUnicodeChars(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertSame(42, $this->page->evaluate('a => a["中文字符"]', ['中文字符' => 42])->await());
+    }
+    /** Upstream scenario: test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work right after framenavigated
+     * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/evaluation.spec.ts#L181 Upstream test
+     */
+    public function testPageEvaluateShouldWorkRightAfterFramenavigated(): void
+    {
+        $evaluation = null;
+        // Page.evaluate uses the main frame; subscribe directly to its navigation
+        // event while the public event API is outside the current scope.
+        $observer = $this->onCdp('Page.frameNavigated', function (array $event) use (&$evaluation): void {
+            if (!isset($event['frame']['parentId'])) {
+                $evaluation = $this->page->evaluate('() => 6 * 7');
+            }
+        });
+        try {
+            $this->page->goto($this->url('/empty.html'))->await();
+            self::assertInstanceOf(\Amp\Future::class, $evaluation);
+            self::assertSame(42, $evaluation->await());
+        } finally {
+            $this->offCdp('Page.frameNavigated', $observer);
+        }
+    }
+
+    /** Create the excluded selector API's handle through the same CDP session. */
+    private function element(string $expression): \Nesk\Puphpeteer\Internal\RemoteObject
+    {
+        $session = $this->cdpSession();
+        $created = $session->waitFor('Runtime.executionContextCreated', static fn (array $event): bool => ($event['context']['auxData']['isDefault'] ?? false) === true);
+        $this->cdp('Runtime.disable');
+        $this->cdp('Runtime.enable');
+        $contextId = $created->await(new \Amp\TimeoutCancellation(10))['context']['id'];
+        $remote = $this->cdp('Runtime.evaluate', ['expression' => $expression, 'contextId' => $contextId]);
+        return new \Nesk\Puphpeteer\Internal\RemoteObject($session, $contextId, $remote['result']['objectId']);
     }
 }

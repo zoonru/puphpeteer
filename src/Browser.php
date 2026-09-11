@@ -12,6 +12,11 @@ namespace Nesk\Puphpeteer;
  */
 class Browser
 {
+    /** @param array<string, mixed> $options @internal */
+    public function __construct(private Internal\Connection $connection, private array $options = [])
+    {
+    }
+
     /**
      * [upstream-generated]
      * upstream-id: Browser.createBrowserContext
@@ -22,7 +27,35 @@ class Browser
      */
     public function createBrowserContext(array $options = array()): \Amp\Future
     {
-        throw new \LogicException('NotImplemented: Browser.createBrowserContext');
+        return \Amp\async(function () use ($options): BrowserContext {
+            $params = [];
+            if (isset($options['proxyServer'])) {
+                $params['proxyServer'] = $options['proxyServer'];
+            }
+            if (isset($options['proxyBypassList'])) {
+                $params['proxyBypassList'] = implode(',', $options['proxyBypassList']);
+            }
+            $result = $this->connection->send('Target.createBrowserContext', $params)->await();
+            $id = (string) $result['browserContextId'];
+            try {
+                if (isset($options['downloadBehavior'])) {
+                    $download = $options['downloadBehavior'];
+                    $params = ['browserContextId' => $id, 'behavior' => $download['policy']];
+                    if (isset($download['downloadPath'])) {
+                        $params['downloadPath'] = $download['downloadPath'];
+                    }
+                    $this->connection->send('Browser.setDownloadBehavior', $params)->await();
+                }
+                return new BrowserContext($this->connection, $id, $this->options);
+            } catch (\Throwable $error) {
+                try {
+                    $this->connection->send('Target.disposeBrowserContext', ['browserContextId' => $id])->await();
+                } catch (\Throwable) {
+                    // Preserve the initialization error if the browser already disconnected.
+                }
+                throw $error;
+            }
+        });
     }
     /**
      * [upstream-generated]
@@ -33,6 +66,11 @@ class Browser
      */
     public function disconnect(): \Amp\Future
     {
-        throw new \LogicException('NotImplemented: Browser.disconnect');
+        try {
+            $this->connection->close();
+            return \Amp\Future::complete(null);
+        } catch (\Throwable $error) {
+            return \Amp\Future::error($error);
+        }
     }
 }

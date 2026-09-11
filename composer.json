@@ -20,7 +20,11 @@
   ],
   "require": {
     "php": "^8.1",
-    "ext-json": "*"
+    "ext-json": "*",
+    "amphp/amp": "^3.1",
+    "amphp/http-client": "^5.0",
+    "amphp/sync": "^2.3",
+    "amphp/websocket-client": "^2.0"
   },
   "scripts": {
     "update-php": "node tools/upstream/update.cjs",
@@ -33,8 +37,7 @@
   "require-dev": {
     "nikic/php-parser": "^5.0",
     "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0 || ^13.0",
-    "vimeo/psalm": "^6.0",
-    "amphp/amp": "^3.1"
+    "vimeo/psalm": "^6.0"
   },
   "autoload": {
     "psr-4": {

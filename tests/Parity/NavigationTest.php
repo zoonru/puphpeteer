@@ -1,17 +1,30 @@
 <?php
 
+/**
+ * Assertions ported from Puppeteer. Copyright Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ * See tests/Support/assets/LICENSE.
+ */
+
 declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
+require_once __DIR__ . '/../Support/BrowserTestCase.php';
 
-final class NavigationTest extends TestCase
+final class NavigationTest extends BrowserTestCase
 {
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should disable timeout when its set to 0
      * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/navigation.spec.ts#L300 Upstream test
      */
     public function testPageGotoShouldDisableTimeoutWhenItsSetTo0(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $loaded = false;
+        $listener = $this->onCdp('Page.loadEventFired', static function () use (&$loaded): void { $loaded = true; });
+        try {
+            $this->page->goto($this->url('/grid.html'), ['timeout' => 0, 'waitUntil' => ['load']])->await();
+            self::assertTrue($loaded);
+        } finally {
+            $this->offCdp('Page.loadEventFired', $listener);
+        }
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when exceeding default maximum navigation timeout
@@ -19,7 +32,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenExceedingDefaultMaximumNavigationTimeout(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setPageTimeout('defaultNavigationTimeout', 1);
+        $this->assertNavigationTimeout([]);
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when exceeding default maximum timeout
@@ -27,7 +41,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenExceedingDefaultMaximumTimeout(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setPageTimeout('defaultTimeout', 1);
+        $this->assertNavigationTimeout([]);
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when exceeding maximum navigation timeout
@@ -35,7 +50,7 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenExceedingMaximumNavigationTimeout(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->assertNavigationTimeout(['timeout' => 1]);
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when main resources failed to load
@@ -43,7 +58,11 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenMainResourcesFailedToLoad(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $socket = stream_socket_server('tcp://127.0.0.1:0');
+        self::assertIsResource($socket);
+        $address = stream_socket_get_name($socket, false);
+        fclose($socket);
+        self::assertStringContainsString('net::ERR_CONNECTION_REFUSED', $this->navigationError('http://' . $address . '/non-existing-url')->getMessage());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when navigating and show the url at the error message
@@ -51,7 +70,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenNavigatingAndShowTheUrlAtTheErrorMessage(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $url = $this->httpsUrl('/redirect/1.html');
+        self::assertStringContainsString($url, $this->navigationError($url)->getMessage());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when navigating to bad SSL
@@ -59,7 +79,17 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenNavigatingToBadSSL(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $events = [];
+        $ids = [];
+        foreach (['Network.requestWillBeSent', 'Network.loadingFinished', 'Network.loadingFailed'] as $event) {
+            $ids[$event] = $this->onCdp($event, static function () use (&$events, $event): void { $events[] = $event; });
+        }
+        try {
+            self::assertMatchesRegularExpression('/net::ERR_CERT_(INVALID|AUTHORITY_INVALID)/', $this->navigationError($this->httpsUrl('/empty.html'))->getMessage());
+            self::assertSame(['Network.requestWillBeSent', 'Network.loadingFailed'], $events);
+        } finally {
+            foreach ($ids as $event => $id) { $this->offCdp($event, $id); }
+        }
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when navigating to bad SSL after redirects
@@ -67,7 +97,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenNavigatingToBadSSLAfterRedirects(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setRoute('/redirect/1.html', fn () => ['status' => 302, 'headers' => ['location' => $this->httpsUrl('/redirect/2.html')]]);
+        self::assertMatchesRegularExpression('/net::ERR_CERT_(INVALID|AUTHORITY_INVALID)/', $this->navigationError($this->url('/redirect/1.html'))->getMessage());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when navigating to bad url
@@ -75,7 +106,7 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenNavigatingToBadUrl(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertMatchesRegularExpression('/invalid argument|Cannot navigate to invalid URL/i', $this->navigationError('asdfasdf')->getMessage());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should fail when server returns 204
@@ -83,7 +114,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldFailWhenServerReturns204(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setRoute('/empty.html', static fn () => ['status' => 204]);
+        self::assertStringContainsString('net::ERR_ABORTED', $this->navigationError($this->url('/empty.html'))->getMessage());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should navigate to about:blank
@@ -91,7 +123,7 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNavigateToAboutBlank(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertNull($this->page->goto('about:blank')->await());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should navigate to dataURL and fire dataURL requests
@@ -99,7 +131,19 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNavigateToDataURLAndFireDataURLRequests(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $url = 'data:text/html,<div>yo</div>';
+        $requests = [];
+        $id = $this->onCdp('Network.requestWillBeSent', static function (array $event) use (&$requests): void {
+            if (($event['type'] ?? null) === 'Document') {
+                $requests[] = $event['request']['url'] . ($event['request']['urlFragment'] ?? '');
+            }
+        });
+        try {
+            $response = $this->page->goto($url)->await();
+            self::assertSame(200, $this->responseField($response, 'status'));
+            self::assertSame($url, $this->responseField($response, 'url'));
+            self::assertSame([$url], $requests);
+        } finally { $this->offCdp('Network.requestWillBeSent', $id); }
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should navigate to empty page with domcontentloaded
@@ -107,7 +151,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNavigateToEmptyPageWithDomcontentloaded(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/empty.html'), ['waitUntil' => 'domcontentloaded'])->await();
+        self::assertSame(200, $this->responseField($response, 'status'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should navigate to empty page with networkidle0
@@ -115,7 +160,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNavigateToEmptyPageWithNetworkidle0(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/empty.html'), ['waitUntil' => 'networkidle0'])->await();
+        self::assertSame(200, $this->responseField($response, 'status'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should navigate to empty page with networkidle2
@@ -123,7 +169,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNavigateToEmptyPageWithNetworkidle2(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/empty.html'), ['waitUntil' => 'networkidle2'])->await();
+        self::assertSame(200, $this->responseField($response, 'status'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should navigate to page with iframe and networkidle0
@@ -131,7 +178,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNavigateToPageWithIframeAndNetworkidle0(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/frames/one-frame.html'), ['waitUntil' => 'networkidle0'])->await();
+        self::assertSame(200, $this->responseField($response, 'status'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should navigate to URL with hash and fire requests without hash
@@ -139,7 +187,19 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNavigateToURLWithHashAndFireRequestsWithoutHash(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $url = $this->url('/empty.html') . '#hash';
+        $requests = [];
+        $id = $this->onCdp('Network.requestWillBeSent', static function (array $event) use (&$requests): void {
+            if (($event['type'] ?? null) === 'Document') {
+                $requests[] = $event['request']['url'] . ($event['request']['urlFragment'] ?? '');
+            }
+        });
+        try {
+            $response = $this->page->goto($url)->await();
+            self::assertSame(200, $this->responseField($response, 'status'));
+            self::assertSame($url, $this->responseField($response, 'url'));
+            self::assertSame([$url], $requests);
+        } finally { $this->offCdp('Network.requestWillBeSent', $id); }
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should not leak listeners during bad navigation
@@ -147,7 +207,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNotLeakListenersDuringBadNavigation(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $before = $this->listenerCount();
+        for ($i = 0; $i < 20; ++$i) { $this->navigationError('asdf'); }
+        self::assertSame($before, $this->listenerCount());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should not leak listeners during navigation
@@ -155,7 +217,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNotLeakListenersDuringNavigation(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $before = $this->listenerCount();
+        for ($i = 0; $i < 20; ++$i) { $this->page->goto($this->url('/empty.html'))->await(); }
+        self::assertSame($before, $this->listenerCount());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should not leak listeners during navigation of 11 pages
@@ -163,7 +227,21 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNotLeakListenersDuringNavigationOf11Pages(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $before = $this->listenerCount();
+        $tasks = [];
+        for ($i = 0; $i < 20; ++$i) {
+            $tasks[] = \Amp\async(function (): void {
+                $page = $this->context->newPage()->await();
+                $page->goto($this->url('/empty.html'))->await();
+                $session = $this->readProperty($page, 'session');
+                $closed = new \Amp\DeferredFuture();
+                $session->observe('__session_closed', static function () use ($closed): void { $closed->complete(); });
+                $session->send('Page.close')->await();
+                $closed->getFuture()->await(new \Amp\TimeoutCancellation(5));
+            });
+        }
+        \Amp\Future\await($tasks);
+        self::assertSame($before, $this->listenerCount());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should not throw an error for a 404 response with an empty body
@@ -171,7 +249,10 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNotThrowAnErrorForA404ResponseWithAnEmptyBody(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setRoute('/error', static fn () => ['status' => 404, 'body' => '']);
+        $response = $this->page->goto($this->url('/error'))->await();
+        self::assertSame(404, $this->responseField($response, 'status'));
+        self::assertFalse($this->responseOk($response));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should not throw an error for a 500 response with an empty body
@@ -179,7 +260,10 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldNotThrowAnErrorForA500ResponseWithAnEmptyBody(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setRoute('/error', static fn () => ['status' => 500, 'body' => '']);
+        $response = $this->page->goto($this->url('/error'))->await();
+        self::assertSame(500, $this->responseField($response, 'status'));
+        self::assertFalse($this->responseOk($response));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should prioritize default navigation timeout over default timeout
@@ -187,7 +271,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldPrioritizeDefaultNavigationTimeoutOverDefaultTimeout(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setPageTimeout('defaultTimeout', 0);
+        $this->setPageTimeout('defaultNavigationTimeout', 1);
+        $this->assertNavigationTimeout([]);
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should return last response in redirect chain
@@ -195,7 +281,10 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldReturnLastResponseInRedirectChain(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->redirectChain();
+        $response = $this->page->goto($this->url('/redirect/1.html'))->await();
+        self::assertTrue($this->responseOk($response));
+        self::assertSame($this->url('/empty.html'), $this->responseField($response, 'url'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should return response when page changes its URL after load
@@ -203,7 +292,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldReturnResponseWhenPageChangesItsURLAfterLoad(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/historyapi.html'))->await();
+        self::assertSame(200, $this->responseField($response, 'status'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should return response when page replaces its state during load
@@ -211,7 +301,10 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldReturnResponseWhenPageReplacesItsStateDuringLoad(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $url = $this->url('/historyapi-replaceState.html');
+        $response = $this->page->goto($url, ['waitUntil' => 'networkidle2'])->await();
+        self::assertSame(200, $this->responseField($response, 'status'));
+        self::assertSame($url, $this->page->evaluate('location.href')->await());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should send referer
@@ -219,7 +312,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldSendReferer(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->goto($this->url('/grid.html'), ['referer' => 'http://google.com/'])->await();
+        self::assertSame('http://google.com/', $this->requestHeaders('/grid.html')['referer'] ?? null);
+        self::assertSame($this->url('/grid.html'), $this->requestHeaders('/digits/1.png')['referer'] ?? null);
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should send referer policy
@@ -227,7 +322,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldSendRefererPolicy(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->goto($this->url('/empty.html'), ['referrerPolicy' => 'origin'])->await();
+        self::assertArrayNotHasKey('referer', $this->requestHeaders('/empty.html'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should wait for network idle to succeed navigation
@@ -235,7 +331,31 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWaitForNetworkIdleToSucceedNavigation(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $initial = new \Amp\DeferredFuture();
+        $second = new \Amp\DeferredFuture();
+        foreach (['a', 'b', 'c', 'd'] as $suffix) {
+            $gate = $suffix === 'd' ? $second : $initial;
+            $this->setRoute('/fetch-request-' . $suffix . '.js', static function () use ($gate): array {
+                $gate->getFuture()->await();
+                return ['status' => 404, 'body' => 'File not found'];
+            });
+        }
+        $loaded = $this->session()->waitFor('Page.loadEventFired', null, new \Amp\TimeoutCancellation(5));
+        $navigation = $this->page->goto($this->url('/networkidle.html'), ['waitUntil' => 'networkidle0']);
+        try {
+            $loaded->await();
+            self::assertFalse($navigation->isComplete());
+            foreach (['a', 'b', 'c'] as $suffix) { $this->waitForRequest('/fetch-request-' . $suffix . '.js'); }
+            self::assertFalse($navigation->isComplete());
+            $initial->complete();
+            $this->waitForRequest('/fetch-request-d.js');
+            self::assertFalse($navigation->isComplete());
+            $second->complete();
+            self::assertTrue($this->responseOk($navigation->await()));
+        } finally {
+            if (!$initial->isComplete()) { $initial->complete(); }
+            if (!$second->isComplete()) { $second->complete(); }
+        }
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work
@@ -243,7 +363,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWork(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $url = $this->url('/empty.html');
+        $this->page->goto($url)->await();
+        self::assertSame($url, $this->page->evaluate('location.href')->await());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work when a page redirects on DOMContentLoaded
@@ -251,7 +373,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWhenAPageRedirectsOnDOMContentLoaded(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/client-redirect-DOMContentLoaded.html'))->await();
+        self::assertTrue($this->responseOk($response));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work when navigating to 404
@@ -259,7 +382,10 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWhenNavigatingTo404(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setRoute('/error', static fn () => ['status' => 404, 'body' => '']);
+        $response = $this->page->goto($this->url('/error'))->await();
+        self::assertSame(404, $this->responseField($response, 'status'));
+        self::assertFalse($this->responseOk($response));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work when navigating to a URL with a client redirect
@@ -267,7 +393,11 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWhenNavigatingToAURLWithAClientRedirect(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/client-redirect.html'))->await();
+        self::assertTrue($this->responseOk($response));
+        // Upstream CDP returns the destination response; its original assertion targets BiDi.
+        // https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/TestExpectations.json#L1330
+        self::assertSame($this->url('/empty.html'), $this->responseField($response, 'url'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work when navigating to data url
@@ -275,7 +405,7 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWhenNavigatingToDataUrl(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        self::assertTrue($this->responseOk($this->page->goto('data:text/html,hello')->await()));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work when navigating to valid url
@@ -283,7 +413,8 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWhenNavigatingToValidUrl(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/empty.html'))->await();
+        self::assertTrue($this->responseOk($response));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work when page calls history API in beforeunload
@@ -291,7 +422,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWhenPageCallsHistoryAPIInBeforeunload(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->goto($this->url('/empty.html'))->await();
+        $this->page->evaluate('() => { window.addEventListener("beforeunload", () => history.replaceState(null, "initial", location.href)); }')->await();
+        self::assertSame(200, $this->responseField($this->page->goto($this->url('/grid.html'))->await(), 'status'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work when reload causes history API in beforeunload
@@ -299,7 +432,12 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWhenReloadCausesHistoryAPIInBeforeunload(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->page->goto($this->url('/empty.html'))->await();
+        $this->page->evaluate('() => { window.addEventListener("beforeunload", () => history.replaceState(null, "initial", location.href)); }')->await();
+        $loaded = $this->session()->waitFor('Page.loadEventFired', null, new \Amp\TimeoutCancellation(5));
+        $this->cdp('Page.reload');
+        $loaded->await();
+        self::assertSame(1, $this->page->evaluate('() => 1')->await());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work with anchor navigation
@@ -307,7 +445,11 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWithAnchorNavigation(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        foreach (['', '#foo', '#bar'] as $fragment) {
+            $url = $this->url('/empty.html') . $fragment;
+            $this->page->goto($url)->await();
+            self::assertSame($url, $this->page->evaluate('location.href')->await());
+        }
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work with redirects
@@ -315,7 +457,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWithRedirects(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->redirectChain();
+        $this->page->goto($this->url('/redirect/1.html'))->await();
+        self::assertSame($this->url('/empty.html'), $this->page->evaluate('location.href')->await());
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work with self requesting page
@@ -323,7 +467,9 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWithSelfRequestingPage(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $response = $this->page->goto($this->url('/self-request.html'))->await();
+        self::assertSame(200, $this->responseField($response, 'status'));
+        self::assertStringContainsString('self-request.html', $this->responseField($response, 'url'));
     }
 
     /** Upstream scenario: test/src/navigation.spec.ts::navigation > Page.goto > should work with subframes return 204
@@ -331,6 +477,84 @@ final class NavigationTest extends TestCase
      */
     public function testPageGotoShouldWorkWithSubframesReturn204(): void
     {
-        self::markTestIncomplete('Implement the upstream assertions.');
+        $this->setRoute('/frames/frame.html', static fn () => ['status' => 204]);
+        self::assertNotNull($this->page->goto($this->url('/frames/one-frame.html'))->await());
+    }
+
+    /** Upstream scenario: test/src/navigation.spec.ts::with network events disabled > should work
+     * @see https://github.com/puppeteer/puppeteer/blob/5d820f2872cdec366fbf6069d03ebc094d8b97f2/test/src/navigation.spec.ts#L1003 Upstream test
+     */
+    public function testShouldWorkWithNetworkEventsDisabled(): void
+    {
+        $browser = (new \Nesk\Puphpeteer\Puppeteer())->connect(['browserWSEndpoint' => self::$endpoint, 'networkEnabled' => false])->await();
+        $context = $browser->createBrowserContext()->await();
+        try {
+            $page = $context->newPage()->await();
+            $url = $this->url('/empty.html');
+            self::assertNull($page->goto($url)->await());
+            self::assertSame($url, $page->evaluate('location.href')->await());
+            $tree = $this->session($page)->send('Page.getFrameTree')->await();
+            self::assertSame($url, $tree['frameTree']['frame']['url']);
+        } finally {
+            $context->close()->await();
+            $browser->disconnect()->await();
+        }
+    }
+
+    private function navigationError(string $url, array $options = []): Throwable
+    {
+        try { $this->page->goto($url, $options)->await(); }
+        catch (Throwable $error) { return $error; }
+        self::fail('Navigation unexpectedly succeeded: ' . $url);
+    }
+
+    private function assertNavigationTimeout(array $options): void
+    {
+        $this->setRoute('/hang', static fn () => ['delay' => 60, 'body' => '']);
+        $error = $this->navigationError($this->url('/hang'), $options);
+        self::assertInstanceOf(\Nesk\Puphpeteer\Internal\NavigationTimeoutException::class, $error);
+        self::assertStringContainsString('Navigation timeout of 1 ms exceeded', $error->getMessage());
+    }
+
+    private function setPageTimeout(string $property, int $milliseconds): void
+    {
+        (new ReflectionProperty($this->page, $property))->setValue($this->page, $milliseconds);
+    }
+
+    private function readProperty(object $object, string $property): mixed
+    {
+        return (new ReflectionProperty($object, $property))->getValue($object);
+    }
+
+    private function responseField(?object $response, string $field): mixed
+    {
+        self::assertNotNull($response);
+        return $this->readProperty($response, $field);
+    }
+
+    private function responseOk(?object $response): bool
+    {
+        $status = $this->responseField($response, 'status');
+        return $status === 0 || ($status >= 200 && $status <= 299);
+    }
+
+    private function redirectChain(): void
+    {
+        foreach (['1' => '/redirect/2.html', '2' => '/redirect/3.html', '3' => '/empty.html'] as $number => $target) {
+            $this->setRoute('/redirect/' . $number . '.html', static fn () => ['status' => 302, 'headers' => ['location' => $target]]);
+        }
+    }
+
+    private function listenerCount(): int
+    {
+        $session = $this->readProperty($this->page, 'session');
+        $connection = $this->readProperty($session, 'connection');
+        $count = 0;
+        foreach ($this->readProperty($connection, 'sessions') as $active) {
+            foreach (['observers', 'waiters'] as $property) {
+                foreach ($this->readProperty($active, $property) as $listeners) { $count += count($listeners); }
+            }
+        }
+        return $count;
     }
 }

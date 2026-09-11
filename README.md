@@ -2,11 +2,12 @@
 
 Tools for maintaining a native PHP port of Puppeteer's public API. The generator
 updates declarations and PHPUnit scaffolds; developers implement their bodies.
-The browser client is currently unimplemented.
+The current client supports CDP connections, isolated browser contexts, page creation,
+navigation and JavaScript evaluation. The remaining API is selected through ignore files.
 
 ## Setup
 
-Requires PHP 8.1+, Composer, Node.js 18+, npm and Git. All work is local; CI is not configured.
+Development requires PHP 8.1+, Composer, Node.js 18+, npm, Git and Chrome for browser tests.
 
 ```sh
 composer install
@@ -14,7 +15,56 @@ npm ci --ignore-scripts
 ```
 
 Commit `package-lock.json`; keep `composer.lock` local. Node is a development dependency.
-The PHP client is intended to run with Amp/Fibers, without Node, Rialto or QuickJS.
+The PHP client runs with Amp/Fibers. Node is used for development tools only.
+
+## Using the current client
+
+Connect to a Chrome instance started with remote debugging enabled:
+
+```php
+use Nesk\Puphpeteer\Puppeteer;
+
+$browser = (new Puppeteer())->connect([
+    'browserWSEndpoint' => $endpoint,
+])->await();
+try {
+    $context = $browser->createBrowserContext()->await();
+    try {
+        $page = $context->newPage()->await();
+        $page->goto('https://example.com')->await();
+        $title = $page->evaluate('document.title')->await();
+    } finally {
+        $context->close()->await();
+    }
+} finally {
+    $browser->disconnect()->await();
+}
+```
+
+Methods return `Amp\Future`; start several operations before awaiting them to run
+concurrently. `goto` accepts an `Amp\Cancellation` in its `signal` option. Disconnecting
+releases the connection and pending operations; closing a context disposes its pages.
+
+`evaluate` accepts a JavaScript expression or function source. Function source such as
+`'(a, b) => a + b'` receives variadic PHP arguments. Results use PHP arrays for JSON
+objects/arrays, `Value\UndefinedValue::Value` for JavaScript `undefined`, and
+`Value\BigInt` for arbitrary precision integers (both under `Nesk\Puphpeteer`).
+JavaScript exceptions reject the future and preserve their JS name, value and stack.
+The current implementation uses CDP; WebDriver BiDi is not implemented.
+
+## Browser tests
+
+`composer test-unit` starts isolated headless Chrome processes and local HTTP/HTTPS
+fixtures. Set `PUPHPETEER_CHROME` to choose a Chrome executable; otherwise the test
+harness uses the cached Chrome for Testing matching the installed Puppeteer version.
+Install that browser once with `npx puppeteer browsers install chrome`. `PUPHPETEER_TEST_ENDPOINT` can point to
+a dedicated test browser instead. Tests create and close targets and contexts in that
+browser. The PHP test process has a 512 MiB memory limit for the upstream 100 MiB
+serialization scenario.
+
+Some upstream serialization scenarios have known CDP failures recorded in Puppeteer's
+`test/TestExpectations.json`. Their PHP ports assert the actual pinned JS/CDP behavior
+and link to those expectations; they remain executable tests.
 
 ## Development workflow
 
@@ -117,15 +167,16 @@ If exclusions are added, previously generated tests must be removed manually. Se
 Port setup, actions and assertions into PHP and review their equivalence to upstream.
 Commit the catalog with the reviewed tests. PHPUnit does not synchronize the catalog or
 run JS; use upstream's own runner separately when investigating reference behavior.
-HTML and data may be shared. There is no additional observation runner or `test-tooling`.
+HTML and data may be shared.
 
-## PHP checks for the framework only
+## Checks without Chrome
 
 ```sh
-composer psalm -- --config=psalm-framework.xml
+composer psalm
 composer test-unit -- --testsuite Framework
 ```
 
-Normal checks include `src/` and the client tests. Standard options pass through directly,
+The Framework suite contains generator and protocol unit tests; the Client suite runs
+real-browser scenarios. Standard options pass through directly,
 for example `composer test-unit -- --filter=Name`. Previous implementations remain in
 Git history and the `native-wip` / `quickjs-prototype` branches.

@@ -205,7 +205,10 @@ function trackTests({root, sourceRoot, api, selection, config = {}, previous = n
     const checker = program.getTypeChecker();
     const entries = [];
     const dependencyCache = new Map();
-    const sharedDependencies = ['test/assets'].flatMap(relative => filesBelow(localPath(sourceRoot, relative)))
+    const sharedDependencies = [
+        ...filesBelow(localPath(sourceRoot, 'test/assets')),
+        localPath(sourceRoot, 'test/TestExpectations.json'),
+    ].filter(file => fs.existsSync(file)).sort()
         .map(file => ({path: slash(path.relative(sourceRoot, file)), hash: hash(fs.readFileSync(file))}));
     const sharedFingerprint = hash(JSON.stringify(sharedDependencies));
     for (const file of testFiles) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php" colors="true" failOnRisky="true" failOnIncomplete="true" failOnSkipped="true" failOnWarning="true" cacheDirectory=".phpunit.cache">
+    <php><ini name="memory_limit" value="512M" /></php>
     <testsuites>
         <testsuite name="Framework"><directory>tests/Unit</directory></testsuite>
         <testsuite name="Client"><directory>tests/Parity</directory></testsuite>

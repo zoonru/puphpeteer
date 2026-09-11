@@ -48,6 +48,230 @@
       "psalm": "\\Amp\\Cancellation"
     }
   },
-  "testMappings": {},
-  "ownTests": []
+  "testMappings": {
+    "test/src/launcher.spec.ts::Launcher specs > Puppeteer > Puppeteer.connect > should be able to connect multiple times to the same browser": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectionLifecycleTest.php",
+      "phpMethod": "testConnectMultipleTimesToTheSameBrowser"
+    },
+    "test/src/launcher.spec.ts::Launcher specs > Puppeteer > Puppeteer.connect > should be able to connect to a browser with no page targets": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectionLifecycleTest.php",
+      "phpMethod": "testConnectToBrowserWithNoPageTargets"
+    },
+    "test/src/launcher.spec.ts::Launcher specs > Puppeteer > Puppeteer.connect > should be able to reconnect to a disconnected browser": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectionLifecycleTest.php",
+      "phpMethod": "testReconnectToDisconnectedBrowserPreservesFramesAndEvaluation"
+    },
+    "test/src/launcher.spec.ts::Launcher specs > Puppeteer > Puppeteer.connect > should be able to connect to the same page simultaneously": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectionLifecycleTest.php",
+      "phpMethod": "testConnectToSamePageSimultaneously"
+    },
+    "test/src/launcher.spec.ts::Launcher specs > Puppeteer > Puppeteer.connect > should support acceptInsecureCerts option": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectionLifecycleTest.php",
+      "phpMethod": "testConnectAcceptsInsecureCertificates"
+    },
+    "test/src/connect.spec.ts::Puppeteer.connect > should be able to connect using browserUrl, with and without trailing slash": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectTest.php",
+      "phpMethod": "testShouldBeAbleToConnectUsingBrowserUrlWithAndWithoutTrailingSlash"
+    },
+    "test/src/connect.spec.ts::Puppeteer.connect > should throw when using both browserWSEndpoint and browserURL": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectTest.php",
+      "phpMethod": "testShouldThrowWhenUsingBothBrowserWSEndpointAndBrowserURL"
+    },
+    "test/src/connect.spec.ts::Puppeteer.connect > should throw when trying to connect to non-existing browser": {
+      "api": [
+        "Puppeteer.connect"
+      ],
+      "phpTest": "tests/Parity/ConnectTest.php",
+      "phpMethod": "testShouldThrowWhenTryingToConnectToNonExistingBrowser"
+    },
+    "test/src/page.spec.ts::Page > Page.newPage > should open pages in a new window": {
+      "api": [
+        "BrowserContext.newPage"
+      ],
+      "phpTest": "tests/Parity/PageCreationTest.php",
+      "phpMethod": "testPageNewPageShouldOpenPagesInANewWindow"
+    },
+    "test/src/page.spec.ts::Page > Page.newPage > should open pages in a new window at the specified position": {
+      "api": [
+        "BrowserContext.newPage"
+      ],
+      "phpTest": "tests/Parity/PageCreationTest.php",
+      "phpMethod": "testPageNewPageShouldOpenPagesInANewWindowAtTheSpecifiedPosition"
+    },
+    "test/src/page.spec.ts::Page > Page.newPage > should open pages in a new window in maximized state": {
+      "api": [
+        "BrowserContext.newPage"
+      ],
+      "phpTest": "tests/Parity/PageCreationTest.php",
+      "phpMethod": "testPageNewPageShouldOpenPagesInANewWindowInMaximizedState"
+    },
+    "test/src/page.spec.ts::Page > Page.newPage > should create a background page": {
+      "api": [
+        "BrowserContext.newPage"
+      ],
+      "phpTest": "tests/Parity/PageCreationTest.php",
+      "phpMethod": "testPageNewPageShouldCreateABackgroundPage"
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should create new context": {
+      "api": [
+        "Browser.createBrowserContext"
+      ],
+      "phpTest": "tests/Parity/BrowserContextTest.php",
+      "phpMethod": "testShouldCreateNewContext"
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should close all belonging targets once closing context": {
+      "api": [
+        "BrowserContext.close"
+      ],
+      "phpTest": "tests/Parity/BrowserContextTest.php",
+      "phpMethod": "testShouldCloseAllBelongingTargetsOnceClosingContext"
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should not be able to close default context": {
+      "api": [
+        "BrowserContext.close"
+      ],
+      "phpTest": "tests/Parity/BrowserContextTest.php",
+      "phpMethod": "testShouldNotBeAbleToCloseDefaultContext"
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should isolate localStorage and cookies": {
+      "api": [
+        "Browser.createBrowserContext"
+      ],
+      "phpTest": "tests/Parity/BrowserContextTest.php",
+      "phpMethod": "testShouldIsolateLocalStorageAndCookies"
+    },
+    "test/src/proxy.spec.ts::request proxy > in incognito browser context > should proxy requests when configured at context level": {
+      "api": [
+        "Browser.createBrowserContext"
+      ],
+      "phpTest": "tests/Parity/ProxyContextTest.php",
+      "phpMethod": "testInIncognitoBrowserContextShouldProxyRequestsWhenConfiguredAtContextLevel"
+    },
+    "test/src/proxy.spec.ts::request proxy > in incognito browser context > should respect proxy bypass list when configured at context level": {
+      "api": [
+        "Browser.createBrowserContext"
+      ],
+      "phpTest": "tests/Parity/ProxyContextTest.php",
+      "phpMethod": "testInIncognitoBrowserContextShouldRespectProxyBypassListWhenConfiguredAtContextLevel"
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > BrowserContext.overridePermissions > should be prompt by default": {
+      "api": [
+        "BrowserContext.overridePermissions"
+      ]
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should fire target events": {
+      "api": [
+        "BrowserContext.on"
+      ]
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should provide a context id": {
+      "api": [
+        "BrowserContext.id"
+      ]
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should timeout waiting for a non-existent target": {
+      "api": [
+        "BrowserContext.waitForTarget"
+      ]
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should wait for a target": {
+      "api": [
+        "BrowserContext.waitForTarget"
+      ]
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > should work across sessions": {
+      "api": [
+        "Browser.browserContexts"
+      ]
+    },
+    "test/src/browsercontext.spec.ts::BrowserContext > window.open should use parent tab context": {
+      "api": [
+        "Target.browserContext"
+      ]
+    },
+    "test/src/proxy.spec.ts::request proxy > in incognito browser context > should proxy requests when configured at browser level": {
+      "api": [
+        "PuppeteerNode.launch"
+      ]
+    },
+    "test/src/proxy.spec.ts::request proxy > in incognito browser context > should respect proxy bypass list when configured at browser level": {
+      "api": [
+        "PuppeteerNode.launch"
+      ]
+    },
+    "test/src/proxy.spec.ts::request proxy > should proxy requests when configured": {
+      "api": [
+        "PuppeteerNode.launch"
+      ]
+    },
+    "test/src/proxy.spec.ts::request proxy > should respect proxy bypass list": {
+      "api": [
+        "PuppeteerNode.launch"
+      ]
+    },
+    "test/src/evaluation.spec.ts::Evaluation specs > Page.evaluate > should work right after framenavigated": {
+      "api": [
+        "Page.evaluate"
+      ],
+      "phpTest": "tests/Parity/EvaluationSpecsTest.php",
+      "phpMethod": "testPageEvaluateShouldWorkRightAfterFramenavigated"
+    },
+    "test/src/navigation.spec.ts::with network events disabled > should work": {
+      "api": [
+        "Page.goto",
+        "Page.evaluate"
+      ],
+      "phpTest": "tests/Parity/NavigationTest.php",
+      "phpMethod": "testShouldWorkWithNetworkEventsDisabled"
+    }
+  },
+  "ownTests": [
+    {
+      "id": "own:concurrent-evaluation",
+      "api": [
+        "Page.evaluate",
+        "BrowserContext.newPage"
+      ],
+      "phpTest": "tests/Parity/AsyncLifecycleTest.php",
+      "phpMethod": "testEvaluationRunsConcurrentlyAcrossPages"
+    },
+    {
+      "id": "own:cancel-navigation",
+      "api": [
+        "Page.goto"
+      ],
+      "phpTest": "tests/Parity/AsyncLifecycleTest.php",
+      "phpMethod": "testNavigationCancellationReleasesWaitersAndPageRemainsUsable"
+    },
+    {
+      "id": "own:context-close-pending-evaluation",
+      "api": [
+        "BrowserContext.close",
+        "Page.evaluate"
+      ],
+      "phpTest": "tests/Parity/AsyncLifecycleTest.php",
+      "phpMethod": "testClosingContextRejectsPendingEvaluationAndReleasesItsTargets"
+    }
+  ]
 }

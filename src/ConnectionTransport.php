@@ -12,6 +12,9 @@ namespace Nesk\Puphpeteer;
  */
 class ConnectionTransport
 {
+    /** @param \Closure(string):void $sender @param \Closure():void $closer */
+    public function __construct(private \Closure $sender, private \Closure $closer) {}
+
     /**
      * [upstream-generated]
      * upstream-id: ConnectionTransport.close
@@ -21,7 +24,7 @@ class ConnectionTransport
      */
     public function close(): void
     {
-        throw new \LogicException('NotImplemented: ConnectionTransport.close');
+        ($this->closer)();
     }
     /**
      * [upstream-generated]
@@ -49,6 +52,6 @@ class ConnectionTransport
      */
     public function send(string $message): void
     {
-        throw new \LogicException('NotImplemented: ConnectionTransport.send');
+        ($this->sender)($message);
     }
 }
