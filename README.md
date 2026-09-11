@@ -52,160 +52,115 @@ $browser->close();
 
 ## Requirements and installation
 
-This package requires PHP >= 7.3 and Node >= 8.
+Основное направление проекта — оригинальный Puppeteer внутри PHP-процесса через
+расширение **php-quickjs**. Amp обслуживает WebSocket, таймеры и PHP-callbacks.
+Node.js нужен для сборки JavaScript и тестовых runner, но не для работы клиента.
 
-Install it with these two command lines:
+Это **разрабатываемая версия**, а не готовый production-релиз. Типизированные
+обёртки полного API и поддержка `puppeteer-extra`/stealth ещё не реализованы.
 
-```shell
-composer require zoon/puphpeteer
-npm install git+https://git@github.com/zoonru/puphpeteer.git#zoon
+## План реализации
+
+1. **Подготовка проекта:** удалить старые backend и зависимости; настроить
+   Composer, PHPUnit, Psalm, воспроизводимую JS-сборку и CI по образцу `native`.
+2. **Генератор:** перенести framework из `native`; генерировать реальные
+   PHP-классы и методы, PHP-сигнатуры и PHPDoc для IDE, включая `Future<T>`
+   и формы массивов параметров. Psalm проверяет типы; публичный API не строится
+   исключительно на `__call`.
+3. **Расширение php-quickjs:** закрепить прямой мост и `dispatch`, контракт
+   типов, лимиты очередей, освобождение ресурсов и безопасность Fibers.
+4. **PHP runtime:** довести Future, отмену, таймауты, события, транспорт и
+   lifecycle объектов.
+5. **Плагины:** проверить `puppeteer-extra` и stealth в QuickJS; адаптировать
+   необходимые Node API, lifecycle hooks и сборку bundle. Проверять отдельные
+   evasions, новые страницы, frames и popup; загрузка плагина недостаточна.
+6. **Проверки и выпуск:** совместимость API, аварийные и длительные тесты,
+   утечки, повторные бенчмарки, проверка на реальной нагрузке и откат.
+
+Координатор согласует контракты генератора, моста и runtime. После подготовки
+проекта задачи 2–5 выполняются параллельно в отдельных рабочих копиях.
+Результаты проверки плагинов учитываются **до фиксации архитектуры**.
+
+## Статус подготовки
+
+Шаг 1 выполнен: старый runtime удалён, зависимости и npm lock-файл приведены
+к QuickJS, настроены PHPUnit, Psalm и CI для PHP 8.4/8.5.
+Локально проверены unit-тесты, native bridge integration и браузерный smoke.
+CI выполняет unit/Psalm/JS build; сборка расширения и браузерная интеграция
+в CI появятся после фиксации воспроизводимой сборки форка на шаге 3.
+
+У закреплённого Puppeteer 24.36.1 остаются npm audit-предупреждения
+в цепочке `extract-zip` → `@puppeteer/browsers` → `puppeteer-core`
+([GHSA-jmr9-qjv8-65gv](https://github.com/advisories/GHSA-jmr9-qjv8-65gv),
+[GHSA-7pqw-9j4j-h8q3](https://github.com/advisories/GHSA-7pqw-9j4j-h8q3)).
+Загрузчик браузеров исключён из QuickJS bundle; тесты используют явно заданный
+Chrome. Предлагаемый npm переход на Puppeteer 25 требует отдельной проверки
+совместимости и не включён в подготовку проекта.
+
+## Архитектура текущего прототипа
+
+- `src/` — временный динамический PHP-фасад `Nesk\Puphpeteer\Client`;
+  типизированный публичный API появится на шаге 2.
+- `js/` — оригинальный Puppeteer и host adapters на JS.
+- `tools/build.cjs` — сборка bundle в `resources/`.
+- `tests/Browser/` — браузерный smoke-тест; `benchmarks/` — бенчмарк.
+- `docs/benchmarks/` — сохранённые исторические результаты.
+- Прямой мост передаёт значения без MessagePack и дополнительного JSON;
+  JSON самого CDP сохранён. Бинарные результаты передаются как PHP-строки.
+- `Js\Callback::dispatch()` объединяет dispatch, ограниченную обработку
+  jobs и возврат сообщений. Продолжение очереди отдаётся event loop.
+- Код расширения находится в отдельном репозитории php-quickjs. Нужен форк
+  с `dispatch` и `__quickjsEmit`; исходного релиза 0.0.2 недостаточно.
+
+## Разработка
+
+Нужны PHP 8.4+, Composer и Node.js для сборки. Для выполнения браузерных
+сценариев нужны Chrome и совместимая сборка расширения `php_quickjs`.
+
+```sh
+# Только подготовка и проверки без загруженного расширения:
+composer install --ignore-platform-req=ext-php_quickjs
+npm ci
+npm run build
+composer test-unit
+composer psalm
 ```
 
-## Use with browserless
+Пропуск требования расширения разрешает установить зависимости для разработки,
+но не позволяет запускать сам клиент без расширения.
 
-```shell
-docker run --rm  -p 3000:3000 ghcr.io/browserless/chrome
+```sh
+CHROME_BIN=/absolute/path/to/chrome QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.dylib npm run test-smoke
+CHROME_BIN=/absolute/path/to/chrome QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.dylib npm run benchmark
 ```
 
-```php
-$puppeteer = new Nesk\Puphpeteer\Puppeteer;
+Для Linux укажите соответствующий `.so`. `CHROME_BIN` задаётся явно;
+при необходимости задайте `PHP_BIN`. Расширение должно быть собрано для выбранной версии и платформы PHP.
+Команды браузерных проверок уточнены в [описании QuickJS](docs/quickjs.md).
 
-$options = [
-    'headless' => false,
-    'stealth'=> true,
-    'timeout'=> 5000,
-    'args' => [
-        '--window-size=1366,768',
-    ],
-];
+## Старые реализации
 
-$browser = $puppeteer->connect(['browserWSEndpoint' => 'ws://127.0.0.1:3000/chrome?launch='.urlencode(json_encode($options, JSON_UNESCAPED_UNICODE))]);
-$page = $browser->newPage();
-$page->goto('https://www.example.com');
-$page->screenshot(['path' => 'example.png']);
-$browser->close();
-```
+Rialto/Node и native PHP не входят в новый runtime. Их код и тесты сохраняются
+в истории Git и ветках `zoon`, `native`, `native-wip`. Framework генерации и
+нужные тестовые сценарии переносим из `native` на следующих шагах.
+Старые benchmark-отчёты в `docs/benchmarks/` являются историческими результатами;
+они не подтверждают состояние текущей версии.
 
-## Notable differences between PuPHPeteer and Puppeteer
+## Зависимости и сборка bundle
 
-### Puppeteer's class must be instantiated
+PHP-зависимости задаются диапазонами в `composer.json`; `composer.lock` остаётся
+локальным. CI устанавливает последние допустимые зависимости через
+`composer update --prefer-stable` и запускает unit-тесты и Psalm 7 beta
+на PHP 8.4 и 8.5.
 
-Instead of requiring Puppeteer:
+Для JS-инструментов сохраняется `package-lock.json`. `npm ci` устанавливает
+зафиксированные зависимости, затем `npm run build` запускает `tools/build.cjs`.
+Esbuild объединяет `js/guest.js`, host adapters и browser-версию Puppeteer
+в `resources/puppeteer.js` (IIFE); рядом записывается `manifest.json` с версиями.
+`Client` загружает этот JS в QuickJS. Это обычный JS bundle, не байткод расширения.
 
-```js
-const puppeteer = require('puppeteer');
-```
-
-You have to instantiate the `Puppeteer` class:
-
-```php
-$puppeteer = new Puppeteer;
-```
-
-This will create a new Node process controlled by PHP.
-
-You can also pass some options to the constructor, see [Rialto's documentation](https://github.com/nesk/rialto/blob/master/docs/api.md#options). PuPHPeteer also extends these options:
-
-```php
-[
-    // Logs the output of Browser's console methods (console.log, console.debug, etc...) to the PHP logger
-    'log_browser_console' => false,
-]
-```
-
-<details>
-<summary><strong>⏱ Want to use some timeouts higher than 30 seconds in Puppeteer's API?</strong></summary> <br>
-
-If you use some timeouts higher than 30 seconds, you will have to set a higher value for the `read_timeout` option (default: `35`):
-
-```php
-$puppeteer = new Puppeteer([
-    'read_timeout' => 65, // In seconds
-]);
-
-$puppeteer->launch()->newPage()->goto($url, [
-    'timeout' => 60000, // In milliseconds
-]);
-```
-</details>
-
-### No need to use the `await` keyword
-
-With PuPHPeteer, every method call or property getting/setting is synchronous.
-
-### Some methods have been aliased
-
-The following methods have been aliased because PHP doesn't support the `$` character in method names:
-
-- `$` => `querySelector`
-- `$$` => `querySelectorAll`
-- `$eval` => `querySelectorEval`
-- `$$eval` => `querySelectorAllEval`
-
-Use these aliases just like you would have used the original methods:
-
-```php
-$divs = $page->querySelectorAll('div');
-// Runs the `//h2` as the XPath expression.
-$xpath = $page->querySelectorAll('::-p-xpath(//h2)');
-// div element that has Checkout as the inner text.
-$text = $page->querySelector('div ::-p-text(Checkout)');
-```
-
-### Evaluated functions must be created with `JsFunction`
-
-Functions evaluated in the context of the page must be written [with the `JsFunction` class](https://github.com/nesk/rialto/blob/master/docs/api.md#javascript-functions), the body of these functions must be written in JavaScript instead of PHP.
-
-```php
-use Nesk\Rialto\Data\JsFunction;
-
-$pageFunction = JsFunction::createWithParameters(['element'])
-    ->body("return element.textContent");
-```
-
-### Exceptions must be caught with `->tryCatch`
-
-If an error occurs in Node, a `Node\FatalException` will be thrown and the process closed, you will have to create a new instance of `Puppeteer`.
-
-To avoid that, you can ask Node to catch these errors by prepending your instruction with `->tryCatch`:
-
-```php
-use Nesk\Rialto\Exceptions\Node;
-
-try {
-    $page->tryCatch->goto('invalid_url');
-} catch (Node\Exception $exception) {
-    // Handle the exception...
-}
-```
-
-Instead, a `Node\Exception` will be thrown, the Node process will stay alive and usable.
-
-### Puppeteer plugins
-
-Puppeteer-extra and puppeteer-extra-plugin-stealth plugins already added in npm requirements.
-
-To use them, override js inclusion with js_extra option
-```php
-    $puppeteer = new Puppeteer([
-        'js_extra' => /** @lang JavaScript */ "
-            const puppeteer = require('puppeteer-extra');
-            const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-            puppeteer.use(StealthPlugin());
-            instruction.setDefaultResource(puppeteer);
-        "
-    ]);
-```
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
-
-## Logo attribution
-
-PuPHPeteer's logo is composed of:
-
-- [Puppet](https://thenounproject.com/search/?q=puppet&i=52120) by Luis Prado from [the Noun Project](http://thenounproject.com/).
-- [Elephant](https://thenounproject.com/search/?q=elephant&i=954119) by Lluisa Iborra from [the Noun Project](http://thenounproject.com/).
-
-Thanks to [Laravel News](https://laravel-news.com/) for picking the icons and colors of the logo.
+Bundle и manifest сохраняются в Git вместе с исходниками и npm lock-файлом.
+CI выполняет `npm run build:check`: пересобирает результат в памяти и проверяет
+совпадение с сохранёнными файлами. При изменении JS или npm-зависимостей выполните
+`npm run build` и включите обновлённые resources в коммит.
+Приложению-потребителю не нужны Node.js и npm. Требуется совместимое расширение PHP.

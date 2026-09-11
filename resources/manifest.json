@@ -1,0 +1,5 @@
+{
+  "puppeteer": "24.36.1",
+  "esbuild": "0.25.12",
+  "extension": "php-quickjs async/native-bridge fork with dispatch"
+}

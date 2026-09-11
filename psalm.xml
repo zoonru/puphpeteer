@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<psalm errorLevel="3" findUnusedCode="false" cacheDirectory=".psalm-cache" resolveFromConfigFile="true"
+       xmlns="https://getpsalm.org/schema/config" autoloader="vendor/autoload.php">
+    <projectFiles>
+        <directory name="src" />
+        <directory name="tests/Unit" />
+        <directory name="tests/Integration" />
+        <ignoreFiles><directory name="vendor" /></ignoreFiles>
+    </projectFiles>
+    <stubs><file name="stubs/php_quickjs.php" /></stubs>
+</psalm>

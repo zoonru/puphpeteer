@@ -1,6 +1,6 @@
 {
   "name": "zoon/puphpeteer",
-  "description": "A Puppeteer bridge for PHP, supporting the entire API.",
+  "description": "A PHP client running Puppeteer in embedded QuickJS.",
   "keywords": [
     "php",
     "puppeteer",
@@ -16,24 +16,22 @@
     {
       "name": "Johann Pardanaud",
       "email": "pardanaud.j@gmail.com"
+    },
+    {
+      "name": "Alexander Pankratov",
+      "email": "s.pankratoff@gmail.com"
     }
   ],
   "require": {
-    "php": "^8.1",
+    "php": "^8.4",
     "ext-json": "*",
-    "composer/semver": "^3.0",
-    "psr/log": "^3.0",
-    "zoon/rialto": "^1.6"
+    "ext-php_quickjs": "*",
+    "amphp/amp": "^3.1",
+    "amphp/websocket-client": "^2.0"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.2",
-    "monolog/monolog": "^3.0",
-    "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^11",
-    "symfony/console": "^7",
-    "symfony/filesystem": "^7",
-    "symfony/process": "^7",
-    "symfony/var-dumper": "^7"
+    "vimeo/psalm": "^7.0.0-beta19"
   },
   "autoload": {
     "psr-4": {
@@ -46,11 +44,17 @@
     }
   },
   "scripts": {
-    "post-install-cmd": "npm install",
-    "test": "./vendor/bin/phpunit",
-    "update-docs": "php bin/console doc:generate",
-    "stan": "vendor/bin/phpstan analyze src",
-    "format": "vendor/bin/php-cs-fixer fix src"
+    "test": "@test-unit",
+    "psalm": "@php vendor/bin/psalm",
+    "check": [
+      "@test",
+      "@psalm"
+    ],
+    "build": "npm run build",
+    "test-browser": "npm run test-smoke",
+    "benchmark": "npm run benchmark",
+    "test-unit": "@php vendor/bin/phpunit",
+    "test-integration": "@php vendor/bin/phpunit tests/Integration"
   },
   "config": {
     "sort-packages": true

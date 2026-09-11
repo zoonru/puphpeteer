@@ -1,19 +1,27 @@
-name: Tests
+name: QuickJS foundation
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
-  phpunit:
+  unit-and-types:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: [7.3, 7.4, 8.0]
-        composer-flags: [null, --prefer-lowest]
+        php-version: ['8.4', '8.5']
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
           coverage: none
-      - run: composer update ${{ matrix.composer-flags }} --no-interaction --no-progress --prefer-dist --ansi
-      - run: npm install
-      - run: ./vendor/bin/phpunit --color=always
+      # Unit tests run without the extension; Psalm uses stubs. Browser integration is separate.
+      - name: Install latest supported dependencies
+        run: composer update --prefer-stable --ignore-platform-req=ext-php_quickjs --no-interaction --no-progress --prefer-dist
+      - run: npm ci
+      - run: npm run build:check
+      - run: composer test-unit
+      - run: composer psalm

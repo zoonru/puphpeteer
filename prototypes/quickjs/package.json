@@ -1,6 +1,0 @@
-{
-  "name": "puphpeteer-quickjs-prototype",
-  "private": true,
-  "scripts": {"build": "node build.cjs"},
-  "devDependencies": {"esbuild": "0.25.12", "puppeteer-core": "24.36.1"}
-}
