@@ -1,0 +1,9 @@
+{
+  "native_baseline_commit": "0a9fab3eceb5d168e027bffbfb94c2384f50b626",
+  "extension_base_commit": "083a60ac7a40e3b64ae952bec0fb9f21a01a85bd",
+  "sha256": {
+    "prototypes/quickjs/build/puppeteer.js": "b92292712816704b8f0c1f953340b5c8bf23b5cbd847ecc880a806f299643e88",
+    "prototypes/quickjs/build/manifest.json": "92bf6cd8ff21cf9e97b74292c1127aef6e08db9a0bffa2a218186877f71937ad",
+    "/opt/homebrew/lib/php/pecl/20250925/quickjs.dylib": "36f6e924c41909cd69be4b7a82abf93c5ace94413e1c9f0d54ca422067493f03"
+  }
+}

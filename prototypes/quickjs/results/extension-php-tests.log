@@ -1,0 +1,219 @@
+tests/php/01_eval_basic.php
+  ok   - integer arithmetic
+  ok   - statements then expression
+  ok   - string concat
+  ok   - boolean
+  ok   - float division
+  ok   - null
+  ok   - undefined -> null
+  ok   - array
+  ok   - object -> assoc array
+  ok   - Array.map runs in JS
+
+10 assertions, 0 failures
+
+tests/php/02_marshal_roundtrip.php
+  ok   - null
+  ok   - bool true
+  ok   - bool false
+  ok   - int zero
+  ok   - negative int
+  ok   - large int (beyond i32)
+  ok   - float
+  ok   - empty string
+  ok   - utf-8 string
+  ok   - indexed array
+  ok   - assoc array
+  ok   - nested structure
+  ok   - empty array
+  ok   - Uint8Array -> binary string
+
+14 assertions, 0 failures
+
+tests/php/03_register_dispatch.php
+  ok   - math.add reenters PHP
+  ok   - object result from PHP consumed in JS
+  ok   - side-effecting callback ran in PHP
+  ok   - bool through bridge
+  ok   - negative int through bridge
+  ok   - large int through bridge
+  ok   - float through bridge
+  ok   - utf-8 string through bridge
+  ok   - array through bridge
+  ok   - nested object through bridge
+  ok   - null through bridge
+  ok   - bytes through bridge
+  ok   - php is frozen
+  ok   - namespace is frozen
+  ok   - frozen capability cannot be overwritten
+  ok   - registered capability is reachable
+  ok   - unknown capability throws in JS
+
+17 assertions, 0 failures
+
+tests/php/04_callbacks_bidir.php
+  ok   - PHP-returned closure is callable from JS
+  ok   - callbacks nested in a returned object
+  ok   - PHP invokes a JS callback synchronously
+  ok   - JS callback invoked repeatedly from PHP
+  ok   - JS function arrives as Js\Callback
+  ok   - JS function survives a round trip through PHP
+  ok   - nested JS->PHP->JS->PHP callbacks
+  ok   - runaway re-entrancy is bounded by the depth guard (got QuickJSEvalException: QuickJSEvalException: RangeError: Maximum call stack size exceeded)
+  ok   - engine usable after depth guard
+
+9 assertions, 0 failures
+
+tests/php/05_handles.php
+  ok   - grant() returns an integer handle
+  ok   - mutate live object via handle
+  ok   - second mutation accumulates
+  ok   - state persisted host-side
+  ok   - host object reflects JS-driven mutations
+  ok   - opaque handle wrapped in a JS class
+  ok   - handle is an opaque number in JS
+  ok   - revoke() succeeds for a live handle
+  ok   - revoke() is idempotent
+  ok   - resolving a revoked handle throws (got QuickJSEvalException: Exception: unknown handle: 1)
+  ok   - granted object survives gc_collect_cycles()
+
+11 assertions, 0 failures
+
+tests/php/06_errors.php
+  ok   - QuickJSException exists
+  ok   - Eval extends base
+  ok   - base extends \Exception
+  ok   - Timeout extends base
+  ok   - Memory extends base
+  ok   - JS Error -> QuickJSEvalException (got QuickJSEvalException: boom)
+  ok   - JS runtime error is a QuickJSException (got QuickJSEvalException: TypeError: cannot read property 'field' of null)
+  ok   - JS syntax error is a QuickJSException (got QuickJSEvalException: Expected a semicolon or an implicit semicolon after a statement, but found none)
+  ok   - typed JS error message preserved
+  ok   - bare Error name elided from message
+  ok   - PHP exception is catchable in JS
+  ok   - PHP exception class exposed to JS as e.phpClass
+  ok   - uncaught PHP exception re-surfaces cleanly
+  ok   - JS error inside a PHP-invoked callback surfaces to PHP (got QuickJSEvalException: QuickJSEvalException: RangeError: oops)
+  ok   - round-tripped PHP exception is unwrapped
+  ok   - original PHP class preserved as jsName
+  ok   - engine still works after exceptions
+
+17 assertions, 0 failures
+
+tests/php/07_sandbox_timeout.php
+  ok   - infinite loop trips the timeout (got QuickJSTimeoutException: InternalError: interrupted)
+  ok   - timeout fired promptly (100.24619102478ms < 1000ms)
+  ok   - timeout is a QuickJSException (got QuickJSTimeoutException: InternalError: interrupted)
+  ok   - engine usable after timeout
+  ok   - fast eval is not interrupted
+  ok   - host-call loop is bounded too (got QuickJSTimeoutException: InternalError: interrupted)
+  ok   - engine usable after host-call timeout
+  ok   - alloc bomb trips the memory limit (got QuickJSMemoryException: InternalError: out of memory)
+  ok   - no limits by default
+
+9 assertions, 0 failures
+
+tests/php/08_dts_generation.php
+  ok   - manifest lists every registration
+  ok   - manifest preserves dotted name
+  ok   - manifest carries the signature
+  ok   - untyped registration has null signature
+  ok   - dts declares the php global
+  ok   - dts nests dotted names into namespaces
+  ok   - typed signature emitted verbatim
+  ok   - untyped leaf falls back to any
+  ok   - second namespace emitted
+  ok   - manifest name 'db.query' is a callable on the php facade
+  ok   - manifest name 'db.execute' is a callable on the php facade
+  ok   - manifest name 'log.info' is a callable on the php facade
+
+12 assertions, 0 failures
+
+tests/php/09_typescript.php
+  ok   - type annotations are stripped and the JS runs
+  ok   - type aliases erase, value survives
+  ok   - interface declaration erases with no runtime trace
+  ok   - generics erase
+  ok   - `as` casts erase
+  ok   - class private fields run natively under esnext
+  ok   - typed guest calls a PHP capability
+  ok   - getMessage() is the clean error text
+  ok   - getFile() is the guest module
+  ok   - getLine() is the original TS line 5, not generated JS line 1
+  ok   - getJsName() exposes the JS error constructor
+  ok   - getJsStack() cites the TS line
+  ok   - getJsStack() has no internal host frames
+  ok   - runtime error remapped to TS line 3
+  ok   - JS error name is TypeError
+  ok   - invalid syntax surfaces as QuickJSEvalException (got QuickJSEvalException: Unexpected token)
+  ok   - transpile error carries a diagnostic message
+  ok   - transpile error has a file
+  ok   - transpile error located at the offending TS line
+  ok   - transpile error is named SyntaxError
+  ok   - thrown object is JSON-rendered (got: {"code":42,"reason":"nope"})
+  ok   - thrown array is JSON-rendered
+  ok   - first eval (transpile + cache)
+  ok   - second eval (cache hit) returns identical result
+  ok   - plain JS is valid TS and round-trips
+
+25 assertions, 0 failures
+
+tests/php/10_scope_isolation.php
+  ok   - globals persist across evals (shared)
+  ok   - globalThis persists
+  ok   - and is visible in a later eval
+  ok   - stored JS callback survives later evals
+  ok   - JS function round-trips through PHP within an eval
+  ok   - unstored callbacks are released
+  ok   - globals do NOT persist (isolated)
+  ok   - no cross-eval redeclaration clash (isolated)
+  ok   - capabilities work in isolated mode
+  ok   - synchronous callbacks work in isolated mode
+  ok   - stored callback rejected after its eval (isolated) (got Exception: JS callback invoked outside its eval (isolated QuickJS instance))
+
+11 assertions, 0 failures
+
+tests/php/11_jobs.php
+  ok   - new runtime has no jobs
+  ok   - empty queue returns immediately
+  ok   - eval does not implicitly drain jobs
+  ok   - Promise reaction is pending
+  ok   - one job executed
+  ok   - reaction executed
+  ok   - queue drained
+  ok   - unresolved Promise is not a ready job
+  ok   - host resolution enqueues a reaction
+  ok   - host-resolved Promise completes
+  ok   - rejections retain JS catch semantics
+  ok   - self-scheduling queue is bounded
+  ok   - job limit is exact
+  ok   - remaining work stays queued
+  ok   - queue can finish on a later turn
+  ok   - zero budget rejected (got Exception: maxJobs must be greater than zero)
+  ok   - negative budget rejected (got Exception: maxJobs must be greater than zero)
+  ok   - reentrant draining rejected instead of deadlocking (got QuickJSEvalException: Exception: Cannot run jobs while JavaScript is executing)
+  ok   - jobs can synchronously call PHP and JS
+  ok   - isolated jobs rejected (got Exception: Promise jobs require shared mode (isolated: false))
+  ok   - isolated draining rejected (got Exception: Promise jobs require shared mode (isolated: false))
+  ok   - single runaway job observes execution timeout (got QuickJSTimeoutException: JavaScript job execution timed out)
+  ok   - engine recovers after job timeout
+
+23 assertions, 0 failures
+
+tests/php/12_fibers.php
+  ok   - main-stack engine runs in a Fiber
+  ok   - main-stack callback runs in a Fiber
+  ok   - ready jobs visible from main stack
+  ok   - jobs run after Fiber resumption
+  ok   - callback returns to main stack
+  ok   - engine outlives its creation Fiber
+  ok   - cross-engine callback uses its own context
+  ok   - switching inside active JS is rejected (got QuickJSEvalException: FiberError: Cannot switch fibers in current execution context)
+  ok   - switching is restored after returning from JS
+  ok   - engine remains usable after rejected switch
+  ok   - same-engine synchronous reentrancy still works
+  ok   - saved callbacks obey the execution timeout (got QuickJSTimeoutException: JavaScript callback execution timed out)
+  ok   - engine recovers after callback timeout
+
+13 assertions, 0 failures
+
