@@ -1,0 +1,44 @@
+{
+  "$id": "ignore.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "classes",
+    "members",
+    "exports"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "initializedFrom": {
+      "type": "object"
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

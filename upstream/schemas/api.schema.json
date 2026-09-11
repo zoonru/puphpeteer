@@ -1,0 +1,84 @@
+{
+  "$id": "api.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "classes",
+    "types",
+    "exports",
+    "declarations",
+    "diagnostics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "classes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "members"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "kind"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "signatures": {
+                  "type": "array"
+                },
+                "type": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "kind"
+        ]
+      }
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "declarations": {
+      "type": "array"
+    },
+    "diagnostics": {
+      "type": "array"
+    }
+  }
+}

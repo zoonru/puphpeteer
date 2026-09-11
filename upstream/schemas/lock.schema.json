@@ -1,0 +1,45 @@
+{
+  "$id": "lock.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "package",
+    "tests"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "package": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "tests": {
+      "type": "object"
+    },
+    "tools": {
+      "type": "object"
+    },
+    "npmLockSha256": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance": {
+      "const": "fixture"
+    }
+  }
+}

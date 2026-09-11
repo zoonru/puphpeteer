@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "namespace": "Nesk\\Puphpeteer",
+  "classes": {},
+  "members": {
+    "Page.evaluate": {
+      "parameters": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "mixed",
+          "docType": "mixed"
+        }
+      ],
+      "returnType": {
+        "native": "\\Amp\\Future",
+        "psalm": "\\Amp\\Future<mixed>"
+      },
+      "templates": []
+    },
+    "Browser.createBrowserContext": {
+      "parameters": [
+        {
+          "default": []
+        }
+      ]
+    },
+    "Page.goto": {
+      "parameters": [
+        {},
+        {
+          "default": []
+        }
+      ]
+    },
+    "BrowserContext.newPage": {
+      "parameters": [
+        {
+          "default": []
+        }
+      ]
+    }
+  },
+  "types": {
+    "AbortSignal": {
+      "native": "\\Amp\\Cancellation",
+      "psalm": "\\Amp\\Cancellation"
+    }
+  },
+  "testMappings": {},
+  "ownTests": []
+}

@@ -23,11 +23,27 @@
     "ext-json": "*"
   },
   "scripts": {
-    "upstream-report": "node tools/upstream/ignore.cjs report",
-    "test-tooling": "node --test tests/Tooling/*.test.cjs",
-    "test": "@test-tooling"
+    "update-php": "node tools/upstream/update.cjs",
+    "psalm": "@php vendor/bin/psalm --no-cache",
+    "test-unit": "@php vendor/bin/phpunit"
   },
   "config": {
     "sort-packages": true
+  },
+  "require-dev": {
+    "nikic/php-parser": "^5.0",
+    "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0 || ^13.0",
+    "vimeo/psalm": "^6.0",
+    "amphp/amp": "^3.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Nesk\\Puphpeteer\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Zoon\\Puphpeteer\\Tooling\\": "tools/php/src/"
+    }
   }
 }

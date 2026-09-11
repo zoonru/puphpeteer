@@ -1,0 +1,73 @@
+{
+  "$id": "tests.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "tests"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "api",
+          "status",
+          "fingerprint"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "api": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "status": {
+            "enum": [
+              "required",
+              "excluded-api",
+              "excluded-test",
+              "unresolved"
+            ]
+          },
+          "fingerprint": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phpMethod": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "upstreamUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "GitHub URL pinned to the upstream commit and source line; null for local or own tests."
+          }
+        }
+      }
+    },
+    "sharedDependencies": {
+      "type": "array"
+    },
+    "sharedFingerprint": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

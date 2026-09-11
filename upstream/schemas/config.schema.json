@@ -1,0 +1,91 @@
+{
+  "$id": "config.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "namespace"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "namespace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "fqcn",
+          "file"
+        ],
+        "properties": {
+          "fqcn": {
+            "type": "string",
+            "minLength": 1
+          },
+          "file": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "members": {
+      "type": "object"
+    },
+    "types": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "native",
+          "psalm"
+        ],
+        "properties": {
+          "native": {
+            "type": "string",
+            "minLength": 1
+          },
+          "psalm": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "testMappings": {
+      "type": "object"
+    },
+    "ownTests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "api"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^own:"
+          },
+          "api": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

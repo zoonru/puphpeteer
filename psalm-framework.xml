@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<psalm errorLevel="3" resolveFromConfigFile="true" xmlns="https://getpsalm.org/schema/config" autoloader="vendor/autoload.php" findUnusedBaselineEntry="true">
+    <projectFiles>
+        <directory name="tools/php" />
+    </projectFiles>
+</psalm>

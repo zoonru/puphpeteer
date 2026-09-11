@@ -25,11 +25,8 @@
   },
   "devDependencies": {
     "@types/node": "25.2.1",
+    "cli-progress": "3.12.0",
     "typescript": "5.9.3"
   },
-  "private": true,
-  "scripts": {
-    "test": "node --test tests/Tooling/*.test.cjs",
-    "upstream-report": "node tools/upstream/ignore.cjs report"
-  }
+  "private": true
 }
