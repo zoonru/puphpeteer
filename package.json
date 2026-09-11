@@ -1,7 +1,6 @@
 {
   "name": "@zoon/puphpeteer",
-  "version": "2.4.3",
-  "description": "A Puppeteer bridge for PHP, supporting the entire API.",
+  "description": "Development tools for the native PHP Puppeteer client.",
   "keywords": [
     "php",
     "puppeteer",
@@ -17,19 +16,20 @@
     "url": "https://johann.pardanaud.com/"
   },
   "license": "MIT",
-  "repository": "git+https://git@github.com/zoonru/puphpeteer.git#zoon",
+  "repository": "git+https://github.com/zoonru/puphpeteer.git",
   "engines": {
-    "node": ">=9.0.0"
+    "node": ">=18"
   },
   "dependencies": {
-    "@zoon/rialto": "git+https://git@github.com/zoonru/rialto.git#zoon",
-    "puppeteer": "24.36.1",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer": "24.36.1"
   },
   "devDependencies": {
-    "@types/yargs": "^15.0.10",
-    "typescript": "^5",
-    "yargs": "^16.1.1"
+    "@types/node": "25.2.1",
+    "typescript": "5.9.3"
+  },
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/Tooling/*.test.cjs",
+    "upstream-report": "node tools/upstream/ignore.cjs report"
   }
 }

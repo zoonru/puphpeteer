@@ -1,6 +1,6 @@
 {
   "name": "zoon/puphpeteer",
-  "description": "A Puppeteer bridge for PHP, supporting the entire API.",
+  "description": "Development framework for a native PHP Puppeteer client.",
   "keywords": [
     "php",
     "puppeteer",
@@ -20,39 +20,12 @@
   ],
   "require": {
     "php": "^8.1",
-    "ext-json": "*",
-    "composer/semver": "^3.0",
-    "psr/log": "^3.0",
-    "zoon/rialto": "^1.6"
-  },
-  "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.2",
-    "monolog/monolog": "^3.0",
-    "phpstan/phpstan": "^2.0",
-    "phpunit/phpunit": "^11",
-    "symfony/console": "^7",
-    "symfony/filesystem": "^7",
-    "symfony/process": "^7",
-    "symfony/var-dumper": "^7"
-  },
-  "autoload": {
-    "psr-4": {
-      "Nesk\\Puphpeteer\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Nesk\\Puphpeteer\\Tests\\": "tests/"
-    }
+    "ext-json": "*"
   },
   "scripts": {
-    "post-install-cmd": "npm install",
     "upstream-report": "node tools/upstream/ignore.cjs report",
     "test-tooling": "node --test tests/Tooling/*.test.cjs",
-    "test": "./vendor/bin/phpunit",
-    "update-docs": "php bin/console doc:generate",
-    "stan": "vendor/bin/phpstan analyze src",
-    "format": "vendor/bin/php-cs-fixer fix src"
+    "test": "@test-tooling"
   },
   "config": {
     "sort-packages": true
