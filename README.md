@@ -59,7 +59,7 @@ $dimensions = $page->evaluate(JsFunction::createWithBody('
 printf('Dimensions: %s', print_r($dimensions, true));
 ```
 
-See also the runnable [examples](examples/).
+See also the runnable [examples](examples/), including [form submission interception with concurrent request waiting](examples/04_form_intercept.php). Their [run instructions](examples/README.md) use the bundled static pages; browserless is a separate Docker example.
 
 ## Requirements and installation
 
@@ -276,10 +276,11 @@ Ignoring the platform requirement only permits dependency installation; the clie
 
 ```sh
 QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer test-browser
+QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer test-release
 QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer benchmark
 ```
 
-On macOS the extension may use `.dylib`. `PHP_BIN` overrides the runner's PHP executable. Smoke runs the browser scenarios and all three examples. The benchmark currently requires macOS and measures the PHP workload separately from Chrome and runner overhead. See [QuickJS internals and test details](docs/quickjs.md).
+On macOS the extension may use `.dylib`. `PHP_BIN` overrides the PHP executable used by isolated processes. Smoke runs the browser scenarios and all three examples. The benchmark supports macOS and Linux and measures the PHP workload separately from Chrome and the wrapper process. See [QuickJS internals and test details](docs/quickjs.md).
 
 `npm run build` bundles `js/guest.js`, adapters and Puppeteer into `resources/puppeteer.js`, with version metadata and launch defaults. Commit these resources with source and lock-file changes. `npm run build:check` verifies reproducibility. PHP dependency ranges are resolved by the consuming application; `composer.lock` is local. JS tooling is pinned in `package-lock.json`.
 
@@ -290,9 +291,9 @@ On macOS the extension may use `.dylib`. `PHP_BIN` overrides the runner's PHP ex
 3. **Extension:** direct bridge, `dispatch`, type contract, queue limits, callback/handle release and Fiber boundaries are implemented and covered by [contract tests](docs/extension-contract.md). Cross-platform release validation remains in step 6.
 4. **Runtime:** transport shutdown, internal cancellation, timeout recovery and object/browser cleanup are implemented with [lifecycle tests and documented boundaries](docs/runtime.md).
 5. **Plugins:** bundled stealth modules, custom plugin registries and lifecycle hooks are implemented with isolated and browser tests; [compatibility limits](docs/plugins.md) are documented.
-6. **Release:** compatibility, failure and long-running tests, leak checks, repeatable benchmarks and real workloads.
+6. **Release:** a PHP validation runner, repeated browser workloads, retention checks, portable benchmarks and an extension/browser CI matrix are implemented. See [release checks and remaining blockers](docs/release.md).
 
-CI currently checks unit tests, Psalm, API generation and the JS build. Reproducible extension builds and browser integration in CI remain pending. Historical benchmark reports under [docs/benchmarks](docs/benchmarks/) describe earlier snapshots.
+CI checks unit tests, Psalm, API generation, plugins and the JS build. The extension/browser matrix requires a published fork SHA configured as `PHP_QUICKJS_REF`. Publishing that revision, obtaining green platform runs and updating the vulnerable browser downloader remain release prerequisites. Historical benchmark reports under [docs/benchmarks](docs/benchmarks/) describe earlier snapshots.
 
 ## License
 
