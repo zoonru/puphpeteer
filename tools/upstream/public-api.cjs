@@ -243,9 +243,10 @@ function extractPublicApi(entry, options = {}) {
         else type.values = node.members.map(member => ({name: memberName(member), value: checker.getConstantValue(member) ?? null}));
         types.push(type);
     }
-    // Resolution failures matter; unrelated library diagnostics are intentionally not compiler readiness checks.
+    // Any semantic error can invalidate the generated PHP model. Keep the full
+    // diagnostic set so update/verify can fail instead of silently drifting.
     for (const diagnostic of program.getSemanticDiagnostics()) {
-        if ([2307, 2304, 2694, 7016].includes(diagnostic.code)) diagnostics.push({code: `typescript-${diagnostic.code}`, message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
+        diagnostics.push({code: `typescript-${diagnostic.code}`, message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
             ...(diagnostic.file ? {path: relative(diagnostic.file.fileName)} : {})});
     }
     return {schemaVersion: 1, classes: classes.sort((a, b) => compare(a.name, b.name)), exports: exports.sort(compare),

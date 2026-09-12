@@ -20,8 +20,18 @@ async function updatePhp(root=toolRoot,{check=false,offline=false,modelOnly=fals
  const source=await resolveSources({root,offline});
  const api=extractPublicApi(source.entry,{root});
  const model=buildPhpModel({api,config});
+ const diagnostics=sortDiagnostics([...api.diagnostics,...model.diagnostics]);
+ if(!modelOnly){
+  const coveragePath=path.join(root,'upstream/coverage.json');
+  if(fs.existsSync(coveragePath)){
+   const previous=readJson(coveragePath);
+   const known=new Set((previous.diagnostics||[]).map(item=>JSON.stringify(item)));
+   const added=diagnostics.filter(item=>!known.has(JSON.stringify(item)));
+   if(added.length) throw new Error(`New generator diagnostics require review: ${json(added)}`);
+  }
+ }
  const files=[{path:'upstream/api.json',content:json(api)},{path:'upstream/lock.json',content:json(source.lock)},
- {path:'upstream/coverage.json',content:json({schemaVersion:1,note:'Declaration coverage only; does not imply runtime or test coverage.', total:model.coverage.length,generated:model.coverage.filter(m=>m.status==='generated').length,members:model.coverage,diagnostics:sortDiagnostics([...api.diagnostics,...model.diagnostics])})}];
+ {path:'upstream/coverage.json',content:json({schemaVersion:1,note:'Declaration coverage only; does not imply runtime or test coverage.', total:model.coverage.length,generated:model.coverage.filter(m=>m.status==='generated').length,members:model.coverage,diagnostics})}];
  let deletedFiles=[];
  if(!modelOnly){
   const result=spawnSync('php',[path.join(toolRoot,'tools/php/synchronize.php')],{cwd:root,input:json({root,classes:model.classes}),encoding:'utf8',maxBuffer:32*1024*1024});

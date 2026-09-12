@@ -43,17 +43,15 @@ function sample(int $rootPid): array
     return array_values(array_filter($rows, static fn(array $row): bool => $row['pid'] !== $rootPid && isset($selected[$row['pid']])));
 }
 
-function runTrial(int $trial, string $output): array
+function runTrial(int $trial, string $output, string $extension): array
 {
-    $extensionHash = hash_file('sha256', (string) getenv('QUICKJS_EXTENSION'));
+    $extensionHash = hash_file('sha256', $extension);
     $bundleHash = hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js');
     $browser = (new Puppeteer())->launch(['headless' => true, 'args' => ['--no-proxy-server']]);
     try {
         $endpoint = parse_url($browser->wsEndpoint());
         $response = HttpClientBuilder::buildDefault()->request(new Request('http://' . $endpoint['host'] . ':' . $endpoint['port'] . '/json/version'));
         $version = json_decode(buffer($response->getBody()), true, 512, JSON_THROW_ON_ERROR)['Browser'];
-        $extension = getenv('QUICKJS_EXTENSION');
-        if (!$extension) { throw new RuntimeException('Set QUICKJS_EXTENSION. See docs/quickjs.md.'); }
         $php = getenv('PHP_BIN') ?: PHP_BINARY;
         $command = [$php, '-n', '-d', 'extension=' . $extension, __DIR__ . '/benchmark.php'];
         $child = Process::start(['/usr/bin/time', ...(PHP_OS_FAMILY === 'Darwin' ? ['-l'] : ['-f', 'PUPHPETEER_TIME %e %U %S']), ...$command], environment: [...getenv(), 'BROWSER_WS' => $browser->wsEndpoint(), 'LC_ALL' => 'C']);
@@ -97,7 +95,7 @@ function runTrial(int $trial, string $output): array
         if ($result['code'] !== 0 || $measurement === null) {
             throw new RuntimeException("QuickJS trial $trial failed ({$result['code']}): " . substr($stderr, 0, 1500) . substr($result['stdout'], -1000));
         }
-        if ($extensionHash !== hash_file('sha256', (string) getenv('QUICKJS_EXTENSION')) || $bundleHash !== hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js')) {
+        if ($extensionHash !== hash_file('sha256', $extension) || $bundleHash !== hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js')) {
             throw new RuntimeException('Extension or bundle changed during trial; freeze build artifacts before benchmarking.');
         }
         if ($samplingErrors !== '' || $samples === 0) { throw new RuntimeException('Resource sampler failed or collected no steady-state samples; inspect raw benchmark logs.'); }
@@ -117,6 +115,10 @@ function runTrial(int $trial, string $output): array
 
 try {
     if (!in_array(PHP_OS_FAMILY, ['Darwin', 'Linux'], true)) { throw new RuntimeException('Resource benchmark requires macOS or Linux with /usr/bin/time and ps.'); }
+    $extension = getenv('QUICKJS_EXTENSION');
+    if (!is_string($extension) || $extension === '' || !is_file($extension) || !is_readable($extension)) {
+        throw new RuntimeException('Set QUICKJS_EXTENSION to a readable extension file. See docs/quickjs.md.');
+    }
     $trials = filter_var(getenv('BENCH_TRIALS') === false ? '5' : getenv('BENCH_TRIALS'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if ($trials === false) { throw new InvalidArgumentException('BENCH_TRIALS must be a positive integer.'); }
     $output = __DIR__ . '/results/current';
@@ -125,7 +127,7 @@ try {
     $runs = [];
         for ($trial = 0; $trial < $trials; $trial++) {
             echo 'Running quickjs ', $trial + 1, '/', $trials, "\n";
-            $run = runTrial($trial, $output);
+            $run = runTrial($trial, $output, $extension);
             $runs[] = $run;
             file_put_contents("$output/benchmark.json", json_encode([
                 'platform' => strtolower(PHP_OS_FAMILY), 'arch' => php_uname('m') === 'x86_64' ? 'x64' : php_uname('m'),

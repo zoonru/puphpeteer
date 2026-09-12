@@ -37,9 +37,8 @@ jobs:
       - run: composer test-unit
       - run: composer psalm
   extension-and-browser:
-    # The compatible fork commit is not published yet. Configure this variable
-    # to a published full SHA; a missing value explicitly skips this job.
-    if: ${{ vars.PHP_QUICKJS_REF != '' || github.event_name == 'workflow_dispatch' }}
+    # Runtime validation is fail-closed: configure PHP_QUICKJS_REF before
+    # merging changes, or provide extension-ref for a manual run.
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -92,6 +91,9 @@ jobs:
           done
       - run: composer update --prefer-stable --ignore-platform-req=ext-php_quickjs --no-interaction --no-progress --prefer-dist
       - run: npm ci
+      - run: npm run build:check
+      - run: composer verify-php
+      - run: composer psalm
       - run: composer test-release
       - name: Record benchmark
         run: composer benchmark
