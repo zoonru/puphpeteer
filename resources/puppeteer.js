@@ -23,9 +23,9 @@
   };
   var __copyProps = (to, from2, except, desc) => {
     if (from2 && typeof from2 === "object" || typeof from2 === "function") {
-      for (let key of __getOwnPropNames(from2))
-        if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from2[key], enumerable: !(desc = __getOwnPropDesc(from2, key)) || desc.enumerable });
+      for (let key2 of __getOwnPropNames(from2))
+        if (!__hasOwnProp.call(to, key2) && key2 !== except)
+          __defProp(to, key2, { get: () => from2[key2], enumerable: !(desc = __getOwnPropDesc(from2, key2)) || desc.enumerable });
     }
     return to;
   };
@@ -39,6 +39,3335 @@
   ));
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
+  // node_modules/ms/index.js
+  var require_ms = __commonJS({
+    "node_modules/ms/index.js"(exports2, module2) {
+      var s = 1e3;
+      var m = s * 60;
+      var h = m * 60;
+      var d = h * 24;
+      var w = d * 7;
+      var y = d * 365.25;
+      module2.exports = function(val, options) {
+        options = options || {};
+        var type = typeof val;
+        if (type === "string" && val.length > 0) {
+          return parse(val);
+        } else if (type === "number" && isFinite(val)) {
+          return options.long ? fmtLong(val) : fmtShort(val);
+        }
+        throw new Error(
+          "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
+        );
+      };
+      function parse(str) {
+        str = String(str);
+        if (str.length > 100) {
+          return;
+        }
+        var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
+          str
+        );
+        if (!match) {
+          return;
+        }
+        var n = parseFloat(match[1]);
+        var type = (match[2] || "ms").toLowerCase();
+        switch (type) {
+          case "years":
+          case "year":
+          case "yrs":
+          case "yr":
+          case "y":
+            return n * y;
+          case "weeks":
+          case "week":
+          case "w":
+            return n * w;
+          case "days":
+          case "day":
+          case "d":
+            return n * d;
+          case "hours":
+          case "hour":
+          case "hrs":
+          case "hr":
+          case "h":
+            return n * h;
+          case "minutes":
+          case "minute":
+          case "mins":
+          case "min":
+          case "m":
+            return n * m;
+          case "seconds":
+          case "second":
+          case "secs":
+          case "sec":
+          case "s":
+            return n * s;
+          case "milliseconds":
+          case "millisecond":
+          case "msecs":
+          case "msec":
+          case "ms":
+            return n;
+          default:
+            return void 0;
+        }
+      }
+      function fmtShort(ms) {
+        var msAbs = Math.abs(ms);
+        if (msAbs >= d) {
+          return Math.round(ms / d) + "d";
+        }
+        if (msAbs >= h) {
+          return Math.round(ms / h) + "h";
+        }
+        if (msAbs >= m) {
+          return Math.round(ms / m) + "m";
+        }
+        if (msAbs >= s) {
+          return Math.round(ms / s) + "s";
+        }
+        return ms + "ms";
+      }
+      function fmtLong(ms) {
+        var msAbs = Math.abs(ms);
+        if (msAbs >= d) {
+          return plural(ms, msAbs, d, "day");
+        }
+        if (msAbs >= h) {
+          return plural(ms, msAbs, h, "hour");
+        }
+        if (msAbs >= m) {
+          return plural(ms, msAbs, m, "minute");
+        }
+        if (msAbs >= s) {
+          return plural(ms, msAbs, s, "second");
+        }
+        return ms + " ms";
+      }
+      function plural(ms, msAbs, n, name) {
+        var isPlural = msAbs >= n * 1.5;
+        return Math.round(ms / n) + " " + name + (isPlural ? "s" : "");
+      }
+    }
+  });
+
+  // node_modules/debug/src/common.js
+  var require_common = __commonJS({
+    "node_modules/debug/src/common.js"(exports2, module2) {
+      function setup(env) {
+        createDebug.debug = createDebug;
+        createDebug.default = createDebug;
+        createDebug.coerce = coerce;
+        createDebug.disable = disable;
+        createDebug.enable = enable;
+        createDebug.enabled = enabled;
+        createDebug.humanize = require_ms();
+        createDebug.destroy = destroy;
+        Object.keys(env).forEach((key2) => {
+          createDebug[key2] = env[key2];
+        });
+        createDebug.names = [];
+        createDebug.skips = [];
+        createDebug.formatters = {};
+        function selectColor(namespace) {
+          let hash = 0;
+          for (let i = 0; i < namespace.length; i++) {
+            hash = (hash << 5) - hash + namespace.charCodeAt(i);
+            hash |= 0;
+          }
+          return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+        }
+        createDebug.selectColor = selectColor;
+        function createDebug(namespace) {
+          let prevTime;
+          let enableOverride = null;
+          let namespacesCache;
+          let enabledCache;
+          function debug2(...args2) {
+            if (!debug2.enabled) {
+              return;
+            }
+            const self2 = debug2;
+            const curr = Number(/* @__PURE__ */ new Date());
+            const ms = curr - (prevTime || curr);
+            self2.diff = ms;
+            self2.prev = prevTime;
+            self2.curr = curr;
+            prevTime = curr;
+            args2[0] = createDebug.coerce(args2[0]);
+            if (typeof args2[0] !== "string") {
+              args2.unshift("%O");
+            }
+            let index = 0;
+            args2[0] = args2[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+              if (match === "%%") {
+                return "%";
+              }
+              index++;
+              const formatter = createDebug.formatters[format];
+              if (typeof formatter === "function") {
+                const val = args2[index];
+                match = formatter.call(self2, val);
+                args2.splice(index, 1);
+                index--;
+              }
+              return match;
+            });
+            createDebug.formatArgs.call(self2, args2);
+            const logFn = self2.log || createDebug.log;
+            logFn.apply(self2, args2);
+          }
+          debug2.namespace = namespace;
+          debug2.useColors = createDebug.useColors();
+          debug2.color = createDebug.selectColor(namespace);
+          debug2.extend = extend;
+          debug2.destroy = createDebug.destroy;
+          Object.defineProperty(debug2, "enabled", {
+            enumerable: true,
+            configurable: false,
+            get: () => {
+              if (enableOverride !== null) {
+                return enableOverride;
+              }
+              if (namespacesCache !== createDebug.namespaces) {
+                namespacesCache = createDebug.namespaces;
+                enabledCache = createDebug.enabled(namespace);
+              }
+              return enabledCache;
+            },
+            set: (v) => {
+              enableOverride = v;
+            }
+          });
+          if (typeof createDebug.init === "function") {
+            createDebug.init(debug2);
+          }
+          return debug2;
+        }
+        function extend(namespace, delimiter) {
+          const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
+          newDebug.log = this.log;
+          return newDebug;
+        }
+        function enable(namespaces) {
+          createDebug.save(namespaces);
+          createDebug.namespaces = namespaces;
+          createDebug.names = [];
+          createDebug.skips = [];
+          const split = (typeof namespaces === "string" ? namespaces : "").trim().replace(/\s+/g, ",").split(",").filter(Boolean);
+          for (const ns of split) {
+            if (ns[0] === "-") {
+              createDebug.skips.push(ns.slice(1));
+            } else {
+              createDebug.names.push(ns);
+            }
+          }
+        }
+        function matchesTemplate(search, template) {
+          let searchIndex = 0;
+          let templateIndex = 0;
+          let starIndex = -1;
+          let matchIndex = 0;
+          while (searchIndex < search.length) {
+            if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) {
+              if (template[templateIndex] === "*") {
+                starIndex = templateIndex;
+                matchIndex = searchIndex;
+                templateIndex++;
+              } else {
+                searchIndex++;
+                templateIndex++;
+              }
+            } else if (starIndex !== -1) {
+              templateIndex = starIndex + 1;
+              matchIndex++;
+              searchIndex = matchIndex;
+            } else {
+              return false;
+            }
+          }
+          while (templateIndex < template.length && template[templateIndex] === "*") {
+            templateIndex++;
+          }
+          return templateIndex === template.length;
+        }
+        function disable() {
+          const namespaces = [
+            ...createDebug.names,
+            ...createDebug.skips.map((namespace) => "-" + namespace)
+          ].join(",");
+          createDebug.enable("");
+          return namespaces;
+        }
+        function enabled(name) {
+          for (const skip of createDebug.skips) {
+            if (matchesTemplate(name, skip)) {
+              return false;
+            }
+          }
+          for (const ns of createDebug.names) {
+            if (matchesTemplate(name, ns)) {
+              return true;
+            }
+          }
+          return false;
+        }
+        function coerce(val) {
+          if (val instanceof Error) {
+            return val.stack || val.message;
+          }
+          return val;
+        }
+        function destroy() {
+          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+        }
+        createDebug.enable(createDebug.load());
+        return createDebug;
+      }
+      module2.exports = setup;
+    }
+  });
+
+  // node_modules/debug/src/browser.js
+  var require_browser = __commonJS({
+    "node_modules/debug/src/browser.js"(exports2, module2) {
+      exports2.formatArgs = formatArgs;
+      exports2.save = save;
+      exports2.load = load;
+      exports2.useColors = useColors;
+      exports2.storage = localstorage();
+      exports2.destroy = /* @__PURE__ */ (() => {
+        let warned = false;
+        return () => {
+          if (!warned) {
+            warned = true;
+            console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+          }
+        };
+      })();
+      exports2.colors = [
+        "#0000CC",
+        "#0000FF",
+        "#0033CC",
+        "#0033FF",
+        "#0066CC",
+        "#0066FF",
+        "#0099CC",
+        "#0099FF",
+        "#00CC00",
+        "#00CC33",
+        "#00CC66",
+        "#00CC99",
+        "#00CCCC",
+        "#00CCFF",
+        "#3300CC",
+        "#3300FF",
+        "#3333CC",
+        "#3333FF",
+        "#3366CC",
+        "#3366FF",
+        "#3399CC",
+        "#3399FF",
+        "#33CC00",
+        "#33CC33",
+        "#33CC66",
+        "#33CC99",
+        "#33CCCC",
+        "#33CCFF",
+        "#6600CC",
+        "#6600FF",
+        "#6633CC",
+        "#6633FF",
+        "#66CC00",
+        "#66CC33",
+        "#9900CC",
+        "#9900FF",
+        "#9933CC",
+        "#9933FF",
+        "#99CC00",
+        "#99CC33",
+        "#CC0000",
+        "#CC0033",
+        "#CC0066",
+        "#CC0099",
+        "#CC00CC",
+        "#CC00FF",
+        "#CC3300",
+        "#CC3333",
+        "#CC3366",
+        "#CC3399",
+        "#CC33CC",
+        "#CC33FF",
+        "#CC6600",
+        "#CC6633",
+        "#CC9900",
+        "#CC9933",
+        "#CCCC00",
+        "#CCCC33",
+        "#FF0000",
+        "#FF0033",
+        "#FF0066",
+        "#FF0099",
+        "#FF00CC",
+        "#FF00FF",
+        "#FF3300",
+        "#FF3333",
+        "#FF3366",
+        "#FF3399",
+        "#FF33CC",
+        "#FF33FF",
+        "#FF6600",
+        "#FF6633",
+        "#FF9900",
+        "#FF9933",
+        "#FFCC00",
+        "#FFCC33"
+      ];
+      function useColors() {
+        if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
+          return true;
+        }
+        if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+          return false;
+        }
+        let m;
+        return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
+        typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
+        // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+        typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+        typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+      }
+      function formatArgs(args2) {
+        args2[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args2[0] + (this.useColors ? "%c " : " ") + "+" + module2.exports.humanize(this.diff);
+        if (!this.useColors) {
+          return;
+        }
+        const c = "color: " + this.color;
+        args2.splice(1, 0, c, "color: inherit");
+        let index = 0;
+        let lastC = 0;
+        args2[0].replace(/%[a-zA-Z%]/g, (match) => {
+          if (match === "%%") {
+            return;
+          }
+          index++;
+          if (match === "%c") {
+            lastC = index;
+          }
+        });
+        args2.splice(lastC, 0, c);
+      }
+      exports2.log = console.debug || console.log || (() => {
+      });
+      function save(namespaces) {
+        try {
+          if (namespaces) {
+            exports2.storage.setItem("debug", namespaces);
+          } else {
+            exports2.storage.removeItem("debug");
+          }
+        } catch (error) {
+        }
+      }
+      function load() {
+        let r;
+        try {
+          r = exports2.storage.getItem("debug") || exports2.storage.getItem("DEBUG");
+        } catch (error) {
+        }
+        if (!r && typeof process !== "undefined" && "env" in process) {
+          r = process.env.DEBUG;
+        }
+        return r;
+      }
+      function localstorage() {
+        try {
+          return localStorage;
+        } catch (error) {
+        }
+      }
+      module2.exports = require_common()(exports2);
+      var { formatters } = module2.exports;
+      formatters.j = function(v) {
+        try {
+          return JSON.stringify(v);
+        } catch (error) {
+          return "[UnexpectedJSONParseError]: " + error.message;
+        }
+      };
+    }
+  });
+
+  // node_modules/arr-union/index.js
+  var require_arr_union = __commonJS({
+    "node_modules/arr-union/index.js"(exports2, module2) {
+      "use strict";
+      module2.exports = function union(init) {
+        if (!Array.isArray(init)) {
+          throw new TypeError("arr-union expects the first argument to be an array.");
+        }
+        var len = arguments.length;
+        var i = 0;
+        while (++i < len) {
+          var arg = arguments[i];
+          if (!arg) continue;
+          if (!Array.isArray(arg)) {
+            arg = [arg];
+          }
+          for (var j = 0; j < arg.length; j++) {
+            var ele = arg[j];
+            if (init.indexOf(ele) >= 0) {
+              continue;
+            }
+            init.push(ele);
+          }
+        }
+        return init;
+      };
+    }
+  });
+
+  // node_modules/isobject/index.js
+  var require_isobject = __commonJS({
+    "node_modules/isobject/index.js"(exports2, module2) {
+      "use strict";
+      module2.exports = function isObject(val) {
+        return val != null && typeof val === "object" && Array.isArray(val) === false;
+      };
+    }
+  });
+
+  // node_modules/is-plain-object/index.js
+  var require_is_plain_object = __commonJS({
+    "node_modules/is-plain-object/index.js"(exports2, module2) {
+      "use strict";
+      var isObject = require_isobject();
+      function isObjectObject(o) {
+        return isObject(o) === true && Object.prototype.toString.call(o) === "[object Object]";
+      }
+      module2.exports = function isPlainObject2(o) {
+        var ctor, prot;
+        if (isObjectObject(o) === false) return false;
+        ctor = o.constructor;
+        if (typeof ctor !== "function") return false;
+        prot = ctor.prototype;
+        if (isObjectObject(prot) === false) return false;
+        if (prot.hasOwnProperty("isPrototypeOf") === false) {
+          return false;
+        }
+        return true;
+      };
+    }
+  });
+
+  // node_modules/is-extendable/index.js
+  var require_is_extendable = __commonJS({
+    "node_modules/is-extendable/index.js"(exports2, module2) {
+      "use strict";
+      module2.exports = function isExtendable(val) {
+        return typeof val !== "undefined" && val !== null && (typeof val === "object" || typeof val === "function");
+      };
+    }
+  });
+
+  // node_modules/mixin-object/node_modules/for-in/index.js
+  var require_for_in = __commonJS({
+    "node_modules/mixin-object/node_modules/for-in/index.js"(exports2, module2) {
+      "use strict";
+      module2.exports = function forIn(obj2, fn, thisArg) {
+        for (var key2 in obj2) {
+          if (fn.call(thisArg, obj2[key2], key2, obj2) === false) {
+            break;
+          }
+        }
+      };
+    }
+  });
+
+  // node_modules/mixin-object/index.js
+  var require_mixin_object = __commonJS({
+    "node_modules/mixin-object/index.js"(exports2, module2) {
+      "use strict";
+      var isObject = require_is_extendable();
+      var forIn = require_for_in();
+      function mixin(target, objects2) {
+        if (!isObject(target)) {
+          throw new TypeError("mixin-object expects the first argument to be an object.");
+        }
+        var len = arguments.length, i = 0;
+        while (++i < len) {
+          var obj2 = arguments[i];
+          if (isObject(obj2)) {
+            forIn(obj2, copy, target);
+          }
+        }
+        return target;
+      }
+      function copy(value2, key2) {
+        this[key2] = value2;
+      }
+      module2.exports = mixin;
+    }
+  });
+
+  // node_modules/is-buffer/index.js
+  var require_is_buffer = __commonJS({
+    "node_modules/is-buffer/index.js"(exports2, module2) {
+      module2.exports = function(obj2) {
+        return obj2 != null && (isBuffer(obj2) || isSlowBuffer(obj2) || !!obj2._isBuffer);
+      };
+      function isBuffer(obj2) {
+        return !!obj2.constructor && typeof obj2.constructor.isBuffer === "function" && obj2.constructor.isBuffer(obj2);
+      }
+      function isSlowBuffer(obj2) {
+        return typeof obj2.readFloatLE === "function" && typeof obj2.slice === "function" && isBuffer(obj2.slice(0, 0));
+      }
+    }
+  });
+
+  // node_modules/shallow-clone/node_modules/kind-of/index.js
+  var require_kind_of = __commonJS({
+    "node_modules/shallow-clone/node_modules/kind-of/index.js"(exports2, module2) {
+      var isBuffer = require_is_buffer();
+      var toString = Object.prototype.toString;
+      module2.exports = function kindOf(val) {
+        if (typeof val === "undefined") {
+          return "undefined";
+        }
+        if (val === null) {
+          return "null";
+        }
+        if (val === true || val === false || val instanceof Boolean) {
+          return "boolean";
+        }
+        if (typeof val === "string" || val instanceof String) {
+          return "string";
+        }
+        if (typeof val === "number" || val instanceof Number) {
+          return "number";
+        }
+        if (typeof val === "function" || val instanceof Function) {
+          return "function";
+        }
+        if (typeof Array.isArray !== "undefined" && Array.isArray(val)) {
+          return "array";
+        }
+        if (val instanceof RegExp) {
+          return "regexp";
+        }
+        if (val instanceof Date) {
+          return "date";
+        }
+        var type = toString.call(val);
+        if (type === "[object RegExp]") {
+          return "regexp";
+        }
+        if (type === "[object Date]") {
+          return "date";
+        }
+        if (type === "[object Arguments]") {
+          return "arguments";
+        }
+        if (typeof Buffer !== "undefined" && isBuffer(val)) {
+          return "buffer";
+        }
+        if (type === "[object Set]") {
+          return "set";
+        }
+        if (type === "[object WeakSet]") {
+          return "weakset";
+        }
+        if (type === "[object Map]") {
+          return "map";
+        }
+        if (type === "[object WeakMap]") {
+          return "weakmap";
+        }
+        if (type === "[object Symbol]") {
+          return "symbol";
+        }
+        return "object";
+      };
+    }
+  });
+
+  // node_modules/shallow-clone/utils.js
+  var require_utils = __commonJS({
+    "node_modules/shallow-clone/utils.js"(exports2, module2) {
+      "use strict";
+      var utils2 = { "isObject": require_is_extendable(), "mixin": require_mixin_object(), "typeOf": require_kind_of() };
+      module2.exports = utils2;
+    }
+  });
+
+  // node_modules/shallow-clone/index.js
+  var require_shallow_clone = __commonJS({
+    "node_modules/shallow-clone/index.js"(exports2, module2) {
+      "use strict";
+      var utils2 = require_utils();
+      function clone(val) {
+        var type = utils2.typeOf(val);
+        if (clone.hasOwnProperty(type)) {
+          return clone[type](val);
+        }
+        return val;
+      }
+      clone.array = function cloneArray(arr) {
+        return arr.slice();
+      };
+      clone.date = function cloneDate(date) {
+        return /* @__PURE__ */ new Date(+date);
+      };
+      clone.object = function cloneObject(obj2) {
+        if (utils2.isObject(obj2)) {
+          return utils2.mixin({}, obj2);
+        } else {
+          return obj2;
+        }
+      };
+      clone.regexp = function cloneRegExp(re) {
+        var flags = "";
+        flags += re.multiline ? "m" : "";
+        flags += re.global ? "g" : "";
+        flags += re.ignorecase ? "i" : "";
+        return new RegExp(re.source, flags);
+      };
+      module2.exports = clone;
+    }
+  });
+
+  // node_modules/kind-of/index.js
+  var require_kind_of2 = __commonJS({
+    "node_modules/kind-of/index.js"(exports2, module2) {
+      var isBuffer = require_is_buffer();
+      var toString = Object.prototype.toString;
+      module2.exports = function kindOf(val) {
+        if (typeof val === "undefined") {
+          return "undefined";
+        }
+        if (val === null) {
+          return "null";
+        }
+        if (val === true || val === false || val instanceof Boolean) {
+          return "boolean";
+        }
+        if (typeof val === "string" || val instanceof String) {
+          return "string";
+        }
+        if (typeof val === "number" || val instanceof Number) {
+          return "number";
+        }
+        if (typeof val === "function" || val instanceof Function) {
+          return "function";
+        }
+        if (typeof Array.isArray !== "undefined" && Array.isArray(val)) {
+          return "array";
+        }
+        if (val instanceof RegExp) {
+          return "regexp";
+        }
+        if (val instanceof Date) {
+          return "date";
+        }
+        var type = toString.call(val);
+        if (type === "[object RegExp]") {
+          return "regexp";
+        }
+        if (type === "[object Date]") {
+          return "date";
+        }
+        if (type === "[object Arguments]") {
+          return "arguments";
+        }
+        if (type === "[object Error]") {
+          return "error";
+        }
+        if (isBuffer(val)) {
+          return "buffer";
+        }
+        if (type === "[object Set]") {
+          return "set";
+        }
+        if (type === "[object WeakSet]") {
+          return "weakset";
+        }
+        if (type === "[object Map]") {
+          return "map";
+        }
+        if (type === "[object WeakMap]") {
+          return "weakmap";
+        }
+        if (type === "[object Symbol]") {
+          return "symbol";
+        }
+        if (type === "[object Int8Array]") {
+          return "int8array";
+        }
+        if (type === "[object Uint8Array]") {
+          return "uint8array";
+        }
+        if (type === "[object Uint8ClampedArray]") {
+          return "uint8clampedarray";
+        }
+        if (type === "[object Int16Array]") {
+          return "int16array";
+        }
+        if (type === "[object Uint16Array]") {
+          return "uint16array";
+        }
+        if (type === "[object Int32Array]") {
+          return "int32array";
+        }
+        if (type === "[object Uint32Array]") {
+          return "uint32array";
+        }
+        if (type === "[object Float32Array]") {
+          return "float32array";
+        }
+        if (type === "[object Float64Array]") {
+          return "float64array";
+        }
+        return "object";
+      };
+    }
+  });
+
+  // node_modules/for-in/index.js
+  var require_for_in2 = __commonJS({
+    "node_modules/for-in/index.js"(exports2, module2) {
+      "use strict";
+      module2.exports = function forIn(obj2, fn, thisArg) {
+        for (var key2 in obj2) {
+          if (fn.call(thisArg, obj2[key2], key2, obj2) === false) {
+            break;
+          }
+        }
+      };
+    }
+  });
+
+  // node_modules/for-own/index.js
+  var require_for_own = __commonJS({
+    "node_modules/for-own/index.js"(exports2, module2) {
+      "use strict";
+      var forIn = require_for_in2();
+      var hasOwn = Object.prototype.hasOwnProperty;
+      module2.exports = function forOwn(obj2, fn, thisArg) {
+        forIn(obj2, function(val, key2) {
+          if (hasOwn.call(obj2, key2)) {
+            return fn.call(thisArg, obj2[key2], key2, obj2);
+          }
+        });
+      };
+    }
+  });
+
+  // node_modules/clone-deep/utils.js
+  var require_utils2 = __commonJS({
+    "node_modules/clone-deep/utils.js"(exports2, module2) {
+      "use strict";
+      var utils2 = { "isObject": require_is_plain_object(), "clone": require_shallow_clone(), "typeOf": require_kind_of2(), "forOwn": require_for_own() };
+      module2.exports = utils2;
+    }
+  });
+
+  // node_modules/clone-deep/index.js
+  var require_clone_deep = __commonJS({
+    "node_modules/clone-deep/index.js"(exports2, module2) {
+      "use strict";
+      var utils2 = require_utils2();
+      function cloneDeep(val, instanceClone) {
+        switch (utils2.typeOf(val)) {
+          case "object":
+            return cloneObjectDeep(val, instanceClone);
+          case "array":
+            return cloneArrayDeep(val, instanceClone);
+          default:
+            return utils2.clone(val);
+        }
+      }
+      function cloneObjectDeep(obj2, instanceClone) {
+        if (utils2.isObject(obj2)) {
+          var res = {};
+          utils2.forOwn(obj2, function(obj3, key2) {
+            this[key2] = cloneDeep(obj3, instanceClone);
+          }, res);
+          return res;
+        } else if (instanceClone) {
+          return instanceClone(obj2);
+        } else {
+          return obj2;
+        }
+      }
+      function cloneArrayDeep(arr, instanceClone) {
+        var len = arr.length, res = [];
+        var i = -1;
+        while (++i < len) {
+          res[i] = cloneDeep(arr[i], instanceClone);
+        }
+        return res;
+      }
+      module2.exports = cloneDeep;
+    }
+  });
+
+  // node_modules/merge-deep/index.js
+  var require_merge_deep = __commonJS({
+    "node_modules/merge-deep/index.js"(exports2, module2) {
+      "use strict";
+      var union = require_arr_union();
+      var clone = require_clone_deep();
+      var typeOf = require_kind_of2();
+      module2.exports = function mergeDeep(orig, objects2) {
+        if (!isObject(orig) && !Array.isArray(orig)) {
+          orig = {};
+        }
+        var target = clone(orig);
+        var len = arguments.length;
+        var idx = 0;
+        while (++idx < len) {
+          var val = arguments[idx];
+          if (isObject(val) || Array.isArray(val)) {
+            merge2(target, val);
+          }
+        }
+        return target;
+      };
+      function merge2(target, obj2) {
+        for (var key2 in obj2) {
+          if (!isValidKey(key2) || !hasOwn(obj2, key2)) {
+            continue;
+          }
+          var oldVal = obj2[key2];
+          var newVal = target[key2];
+          if (isObject(newVal) && isObject(oldVal)) {
+            target[key2] = merge2(newVal, oldVal);
+          } else if (Array.isArray(newVal)) {
+            target[key2] = union([], newVal, oldVal);
+          } else {
+            target[key2] = clone(oldVal);
+          }
+        }
+        return target;
+      }
+      function hasOwn(obj2, key2) {
+        return Object.prototype.hasOwnProperty.call(obj2, key2);
+      }
+      function isObject(val) {
+        return typeOf(val) === "object" || typeOf(val) === "function";
+      }
+      function isValidKey(key2) {
+        return key2 !== "__proto__" && key2 !== "constructor" && key2 !== "prototype";
+      }
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin/dist/index.cjs.js
+  var require_index_cjs = __commonJS({
+    "node_modules/puppeteer-extra-plugin/dist/index.cjs.js"(exports2) {
+      "use strict";
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      function _interopDefault(ex) {
+        return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
+      }
+      var debug2 = _interopDefault(require_browser());
+      var merge2 = require_merge_deep();
+      var PuppeteerExtraPlugin = class {
+        constructor(opts) {
+          this._debugBase = debug2(`puppeteer-extra-plugin:base:${this.name}`);
+          this._childClassMembers = [];
+          this._opts = merge2(this.defaults, opts || {});
+          this._debugBase("Initialized.");
+        }
+        /**
+         * Plugin name (required).
+         *
+         * Convention:
+         * - Package: `puppeteer-extra-plugin-anonymize-ua`
+         * - Name: `anonymize-ua`
+         *
+         * @example
+         * get name () { return 'anonymize-ua' }
+         */
+        get name() {
+          throw new Error('Plugin must override "name"');
+        }
+        /**
+         * Plugin defaults (optional).
+         *
+         * If defined will be ([deep-](https://github.com/jonschlinkert/merge-deep))merged with the (optional) user supplied options (supplied during plugin instantiation).
+         *
+         * The result of merging defaults with user supplied options can be accessed through `this.opts`.
+         *
+         * @see [[opts]]
+         *
+         * @example
+         * get defaults () {
+         *   return {
+         *     stripHeadless: true,
+         *     makeWindows: true,
+         *     customFn: null
+         *   }
+         * }
+         *
+         * // Users can overwrite plugin defaults during instantiation:
+         * puppeteer.use(require('puppeteer-extra-plugin-foobar')({ makeWindows: false }))
+         */
+        get defaults() {
+          return {};
+        }
+        /**
+         * Plugin requirements (optional).
+         *
+         * Signal certain plugin requirements to the base class and the user.
+         *
+         * Currently supported:
+         * - `launch`
+         *   - If the plugin only supports locally created browser instances (no `puppeteer.connect()`),
+         *     will output a warning to the user.
+         * - `headful`
+         *   - If the plugin doesn't work in `headless: true` mode,
+         *     will output a warning to the user.
+         * - `dataFromPlugins`
+         *   - In case the plugin requires data from other plugins.
+         *     will enable usage of `this.getDataFromPlugins()`.
+         * - `runLast`
+         *   - In case the plugin prefers to run after the others.
+         *     Useful when the plugin needs data from others.
+         *
+         * @example
+         * get requirements () {
+         *   return new Set(['runLast', 'dataFromPlugins'])
+         * }
+         */
+        get requirements() {
+          return /* @__PURE__ */ new Set([]);
+        }
+        /**
+         * Plugin dependencies (optional).
+         *
+         * Missing plugins will be required() by puppeteer-extra.
+         *
+         * @example
+         * get dependencies () {
+         *   return new Set(['user-preferences'])
+         * }
+         * // Will ensure the 'puppeteer-extra-plugin-user-preferences' plugin is loaded.
+         */
+        get dependencies() {
+          return /* @__PURE__ */ new Set([]);
+        }
+        /**
+         * Plugin data (optional).
+         *
+         * Plugins can expose data (an array of objects), which in turn can be consumed by other plugins,
+         * that list the `dataFromPlugins` requirement (by using `this.getDataFromPlugins()`).
+         *
+         * Convention: `[ {name: 'Any name', value: 'Any value'} ]`
+         *
+         * @see [[getDataFromPlugins]]
+         *
+         * @example
+         * // plugin1.js
+         * get data () {
+         *   return [
+         *     {
+         *       name: 'userPreferences',
+         *       value: { foo: 'bar' }
+         *     },
+         *     {
+         *       name: 'userPreferences',
+         *       value: { hello: 'world' }
+         *     }
+         *   ]
+         *
+         * // plugin2.js
+         * get requirements () { return new Set(['dataFromPlugins']) }
+         *
+         * async beforeLaunch () {
+         *   const prefs = this.getDataFromPlugins('userPreferences').map(d => d.value)
+         *   this.debug(prefs) // => [ { foo: 'bar' }, { hello: 'world' } ]
+         * }
+         */
+        get data() {
+          return [];
+        }
+        /**
+         * Access the plugin options (usually the `defaults` merged with user defined options)
+         *
+         * To skip the auto-merging of defaults with user supplied opts don't define a `defaults`
+         * property and set the `this._opts` Object in your plugin constructor directly.
+         *
+         * @see [[defaults]]
+         *
+         * @example
+         * get defaults () { return { foo: "bar" } }
+         *
+         * async onPageCreated (page) {
+         *   this.debug(this.opts.foo) // => bar
+         * }
+         */
+        get opts() {
+          return this._opts;
+        }
+        /**
+         *  Convenience debug logger based on the [debug] module.
+         *  Will automatically namespace the logging output to the plugin package name.
+         *  [debug]: https://www.npmjs.com/package/debug
+         *
+         *  ```bash
+         *  # toggle output using environment variables
+         *  DEBUG=puppeteer-extra-plugin:<plugin_name> node foo.js
+         *  # to debug all the things:
+         *  DEBUG=puppeteer-extra,puppeteer-extra-plugin:* node foo.js
+         *  ```
+         *
+         * @example
+         * this.debug('hello world')
+         * // will output e.g. 'puppeteer-extra-plugin:anonymize-ua hello world'
+         */
+        get debug() {
+          return debug2(`puppeteer-extra-plugin:${this.name}`);
+        }
+        /**
+         * Before a new browser instance is created/launched.
+         *
+         * Can be used to modify the puppeteer launch options by modifying or returning them.
+         *
+         * Plugins using this method will be called in sequence to each
+         * be able to update the launch options.
+         *
+         * @example
+         * async beforeLaunch (options) {
+         *   if (this.opts.flashPluginPath) {
+         *     options.args.push(`--ppapi-flash-path=${this.opts.flashPluginPath}`)
+         *   }
+         * }
+         *
+         * @param options - Puppeteer launch options
+         */
+        async beforeLaunch(options) {
+        }
+        /**
+         * After the browser has launched.
+         *
+         * Note: Don't assume that there will only be a single browser instance during the lifecycle of a plugin.
+         * It's possible that `pupeeteer.launch` will be  called multiple times and more than one browser created.
+         * In order to make the plugins as stateless as possible don't store a reference to the browser instance
+         * in the plugin but rather consider alternatives.
+         *
+         * E.g. when using `onPageCreated` you can get a browser reference by using `page.browser()`.
+         *
+         * Alternatively you could expose a class method that takes a browser instance as a parameter to work with:
+         *
+         * ```es6
+         * const fancyPlugin = require('puppeteer-extra-plugin-fancy')()
+         * puppeteer.use(fancyPlugin)
+         * const browser = await puppeteer.launch()
+         * await fancyPlugin.killBrowser(browser)
+         * ```
+         *
+         * @param  browser - The `puppeteer` browser instance.
+         * @param  opts.options - Puppeteer launch options used.
+         *
+         * @example
+         * async afterLaunch (browser, opts) {
+         *   this.debug('browser has been launched', opts.options)
+         * }
+         */
+        async afterLaunch(browser, opts = { options: {} }) {
+        }
+        /**
+         * Before connecting to an existing browser instance.
+         *
+         * Can be used to modify the puppeteer connect options by modifying or returning them.
+         *
+         * Plugins using this method will be called in sequence to each
+         * be able to update the launch options.
+         *
+         * @param  {Object} options - Puppeteer connect options
+         * @return {Object=}
+         */
+        async beforeConnect(options) {
+        }
+        /**
+         * After connecting to an existing browser instance.
+         *
+         * > Note: Don't assume that there will only be a single browser instance during the lifecycle of a plugin.
+         *
+         * @param browser - The `puppeteer` browser instance.
+         * @param  {Object} opts
+         * @param  {Object} opts.options - Puppeteer connect options used.
+         *
+         */
+        async afterConnect(browser, opts = {}) {
+        }
+        /**
+         * Called when a browser instance is available.
+         *
+         * This applies to both `puppeteer.launch()` and `puppeteer.connect()`.
+         *
+         * Convenience method created for plugins that need access to a browser instance
+         * and don't mind if it has been created through `launch` or `connect`.
+         *
+         * > Note: Don't assume that there will only be a single browser instance during the lifecycle of a plugin.
+         *
+         * @param browser - The `puppeteer` browser instance.
+         */
+        async onBrowser(browser, opts) {
+        }
+        /**
+         * Called when a target is created, for example when a new page is opened by window.open or browser.newPage.
+         *
+         * > Note: This includes target creations in incognito browser contexts.
+         *
+         * > Note: This includes browser instances created through `.launch()` as well as `.connect()`.
+         *
+         * @param  {Puppeteer.Target} target
+         */
+        async onTargetCreated(target) {
+        }
+        /**
+         * Same as `onTargetCreated` but prefiltered to only contain Pages, for convenience.
+         *
+         * > Note: This includes page creations in incognito browser contexts.
+         *
+         * > Note: This includes browser instances created through `.launch()` as well as `.connect()`.
+         *
+         * @param  {Puppeteer.Target} target
+         *
+         * @example
+         * async onPageCreated (page) {
+         *   let ua = await page.browser().userAgent()
+         *   if (this.opts.stripHeadless) {
+         *     ua = ua.replace('HeadlessChrome/', 'Chrome/')
+         *   }
+         *   this.debug('new ua', ua)
+         *   await page.setUserAgent(ua)
+         * }
+         */
+        async onPageCreated(page2) {
+        }
+        /**
+         * Called when the url of a target changes.
+         *
+         * > Note: This includes target changes in incognito browser contexts.
+         *
+         * > Note: This includes browser instances created through `.launch()` as well as `.connect()`.
+         *
+         * @param  {Puppeteer.Target} target
+         */
+        async onTargetChanged(target) {
+        }
+        /**
+         * Called when a target is destroyed, for example when a page is closed.
+         *
+         * > Note: This includes target destructions in incognito browser contexts.
+         *
+         * > Note: This includes browser instances created through `.launch()` as well as `.connect()`.
+         *
+         * @param  {Puppeteer.Target} target
+         */
+        async onTargetDestroyed(target) {
+        }
+        /**
+         * Called when Puppeteer gets disconnected from the Chromium instance.
+         *
+         * This might happen because of one of the following:
+         * - Chromium is closed or crashed
+         * - The `browser.disconnect` method was called
+         */
+        async onDisconnected() {
+        }
+        /**
+         * **Deprecated:** Since puppeteer v1.6.0 `onDisconnected` has been improved
+         * and should be used instead of `onClose`.
+         *
+         * In puppeteer < v1.6.0 `onDisconnected` was not catching all exit scenarios.
+         * In order for plugins to clean up properly (e.g. deleting temporary files)
+         * the `onClose` method had been introduced.
+         *
+         * > Note: Might be called multiple times on exit.
+         *
+         * > Note: This only includes browser instances created through `.launch()`.
+         */
+        async onClose() {
+        }
+        /**
+         * After the plugin has been registered in `puppeteer-extra`.
+         *
+         * Normally right after `puppeteer.use(plugin)` is called
+         */
+        async onPluginRegistered() {
+        }
+        /**
+         * Helper method to retrieve `data` objects from other plugins.
+         *
+         * A plugin needs to state the `dataFromPlugins` requirement
+         * in order to use this method. Will be mapped to `puppeteer.getPluginData`.
+         *
+         * @param name - Filter data by `name` property
+         *
+         * @see [data]
+         * @see [requirements]
+         */
+        getDataFromPlugins(name) {
+          return [];
+        }
+        /**
+         * Will match plugin dependencies against all currently registered plugins.
+         * Is being called by `puppeteer-extra` and used to require missing dependencies.
+         *
+         * @param  {Array<Object>} plugins
+         * @return {Set} - list of missing plugin names
+         *
+         * @private
+         */
+        _getMissingDependencies(plugins2) {
+          const pluginNames = new Set(plugins2.map((p) => p.name));
+          const missing = new Set(Array.from(this.dependencies.values()).filter((x) => !pluginNames.has(x)));
+          return missing;
+        }
+        /**
+         * Conditionally bind browser/process events to class members.
+         * The idea is to reduce event binding boilerplate in plugins.
+         *
+         * For efficiency we make sure the plugin is using the respective event
+         * by checking the child class members before registering the listener.
+         *
+         * @param  {<Puppeteer.Browser>} browser
+         * @param  {Object} opts - Options
+         * @param  {string} opts.context - Puppeteer context (launch/connect)
+         * @param  {Object} [opts.options] - Puppeteer launch or connect options
+         * @param  {Array<string>} [opts.defaultArgs] - The default flags that Chromium will be launched with
+         *
+         * @private
+         */
+        async _bindBrowserEvents(browser, opts = {}) {
+          if (this._hasChildClassMember("onTargetCreated") || this._hasChildClassMember("onPageCreated")) {
+            browser.on("targetcreated", this._onTargetCreated.bind(this));
+          }
+          if (this._hasChildClassMember("onTargetChanged") && this.onTargetChanged) {
+            browser.on("targetchanged", this.onTargetChanged.bind(this));
+          }
+          if (this._hasChildClassMember("onTargetDestroyed") && this.onTargetDestroyed) {
+            browser.on("targetdestroyed", this.onTargetDestroyed.bind(this));
+          }
+          if (this._hasChildClassMember("onDisconnected") && this.onDisconnected) {
+            browser.on("disconnected", this.onDisconnected.bind(this));
+          }
+          if (opts.context === "launch" && this._hasChildClassMember("onClose")) {
+            if (this.onClose) {
+              process.on("exit", this.onClose.bind(this));
+              browser.on("disconnected", this.onClose.bind(this));
+              if (opts.options.handleSIGINT !== false) {
+                process.on("SIGINT", this.onClose.bind(this));
+              }
+              if (opts.options.handleSIGTERM !== false) {
+                process.on("SIGTERM", this.onClose.bind(this));
+              }
+              if (opts.options.handleSIGHUP !== false) {
+                process.on("SIGHUP", this.onClose.bind(this));
+              }
+            }
+          }
+          if (opts.context === "launch" && this.afterLaunch) {
+            await this.afterLaunch(browser, opts);
+          }
+          if (opts.context === "connect" && this.afterConnect) {
+            await this.afterConnect(browser, opts);
+          }
+          if (this.onBrowser)
+            await this.onBrowser(browser, opts);
+        }
+        /**
+         * @private
+         */
+        async _onTargetCreated(target) {
+          if (this.onTargetCreated)
+            await this.onTargetCreated(target);
+          if (target.type() === "page") {
+            try {
+              const page2 = await target.page();
+              if (!page2) {
+                return;
+              }
+              const validPage = "isClosed" in page2 && !page2.isClosed();
+              if (this.onPageCreated && validPage) {
+                await this.onPageCreated(page2);
+              }
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        }
+        /**
+         * @private
+         */
+        _register(prototype) {
+          this._registerChildClassMembers(prototype);
+          if (this.onPluginRegistered)
+            this.onPluginRegistered();
+        }
+        /**
+         * @private
+         */
+        _registerChildClassMembers(prototype) {
+          this._childClassMembers = Object.getOwnPropertyNames(prototype);
+        }
+        /**
+         * @private
+         */
+        _hasChildClassMember(name) {
+          return !!this._childClassMembers.includes(name);
+        }
+        /**
+         * @private
+         */
+        get _isPuppeteerExtraPlugin() {
+          return true;
+        }
+      };
+      exports2.PuppeteerExtraPlugin = PuppeteerExtraPlugin;
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/index.js
+  var require_puppeteer_extra_plugin_stealth = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var StealthPlugin = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth";
+        }
+        get defaults() {
+          const availableEvasions = /* @__PURE__ */ new Set([
+            "chrome.app",
+            "chrome.csi",
+            "chrome.loadTimes",
+            "chrome.runtime",
+            "defaultArgs",
+            "iframe.contentWindow",
+            "media.codecs",
+            "navigator.hardwareConcurrency",
+            "navigator.languages",
+            "navigator.permissions",
+            "navigator.plugins",
+            "navigator.webdriver",
+            "sourceurl",
+            "user-agent-override",
+            "webgl.vendor",
+            "window.outerdimensions"
+          ]);
+          return {
+            availableEvasions,
+            // Enable all available evasions by default
+            enabledEvasions: /* @__PURE__ */ new Set([...availableEvasions])
+          };
+        }
+        /**
+         * Requires evasion techniques dynamically based on configuration.
+         *
+         * @private
+         */
+        get dependencies() {
+          return new Set(
+            [...this.opts.enabledEvasions].map((e) => `${this.name}/evasions/${e}`)
+          );
+        }
+        /**
+         * Get all available evasions.
+         *
+         * Please look into the [evasions directory](./evasions/) for an up to date list.
+         *
+         * @type {Set<string>} - A Set of all available evasions.
+         *
+         * @example
+         * const pluginStealth = require('puppeteer-extra-plugin-stealth')()
+         * console.log(pluginStealth.availableEvasions) // => Set { 'user-agent', 'console.debug' }
+         * puppeteer.use(pluginStealth)
+         */
+        get availableEvasions() {
+          return this.defaults.availableEvasions;
+        }
+        /**
+         * Get all enabled evasions.
+         *
+         * Enabled evasions can be configured either through `opts` or by modifying this property.
+         *
+         * @type {Set<string>} - A Set of all enabled evasions.
+         *
+         * @example
+         * // Remove specific evasion from enabled ones dynamically
+         * const pluginStealth = require('puppeteer-extra-plugin-stealth')()
+         * pluginStealth.enabledEvasions.delete('console.debug')
+         * puppeteer.use(pluginStealth)
+         */
+        get enabledEvasions() {
+          return this.opts.enabledEvasions;
+        }
+        /**
+         * @private
+         */
+        set enabledEvasions(evasions) {
+          this.opts.enabledEvasions = evasions;
+        }
+        async onBrowser(browser) {
+          if (browser && browser.setMaxListeners) {
+            browser.setMaxListeners(30);
+          }
+        }
+      };
+      var defaultExport = (opts) => new StealthPlugin(opts);
+      module2.exports = defaultExport;
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/_utils/index.js
+  var require_utils3 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/_utils/index.js"(exports, module) {
+      var utils = {};
+      utils.init = () => {
+        utils.preloadCache();
+      };
+      utils.stripProxyFromErrors = (handler2 = {}) => {
+        const newHandler = {
+          setPrototypeOf: function(target, proto) {
+            if (proto === null)
+              throw new TypeError("Cannot convert object to primitive value");
+            if (Object.getPrototypeOf(target) === Object.getPrototypeOf(proto)) {
+              throw new TypeError("Cyclic __proto__ value");
+            }
+            return Reflect.setPrototypeOf(target, proto);
+          }
+        };
+        const traps = Object.getOwnPropertyNames(handler2);
+        traps.forEach((trap) => {
+          newHandler[trap] = function() {
+            try {
+              return handler2[trap].apply(this, arguments || []);
+            } catch (err) {
+              if (!err || !err.stack || !err.stack.includes(`at `)) {
+                throw err;
+              }
+              const stripWithBlacklist = (stack, stripFirstLine = true) => {
+                const blacklist = [
+                  `at Reflect.${trap} `,
+                  // e.g. Reflect.get or Reflect.apply
+                  `at Object.${trap} `,
+                  // e.g. Object.get or Object.apply
+                  `at Object.newHandler.<computed> [as ${trap}] `
+                  // caused by this very wrapper :-)
+                ];
+                return err.stack.split("\n").filter((line, index) => !(index === 1 && stripFirstLine)).filter((line) => !blacklist.some((bl) => line.trim().startsWith(bl))).join("\n");
+              };
+              const stripWithAnchor = (stack, anchor) => {
+                const stackArr = stack.split("\n");
+                anchor = anchor || `at Object.newHandler.<computed> [as ${trap}] `;
+                const anchorIndex = stackArr.findIndex(
+                  (line) => line.trim().startsWith(anchor)
+                );
+                if (anchorIndex === -1) {
+                  return false;
+                }
+                stackArr.splice(1, anchorIndex);
+                return stackArr.join("\n");
+              };
+              err.stack = err.stack.replace(
+                "at Object.toString (",
+                "at Function.toString ("
+              );
+              if ((err.stack || "").includes("at Function.toString (")) {
+                err.stack = stripWithBlacklist(err.stack, false);
+                throw err;
+              }
+              err.stack = stripWithAnchor(err.stack) || stripWithBlacklist(err.stack);
+              throw err;
+            }
+          };
+        });
+        return newHandler;
+      };
+      utils.stripErrorWithAnchor = (err, anchor) => {
+        const stackArr = err.stack.split("\n");
+        const anchorIndex = stackArr.findIndex((line) => line.trim().startsWith(anchor));
+        if (anchorIndex === -1) {
+          return err;
+        }
+        stackArr.splice(1, anchorIndex);
+        err.stack = stackArr.join("\n");
+        return err;
+      };
+      utils.replaceProperty = (obj2, propName2, descriptorOverrides = {}) => {
+        return Object.defineProperty(obj2, propName2, {
+          // Copy over the existing descriptors (writable, enumerable, configurable, etc)
+          ...Object.getOwnPropertyDescriptor(obj2, propName2) || {},
+          // Add our overrides (e.g. value, get())
+          ...descriptorOverrides
+        });
+      };
+      utils.preloadCache = () => {
+        if (utils.cache) {
+          return;
+        }
+        utils.cache = {
+          // Used in our proxies
+          Reflect: {
+            get: Reflect.get.bind(Reflect),
+            apply: Reflect.apply.bind(Reflect)
+          },
+          // Used in `makeNativeString`
+          nativeToStringStr: Function.toString + ""
+          // => `function toString() { [native code] }`
+        };
+      };
+      utils.makeNativeString = (name = "") => {
+        return utils.cache.nativeToStringStr.replace("toString", name || "");
+      };
+      utils.patchToString = (obj2, str = "") => {
+        const handler2 = {
+          apply: function(target, ctx) {
+            if (ctx === Function.prototype.toString) {
+              return utils.makeNativeString("toString");
+            }
+            if (ctx === obj2) {
+              return str || utils.makeNativeString(obj2.name);
+            }
+            const hasSameProto = Object.getPrototypeOf(
+              Function.prototype.toString
+            ).isPrototypeOf(ctx.toString);
+            if (!hasSameProto) {
+              return ctx.toString();
+            }
+            return target.call(ctx);
+          }
+        };
+        const toStringProxy = new Proxy(
+          Function.prototype.toString,
+          utils.stripProxyFromErrors(handler2)
+        );
+        utils.replaceProperty(Function.prototype, "toString", {
+          value: toStringProxy
+        });
+      };
+      utils.patchToStringNested = (obj2 = {}) => {
+        return utils.execRecursively(obj2, ["function"], utils.patchToString);
+      };
+      utils.redirectToString = (proxyObj, originalObj) => {
+        const handler2 = {
+          apply: function(target, ctx) {
+            if (ctx === Function.prototype.toString) {
+              return utils.makeNativeString("toString");
+            }
+            if (ctx === proxyObj) {
+              const fallback = () => originalObj && originalObj.name ? utils.makeNativeString(originalObj.name) : utils.makeNativeString(proxyObj.name);
+              return originalObj + "" || fallback();
+            }
+            if (typeof ctx === "undefined" || ctx === null) {
+              return target.call(ctx);
+            }
+            const hasSameProto = Object.getPrototypeOf(
+              Function.prototype.toString
+            ).isPrototypeOf(ctx.toString);
+            if (!hasSameProto) {
+              return ctx.toString();
+            }
+            return target.call(ctx);
+          }
+        };
+        const toStringProxy = new Proxy(
+          Function.prototype.toString,
+          utils.stripProxyFromErrors(handler2)
+        );
+        utils.replaceProperty(Function.prototype, "toString", {
+          value: toStringProxy
+        });
+      };
+      utils.replaceWithProxy = (obj2, propName2, handler2) => {
+        const originalObj = obj2[propName2];
+        const proxyObj = new Proxy(obj2[propName2], utils.stripProxyFromErrors(handler2));
+        utils.replaceProperty(obj2, propName2, { value: proxyObj });
+        utils.redirectToString(proxyObj, originalObj);
+        return true;
+      };
+      utils.replaceGetterWithProxy = (obj2, propName2, handler2) => {
+        const fn = Object.getOwnPropertyDescriptor(obj2, propName2).get;
+        const fnStr = fn.toString();
+        const proxyObj = new Proxy(fn, utils.stripProxyFromErrors(handler2));
+        utils.replaceProperty(obj2, propName2, { get: proxyObj });
+        utils.patchToString(proxyObj, fnStr);
+        return true;
+      };
+      utils.replaceGetterSetter = (obj2, propName2, handlerGetterSetter) => {
+        const ownPropertyDescriptor = Object.getOwnPropertyDescriptor(obj2, propName2);
+        const handler2 = { ...ownPropertyDescriptor };
+        if (handlerGetterSetter.get !== void 0) {
+          const nativeFn = ownPropertyDescriptor.get;
+          handler2.get = function() {
+            return handlerGetterSetter.get.call(this, nativeFn.bind(this));
+          };
+          utils.redirectToString(handler2.get, nativeFn);
+        }
+        if (handlerGetterSetter.set !== void 0) {
+          const nativeFn = ownPropertyDescriptor.set;
+          handler2.set = function(newValue) {
+            handlerGetterSetter.set.call(this, newValue, nativeFn.bind(this));
+          };
+          utils.redirectToString(handler2.set, nativeFn);
+        }
+        Object.defineProperty(obj2, propName2, handler2);
+      };
+      utils.mockWithProxy = (obj2, propName2, pseudoTarget, handler2) => {
+        const proxyObj = new Proxy(pseudoTarget, utils.stripProxyFromErrors(handler2));
+        utils.replaceProperty(obj2, propName2, { value: proxyObj });
+        utils.patchToString(proxyObj);
+        return true;
+      };
+      utils.createProxy = (pseudoTarget, handler2) => {
+        const proxyObj = new Proxy(pseudoTarget, utils.stripProxyFromErrors(handler2));
+        utils.patchToString(proxyObj);
+        return proxyObj;
+      };
+      utils.splitObjPath = (objPath2) => ({
+        // Remove last dot entry (property) ==> `HTMLMediaElement.prototype`
+        objName: objPath2.split(".").slice(0, -1).join("."),
+        // Extract last dot entry ==> `canPlayType`
+        propName: objPath2.split(".").slice(-1)[0]
+      });
+      utils.replaceObjPathWithProxy = (objPath, handler) => {
+        const { objName, propName } = utils.splitObjPath(objPath);
+        const obj = eval(objName);
+        return utils.replaceWithProxy(obj, propName, handler);
+      };
+      utils.execRecursively = (obj2 = {}, typeFilter = [], fn) => {
+        function recurse(obj3) {
+          for (const key2 in obj3) {
+            if (obj3[key2] === void 0) {
+              continue;
+            }
+            if (obj3[key2] && typeof obj3[key2] === "object") {
+              recurse(obj3[key2]);
+            } else {
+              if (obj3[key2] && typeFilter.includes(typeof obj3[key2])) {
+                fn.call(this, obj3[key2]);
+              }
+            }
+          }
+        }
+        recurse(obj2);
+        return obj2;
+      };
+      utils.stringifyFns = (fnObj = { hello: () => "world" }) => {
+        function fromEntries(iterable) {
+          return [...iterable].reduce((obj2, [key2, val]) => {
+            obj2[key2] = val;
+            return obj2;
+          }, {});
+        }
+        return (Object.fromEntries || fromEntries)(
+          Object.entries(fnObj).filter(([key2, value2]) => typeof value2 === "function").map(([key2, value2]) => [key2, value2.toString()])
+          // eslint-disable-line no-eval
+        );
+      };
+      utils.materializeFns = (fnStrObj = { hello: "() => 'world'" }) => {
+        return Object.fromEntries(
+          Object.entries(fnStrObj).map(([key, value]) => {
+            if (value.startsWith("function")) {
+              return [key, eval(`() => ${value}`)()];
+            } else {
+              return [key, eval(value)];
+            }
+          })
+        );
+      };
+      utils.makeHandler = () => ({
+        // Used by simple `navigator` getter evasions
+        getterValue: (value2) => ({
+          apply(target, ctx, args2) {
+            utils.cache.Reflect.apply(...arguments);
+            return value2;
+          }
+        })
+      });
+      utils.arrayEquals = (array1, array2) => {
+        if (array1.length !== array2.length) {
+          return false;
+        }
+        for (let i = 0; i < array1.length; ++i) {
+          if (array1[i] !== array2[i]) {
+            return false;
+          }
+        }
+        return true;
+      };
+      utils.memoize = (fn) => {
+        const cache = [];
+        return function(...args2) {
+          if (!cache.some((c) => utils.arrayEquals(c.key, args2))) {
+            cache.push({ key: args2, value: fn.apply(this, args2) });
+          }
+          return cache.find((c) => utils.arrayEquals(c.key, args2)).value;
+        };
+      };
+      module.exports = utils;
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/_utils/withUtils.js
+  var require_withUtils = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/_utils/withUtils.js"(exports, module) {
+      var utils = require_utils3();
+      module.exports = (page) => ({
+        /**
+         * Simple `page.evaluate` replacement to preload utils
+         */
+        evaluate: async function(mainFunction, ...args) {
+          return page.evaluate(
+            ({ _utilsFns, _mainFunction, _args }) => {
+              const utils = Object.fromEntries(
+                Object.entries(_utilsFns).map(([key, value]) => [key, eval(value)])
+                // eslint-disable-line no-eval
+              );
+              utils.init();
+              return eval(_mainFunction)(utils, ..._args);
+            },
+            {
+              _utilsFns: utils.stringifyFns(utils),
+              _mainFunction: mainFunction.toString(),
+              _args: args || []
+            }
+          );
+        },
+        /**
+         * Simple `page.evaluateOnNewDocument` replacement to preload utils
+         */
+        evaluateOnNewDocument: async function(mainFunction, ...args) {
+          return page.evaluateOnNewDocument(
+            ({ _utilsFns, _mainFunction, _args }) => {
+              const utils = Object.fromEntries(
+                Object.entries(_utilsFns).map(([key, value]) => [key, eval(value)])
+                // eslint-disable-line no-eval
+              );
+              utils.init();
+              return eval(_mainFunction)(utils, ..._args);
+            },
+            {
+              _utilsFns: utils.stringifyFns(utils),
+              _mainFunction: mainFunction.toString(),
+              _args: args || []
+            }
+          );
+        }
+      });
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.app/index.js
+  var require_chrome = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.app/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/chrome.app";
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument((utils2) => {
+            if (!window.chrome) {
+              Object.defineProperty(window, "chrome", {
+                writable: true,
+                enumerable: true,
+                configurable: false,
+                // note!
+                value: {}
+                // We'll extend that later
+              });
+            }
+            if ("app" in window.chrome) {
+              return;
+            }
+            const makeError = {
+              ErrorInInvocation: (fn) => {
+                const err = new TypeError(`Error in invocation of app.${fn}()`);
+                return utils2.stripErrorWithAnchor(
+                  err,
+                  `at ${fn} (eval at <anonymous>`
+                );
+              }
+            };
+            const STATIC_DATA = JSON.parse(
+              `
+{
+  "isInstalled": false,
+  "InstallState": {
+    "DISABLED": "disabled",
+    "INSTALLED": "installed",
+    "NOT_INSTALLED": "not_installed"
+  },
+  "RunningState": {
+    "CANNOT_RUN": "cannot_run",
+    "READY_TO_RUN": "ready_to_run",
+    "RUNNING": "running"
+  }
+}
+        `.trim()
+            );
+            window.chrome.app = {
+              ...STATIC_DATA,
+              get isInstalled() {
+                return false;
+              },
+              getDetails: function getDetails() {
+                if (arguments.length) {
+                  throw makeError.ErrorInInvocation(`getDetails`);
+                }
+                return null;
+              },
+              getIsInstalled: function getDetails() {
+                if (arguments.length) {
+                  throw makeError.ErrorInInvocation(`getIsInstalled`);
+                }
+                return false;
+              },
+              runningState: function getDetails() {
+                if (arguments.length) {
+                  throw makeError.ErrorInInvocation(`runningState`);
+                }
+                return "cannot_run";
+              }
+            };
+            utils2.patchToStringNested(window.chrome.app);
+          });
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.csi/index.js
+  var require_chrome2 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.csi/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/chrome.csi";
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument((utils2) => {
+            if (!window.chrome) {
+              Object.defineProperty(window, "chrome", {
+                writable: true,
+                enumerable: true,
+                configurable: false,
+                // note!
+                value: {}
+                // We'll extend that later
+              });
+            }
+            if ("csi" in window.chrome) {
+              return;
+            }
+            if (!window.performance || !window.performance.timing) {
+              return;
+            }
+            const { timing } = window.performance;
+            window.chrome.csi = function() {
+              return {
+                onloadT: timing.domContentLoadedEventEnd,
+                startE: timing.navigationStart,
+                pageT: Date.now() - timing.navigationStart,
+                tran: 15
+                // Transition type or something
+              };
+            };
+            utils2.patchToString(window.chrome.csi);
+          });
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes/index.js
+  var require_chrome3 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/chrome.loadTimes";
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument(
+            (utils2, { opts }) => {
+              if (!window.chrome) {
+                Object.defineProperty(window, "chrome", {
+                  writable: true,
+                  enumerable: true,
+                  configurable: false,
+                  // note!
+                  value: {}
+                  // We'll extend that later
+                });
+              }
+              if ("loadTimes" in window.chrome) {
+                return;
+              }
+              if (!window.performance || !window.performance.timing || !window.PerformancePaintTiming) {
+                return;
+              }
+              const { performance: performance2 } = window;
+              const ntEntryFallback = {
+                nextHopProtocol: "h2",
+                type: "other"
+              };
+              const protocolInfo = {
+                get connectionInfo() {
+                  const ntEntry = performance2.getEntriesByType("navigation")[0] || ntEntryFallback;
+                  return ntEntry.nextHopProtocol;
+                },
+                get npnNegotiatedProtocol() {
+                  const ntEntry = performance2.getEntriesByType("navigation")[0] || ntEntryFallback;
+                  return ["h2", "hq"].includes(ntEntry.nextHopProtocol) ? ntEntry.nextHopProtocol : "unknown";
+                },
+                get navigationType() {
+                  const ntEntry = performance2.getEntriesByType("navigation")[0] || ntEntryFallback;
+                  return ntEntry.type;
+                },
+                get wasAlternateProtocolAvailable() {
+                  return false;
+                },
+                get wasFetchedViaSpdy() {
+                  const ntEntry = performance2.getEntriesByType("navigation")[0] || ntEntryFallback;
+                  return ["h2", "hq"].includes(ntEntry.nextHopProtocol);
+                },
+                get wasNpnNegotiated() {
+                  const ntEntry = performance2.getEntriesByType("navigation")[0] || ntEntryFallback;
+                  return ["h2", "hq"].includes(ntEntry.nextHopProtocol);
+                }
+              };
+              const { timing } = window.performance;
+              function toFixed(num, fixed) {
+                var re = new RegExp("^-?\\d+(?:.\\d{0," + (fixed || -1) + "})?");
+                return num.toString().match(re)[0];
+              }
+              const timingInfo = {
+                get firstPaintAfterLoadTime() {
+                  return 0;
+                },
+                get requestTime() {
+                  return timing.navigationStart / 1e3;
+                },
+                get startLoadTime() {
+                  return timing.navigationStart / 1e3;
+                },
+                get commitLoadTime() {
+                  return timing.responseStart / 1e3;
+                },
+                get finishDocumentLoadTime() {
+                  return timing.domContentLoadedEventEnd / 1e3;
+                },
+                get finishLoadTime() {
+                  return timing.loadEventEnd / 1e3;
+                },
+                get firstPaintTime() {
+                  const fpEntry = performance2.getEntriesByType("paint")[0] || {
+                    startTime: timing.loadEventEnd / 1e3
+                    // Fallback if no navigation occured (`about:blank`)
+                  };
+                  return toFixed(
+                    (fpEntry.startTime + performance2.timeOrigin) / 1e3,
+                    3
+                  );
+                }
+              };
+              window.chrome.loadTimes = function() {
+                return {
+                  ...protocolInfo,
+                  ...timingInfo
+                };
+              };
+              utils2.patchToString(window.chrome.loadTimes);
+            },
+            {
+              opts: this.opts
+            }
+          );
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.runtime/staticData.json
+  var require_staticData = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.runtime/staticData.json"(exports2, module2) {
+      module2.exports = {
+        OnInstalledReason: {
+          CHROME_UPDATE: "chrome_update",
+          INSTALL: "install",
+          SHARED_MODULE_UPDATE: "shared_module_update",
+          UPDATE: "update"
+        },
+        OnRestartRequiredReason: {
+          APP_UPDATE: "app_update",
+          OS_UPDATE: "os_update",
+          PERIODIC: "periodic"
+        },
+        PlatformArch: {
+          ARM: "arm",
+          ARM64: "arm64",
+          MIPS: "mips",
+          MIPS64: "mips64",
+          X86_32: "x86-32",
+          X86_64: "x86-64"
+        },
+        PlatformNaclArch: {
+          ARM: "arm",
+          MIPS: "mips",
+          MIPS64: "mips64",
+          X86_32: "x86-32",
+          X86_64: "x86-64"
+        },
+        PlatformOs: {
+          ANDROID: "android",
+          CROS: "cros",
+          LINUX: "linux",
+          MAC: "mac",
+          OPENBSD: "openbsd",
+          WIN: "win"
+        },
+        RequestUpdateCheckStatus: {
+          NO_UPDATE: "no_update",
+          THROTTLED: "throttled",
+          UPDATE_AVAILABLE: "update_available"
+        }
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.runtime/index.js
+  var require_chrome4 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/chrome.runtime/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var STATIC_DATA = require_staticData();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/chrome.runtime";
+        }
+        get defaults() {
+          return { runOnInsecureOrigins: false };
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument(
+            (utils2, { opts, STATIC_DATA: STATIC_DATA2 }) => {
+              if (!window.chrome) {
+                Object.defineProperty(window, "chrome", {
+                  writable: true,
+                  enumerable: true,
+                  configurable: false,
+                  // note!
+                  value: {}
+                  // We'll extend that later
+                });
+              }
+              const existsAlready = "runtime" in window.chrome;
+              const isNotSecure = !window.location.protocol.startsWith("https");
+              if (existsAlready || isNotSecure && !opts.runOnInsecureOrigins) {
+                return;
+              }
+              window.chrome.runtime = {
+                // There's a bunch of static data in that property which doesn't seem to change,
+                // we should periodically check for updates: `JSON.stringify(window.chrome.runtime, null, 2)`
+                ...STATIC_DATA2,
+                // `chrome.runtime.id` is extension related and returns undefined in Chrome
+                get id() {
+                  return void 0;
+                },
+                // These two require more sophisticated mocks
+                connect: null,
+                sendMessage: null
+              };
+              const makeCustomRuntimeErrors = (preamble, method, extensionId) => ({
+                NoMatchingSignature: new TypeError(
+                  preamble + `No matching signature.`
+                ),
+                MustSpecifyExtensionID: new TypeError(
+                  preamble + `${method} called from a webpage must specify an Extension ID (string) for its first argument.`
+                ),
+                InvalidExtensionID: new TypeError(
+                  preamble + `Invalid extension id: '${extensionId}'`
+                )
+              });
+              const isValidExtensionID = (str) => str.length === 32 && str.toLowerCase().match(/^[a-p]+$/);
+              const sendMessageHandler = {
+                apply: function(target, ctx, args2) {
+                  const [extensionId, options, responseCallback] = args2 || [];
+                  const errorPreamble = `Error in invocation of runtime.sendMessage(optional string extensionId, any message, optional object options, optional function responseCallback): `;
+                  const Errors = makeCustomRuntimeErrors(
+                    errorPreamble,
+                    `chrome.runtime.sendMessage()`,
+                    extensionId
+                  );
+                  const noArguments = args2.length === 0;
+                  const tooManyArguments = args2.length > 4;
+                  const incorrectOptions = options && typeof options !== "object";
+                  const incorrectResponseCallback = responseCallback && typeof responseCallback !== "function";
+                  if (noArguments || tooManyArguments || incorrectOptions || incorrectResponseCallback) {
+                    throw Errors.NoMatchingSignature;
+                  }
+                  if (args2.length < 2) {
+                    throw Errors.MustSpecifyExtensionID;
+                  }
+                  if (typeof extensionId !== "string") {
+                    throw Errors.NoMatchingSignature;
+                  }
+                  if (!isValidExtensionID(extensionId)) {
+                    throw Errors.InvalidExtensionID;
+                  }
+                  return void 0;
+                }
+              };
+              utils2.mockWithProxy(
+                window.chrome.runtime,
+                "sendMessage",
+                function sendMessage() {
+                },
+                sendMessageHandler
+              );
+              const connectHandler = {
+                apply: function(target, ctx, args2) {
+                  const [extensionId, connectInfo] = args2 || [];
+                  const errorPreamble = `Error in invocation of runtime.connect(optional string extensionId, optional object connectInfo): `;
+                  const Errors = makeCustomRuntimeErrors(
+                    errorPreamble,
+                    `chrome.runtime.connect()`,
+                    extensionId
+                  );
+                  const noArguments = args2.length === 0;
+                  const emptyStringArgument = args2.length === 1 && extensionId === "";
+                  if (noArguments || emptyStringArgument) {
+                    throw Errors.MustSpecifyExtensionID;
+                  }
+                  const tooManyArguments = args2.length > 2;
+                  const incorrectConnectInfoType = connectInfo && typeof connectInfo !== "object";
+                  if (tooManyArguments || incorrectConnectInfoType) {
+                    throw Errors.NoMatchingSignature;
+                  }
+                  const extensionIdIsString = typeof extensionId === "string";
+                  if (extensionIdIsString && extensionId === "") {
+                    throw Errors.MustSpecifyExtensionID;
+                  }
+                  if (extensionIdIsString && !isValidExtensionID(extensionId)) {
+                    throw Errors.InvalidExtensionID;
+                  }
+                  const validateConnectInfo = (ci) => {
+                    if (args2.length > 1) {
+                      throw Errors.NoMatchingSignature;
+                    }
+                    if (Object.keys(ci).length === 0) {
+                      throw Errors.MustSpecifyExtensionID;
+                    }
+                    Object.entries(ci).forEach(([k, v]) => {
+                      const isExpected = ["name", "includeTlsChannelId"].includes(k);
+                      if (!isExpected) {
+                        throw new TypeError(
+                          errorPreamble + `Unexpected property: '${k}'.`
+                        );
+                      }
+                      const MismatchError = (propName2, expected, found) => TypeError(
+                        errorPreamble + `Error at property '${propName2}': Invalid type: expected ${expected}, found ${found}.`
+                      );
+                      if (k === "name" && typeof v !== "string") {
+                        throw MismatchError(k, "string", typeof v);
+                      }
+                      if (k === "includeTlsChannelId" && typeof v !== "boolean") {
+                        throw MismatchError(k, "boolean", typeof v);
+                      }
+                    });
+                  };
+                  if (typeof extensionId === "object") {
+                    validateConnectInfo(extensionId);
+                    throw Errors.MustSpecifyExtensionID;
+                  }
+                  return utils2.patchToStringNested(makeConnectResponse());
+                }
+              };
+              utils2.mockWithProxy(
+                window.chrome.runtime,
+                "connect",
+                function connect2() {
+                },
+                connectHandler
+              );
+              function makeConnectResponse() {
+                const onSomething = () => ({
+                  addListener: function addListener() {
+                  },
+                  dispatch: function dispatch() {
+                  },
+                  hasListener: function hasListener() {
+                  },
+                  hasListeners: function hasListeners() {
+                    return false;
+                  },
+                  removeListener: function removeListener() {
+                  }
+                });
+                const response = {
+                  name: "",
+                  sender: void 0,
+                  disconnect: function disconnect() {
+                  },
+                  onDisconnect: onSomething(),
+                  onMessage: onSomething(),
+                  postMessage: function postMessage() {
+                    if (!arguments.length) {
+                      throw new TypeError(`Insufficient number of arguments.`);
+                    }
+                    throw new Error(`Attempting to use a disconnected port object`);
+                  }
+                };
+                return response;
+              }
+            },
+            {
+              opts: this.opts,
+              STATIC_DATA
+            }
+          );
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/defaultArgs/index.js
+  var require_defaultArgs = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/defaultArgs/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var argsToIgnore = [
+        "--disable-extensions",
+        "--disable-default-apps",
+        "--disable-component-extensions-with-background-pages"
+      ];
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/defaultArgs";
+        }
+        get requirements() {
+          return /* @__PURE__ */ new Set(["runLast"]);
+        }
+        async beforeLaunch(options = {}) {
+          options.ignoreDefaultArgs = options.ignoreDefaultArgs || [];
+          if (options.ignoreDefaultArgs === true) {
+            return;
+          }
+          argsToIgnore.forEach((arg) => {
+            if (options.ignoreDefaultArgs.includes(arg)) {
+              return;
+            }
+            options.ignoreDefaultArgs.push(arg);
+          });
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+      module2.exports.argsToIgnore = argsToIgnore;
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow/index.js
+  var require_iframe = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/iframe.contentWindow/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/iframe.contentWindow";
+        }
+        get requirements() {
+          return /* @__PURE__ */ new Set(["runLast"]);
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument((utils2, opts) => {
+            try {
+              const addContentWindowProxy = (iframe) => {
+                const contentWindowProxy = {
+                  get(target, key2) {
+                    if (key2 === "self") {
+                      return this;
+                    }
+                    if (key2 === "frameElement") {
+                      return iframe;
+                    }
+                    if (key2 === "0") {
+                      return void 0;
+                    }
+                    return Reflect.get(target, key2);
+                  }
+                };
+                if (!iframe.contentWindow) {
+                  const proxy = new Proxy(window, contentWindowProxy);
+                  Object.defineProperty(iframe, "contentWindow", {
+                    get() {
+                      return proxy;
+                    },
+                    set(newValue) {
+                      return newValue;
+                    },
+                    enumerable: true,
+                    configurable: false
+                  });
+                }
+              };
+              const handleIframeCreation = (target, thisArg, args2) => {
+                const iframe = target.apply(thisArg, args2);
+                const _iframe = iframe;
+                const _srcdoc = _iframe.srcdoc;
+                Object.defineProperty(iframe, "srcdoc", {
+                  configurable: true,
+                  // Important, so we can reset this later
+                  get: function() {
+                    return _srcdoc;
+                  },
+                  set: function(newValue) {
+                    addContentWindowProxy(this);
+                    Object.defineProperty(iframe, "srcdoc", {
+                      configurable: false,
+                      writable: false,
+                      value: _srcdoc
+                    });
+                    _iframe.srcdoc = newValue;
+                  }
+                });
+                return iframe;
+              };
+              const addIframeCreationSniffer = () => {
+                const createElementHandler = {
+                  // Make toString() native
+                  get(target, key2) {
+                    return Reflect.get(target, key2);
+                  },
+                  apply: function(target, thisArg, args2) {
+                    const isIframe = args2 && args2.length && `${args2[0]}`.toLowerCase() === "iframe";
+                    if (!isIframe) {
+                      return target.apply(thisArg, args2);
+                    } else {
+                      return handleIframeCreation(target, thisArg, args2);
+                    }
+                  }
+                };
+                utils2.replaceWithProxy(
+                  document,
+                  "createElement",
+                  createElementHandler
+                );
+              };
+              addIframeCreationSniffer();
+            } catch (err) {
+            }
+          });
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/media.codecs/index.js
+  var require_media = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/media.codecs/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/media.codecs";
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument((utils2) => {
+            const parseInput = (arg) => {
+              const [mime, codecStr] = arg.trim().split(";");
+              let codecs = [];
+              if (codecStr && codecStr.includes('codecs="')) {
+                codecs = codecStr.trim().replace(`codecs="`, "").replace(`"`, "").trim().split(",").filter((x) => !!x).map((x) => x.trim());
+              }
+              return {
+                mime,
+                codecStr,
+                codecs
+              };
+            };
+            const canPlayType = {
+              // Intercept certain requests
+              apply: function(target, ctx, args2) {
+                if (!args2 || !args2.length) {
+                  return target.apply(ctx, args2);
+                }
+                const { mime, codecs } = parseInput(args2[0]);
+                if (mime === "video/mp4") {
+                  if (codecs.includes("avc1.42E01E")) {
+                    return "probably";
+                  }
+                }
+                if (mime === "audio/x-m4a" && !codecs.length) {
+                  return "maybe";
+                }
+                if (mime === "audio/aac" && !codecs.length) {
+                  return "probably";
+                }
+                return target.apply(ctx, args2);
+              }
+            };
+            utils2.replaceWithProxy(
+              HTMLMediaElement.prototype,
+              "canPlayType",
+              canPlayType
+            );
+          });
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency/index.js
+  var require_navigator = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.hardwareConcurrency/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/navigator.hardwareConcurrency";
+        }
+        get defaults() {
+          return {
+            hardwareConcurrency: 4
+          };
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument(
+            (utils2, { opts }) => {
+              utils2.replaceGetterWithProxy(
+                Object.getPrototypeOf(navigator),
+                "hardwareConcurrency",
+                utils2.makeHandler().getterValue(opts.hardwareConcurrency)
+              );
+            },
+            {
+              opts: this.opts
+            }
+          );
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.languages/index.js
+  var require_navigator2 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.languages/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/navigator.languages";
+        }
+        get defaults() {
+          return {
+            languages: []
+            // Empty default, otherwise this would be merged with user defined array override
+          };
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument(
+            (utils2, { opts }) => {
+              const languages = opts.languages.length ? opts.languages : ["en-US", "en"];
+              utils2.replaceGetterWithProxy(
+                Object.getPrototypeOf(navigator),
+                "languages",
+                utils2.makeHandler().getterValue(Object.freeze([...languages]))
+              );
+            },
+            {
+              opts: this.opts
+            }
+          );
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.permissions/index.js
+  var require_navigator3 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.permissions/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/navigator.permissions";
+        }
+        /* global Notification Permissions PermissionStatus */
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument((utils2, opts) => {
+            const isSecure = document.location.protocol.startsWith("https");
+            if (isSecure) {
+              utils2.replaceGetterWithProxy(Notification, "permission", {
+                apply() {
+                  return "default";
+                }
+              });
+            }
+            if (!isSecure) {
+              const handler2 = {
+                apply(target, ctx, args2) {
+                  const param = (args2 || [])[0];
+                  const isNotifications = param && param.name && param.name === "notifications";
+                  if (!isNotifications) {
+                    return utils2.cache.Reflect.apply(...arguments);
+                  }
+                  return Promise.resolve(
+                    Object.setPrototypeOf(
+                      {
+                        state: "denied",
+                        onchange: null
+                      },
+                      PermissionStatus.prototype
+                    )
+                  );
+                }
+              };
+              utils2.replaceWithProxy(Permissions.prototype, "query", handler2);
+            }
+          }, this.opts);
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/mimeTypes.js
+  var require_mimeTypes = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/mimeTypes.js"(exports2, module2) {
+      module2.exports.generateMimeTypeArray = (utils2, fns) => (mimeTypesData) => {
+        return fns.generateMagicArray(utils2, fns)(
+          mimeTypesData,
+          MimeTypeArray.prototype,
+          MimeType.prototype,
+          "type"
+        );
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/plugins.js
+  var require_plugins = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/plugins.js"(exports2, module2) {
+      module2.exports.generatePluginArray = (utils2, fns) => (pluginsData) => {
+        return fns.generateMagicArray(utils2, fns)(
+          pluginsData,
+          PluginArray.prototype,
+          Plugin.prototype,
+          "name"
+        );
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/magicArray.js
+  var require_magicArray = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/magicArray.js"(exports2, module2) {
+      module2.exports.generateMagicArray = (utils2, fns) => function(dataArray = [], proto = MimeTypeArray.prototype, itemProto = MimeType.prototype, itemMainProp = "type") {
+        const defineProp = (obj2, prop, value2) => Object.defineProperty(obj2, prop, {
+          value: value2,
+          writable: false,
+          enumerable: false,
+          // Important for mimeTypes & plugins: `JSON.stringify(navigator.mimeTypes)`
+          configurable: true
+        });
+        const makeItem = (data) => {
+          const item = {};
+          for (const prop of Object.keys(data)) {
+            if (prop.startsWith("__")) {
+              continue;
+            }
+            defineProp(item, prop, data[prop]);
+          }
+          return patchItem(item, data);
+        };
+        const patchItem = (item, data) => {
+          let descriptor = Object.getOwnPropertyDescriptors(item);
+          if (itemProto === Plugin.prototype) {
+            descriptor = {
+              ...descriptor,
+              length: {
+                value: data.__mimeTypes.length,
+                writable: false,
+                enumerable: false,
+                configurable: true
+                // Important to be able to use the ownKeys trap in a Proxy to strip `length`
+              }
+            };
+          }
+          const obj2 = Object.create(itemProto, descriptor);
+          const blacklist = [...Object.keys(data), "length", "enabledPlugin"];
+          return new Proxy(obj2, {
+            ownKeys(target) {
+              return Reflect.ownKeys(target).filter((k) => !blacklist.includes(k));
+            },
+            getOwnPropertyDescriptor(target, prop) {
+              if (blacklist.includes(prop)) {
+                return void 0;
+              }
+              return Reflect.getOwnPropertyDescriptor(target, prop);
+            }
+          });
+        };
+        const magicArray = [];
+        dataArray.forEach((data) => {
+          magicArray.push(makeItem(data));
+        });
+        magicArray.forEach((entry) => {
+          defineProp(magicArray, entry[itemMainProp], entry);
+        });
+        const magicArrayObj = Object.create(proto, {
+          ...Object.getOwnPropertyDescriptors(magicArray),
+          // There's one ugly quirk we unfortunately need to take care of:
+          // The `MimeTypeArray` prototype has an enumerable `length` property,
+          // but headful Chrome will still skip it when running `Object.getOwnPropertyNames(navigator.mimeTypes)`.
+          // To strip it we need to make it first `configurable` and can then overlay a Proxy with an `ownKeys` trap.
+          length: {
+            value: magicArray.length,
+            writable: false,
+            enumerable: false,
+            configurable: true
+            // Important to be able to use the ownKeys trap in a Proxy to strip `length`
+          }
+        });
+        const functionMocks = fns.generateFunctionMocks(utils2)(
+          proto,
+          itemMainProp,
+          magicArray
+        );
+        const magicArrayObjProxy = new Proxy(magicArrayObj, {
+          get(target, key2 = "") {
+            if (key2 === "item") {
+              return functionMocks.item;
+            }
+            if (key2 === "namedItem") {
+              return functionMocks.namedItem;
+            }
+            if (proto === PluginArray.prototype && key2 === "refresh") {
+              return functionMocks.refresh;
+            }
+            return utils2.cache.Reflect.get(...arguments);
+          },
+          ownKeys(target) {
+            const keys = [];
+            const typeProps = magicArray.map((mt) => mt[itemMainProp]);
+            typeProps.forEach((_, i) => keys.push(`${i}`));
+            typeProps.forEach((propName2) => keys.push(propName2));
+            return keys;
+          },
+          getOwnPropertyDescriptor(target, prop) {
+            if (prop === "length") {
+              return void 0;
+            }
+            return Reflect.getOwnPropertyDescriptor(target, prop);
+          }
+        });
+        return magicArrayObjProxy;
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/functionMocks.js
+  var require_functionMocks = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/functionMocks.js"(exports2, module2) {
+      module2.exports.generateFunctionMocks = (utils2) => (proto, itemMainProp, dataArray) => ({
+        /** Returns the MimeType object with the specified index. */
+        item: utils2.createProxy(proto.item, {
+          apply(target, ctx, args2) {
+            if (!args2.length) {
+              throw new TypeError(
+                `Failed to execute 'item' on '${proto[Symbol.toStringTag]}': 1 argument required, but only 0 present.`
+              );
+            }
+            const isInteger = args2[0] && Number.isInteger(Number(args2[0]));
+            return (isInteger ? dataArray[Number(args2[0])] : dataArray[0]) || null;
+          }
+        }),
+        /** Returns the MimeType object with the specified name. */
+        namedItem: utils2.createProxy(proto.namedItem, {
+          apply(target, ctx, args2) {
+            if (!args2.length) {
+              throw new TypeError(
+                `Failed to execute 'namedItem' on '${proto[Symbol.toStringTag]}': 1 argument required, but only 0 present.`
+              );
+            }
+            return dataArray.find((mt) => mt[itemMainProp] === args2[0]) || null;
+          }
+        }),
+        /** Does nothing and shall return nothing */
+        refresh: proto.refresh ? utils2.createProxy(proto.refresh, {
+          apply(target, ctx, args2) {
+            return void 0;
+          }
+        }) : void 0
+      });
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/data.json
+  var require_data = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/data.json"(exports2, module2) {
+      module2.exports = {
+        mimeTypes: [
+          {
+            type: "application/pdf",
+            suffixes: "pdf",
+            description: "",
+            __pluginName: "Chrome PDF Viewer"
+          },
+          {
+            type: "application/x-google-chrome-pdf",
+            suffixes: "pdf",
+            description: "Portable Document Format",
+            __pluginName: "Chrome PDF Plugin"
+          },
+          {
+            type: "application/x-nacl",
+            suffixes: "",
+            description: "Native Client Executable",
+            __pluginName: "Native Client"
+          },
+          {
+            type: "application/x-pnacl",
+            suffixes: "",
+            description: "Portable Native Client Executable",
+            __pluginName: "Native Client"
+          }
+        ],
+        plugins: [
+          {
+            name: "Chrome PDF Plugin",
+            filename: "internal-pdf-viewer",
+            description: "Portable Document Format",
+            __mimeTypes: ["application/x-google-chrome-pdf"]
+          },
+          {
+            name: "Chrome PDF Viewer",
+            filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai",
+            description: "",
+            __mimeTypes: ["application/pdf"]
+          },
+          {
+            name: "Native Client",
+            filename: "internal-nacl-plugin",
+            description: "",
+            __mimeTypes: ["application/x-nacl", "application/x-pnacl"]
+          }
+        ]
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/index.js
+  var require_navigator4 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.plugins/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var utils2 = require_utils3();
+      var withUtils = require_withUtils();
+      var { generateMimeTypeArray } = require_mimeTypes();
+      var { generatePluginArray } = require_plugins();
+      var { generateMagicArray } = require_magicArray();
+      var { generateFunctionMocks } = require_functionMocks();
+      var data = require_data();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/navigator.plugins";
+        }
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument(
+            (utils3, { fns, data: data2 }) => {
+              fns = utils3.materializeFns(fns);
+              const hasPlugins = "plugins" in navigator && navigator.plugins.length;
+              if (hasPlugins) {
+                return;
+              }
+              const mimeTypes = fns.generateMimeTypeArray(utils3, fns)(data2.mimeTypes);
+              const plugins2 = fns.generatePluginArray(utils3, fns)(data2.plugins);
+              for (const pluginData of data2.plugins) {
+                pluginData.__mimeTypes.forEach((type, index) => {
+                  plugins2[pluginData.name][index] = mimeTypes[type];
+                  Object.defineProperty(plugins2[pluginData.name], type, {
+                    value: mimeTypes[type],
+                    writable: false,
+                    enumerable: false,
+                    // Not enumerable
+                    configurable: true
+                  });
+                  Object.defineProperty(mimeTypes[type], "enabledPlugin", {
+                    value: type === "application/x-pnacl" ? mimeTypes["application/x-nacl"].enabledPlugin : new Proxy(plugins2[pluginData.name], {}),
+                    // Prevent circular references
+                    writable: false,
+                    enumerable: false,
+                    // Important: `JSON.stringify(navigator.plugins)`
+                    configurable: true
+                  });
+                });
+              }
+              const patchNavigator = (name, value2) => utils3.replaceProperty(Object.getPrototypeOf(navigator), name, {
+                get() {
+                  return value2;
+                }
+              });
+              patchNavigator("mimeTypes", mimeTypes);
+              patchNavigator("plugins", plugins2);
+            },
+            {
+              // We pass some functions to evaluate to structure the code more nicely
+              fns: utils2.stringifyFns({
+                generateMimeTypeArray,
+                generatePluginArray,
+                generateMagicArray,
+                generateFunctionMocks
+              }),
+              data
+            }
+          );
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.webdriver/index.js
+  var require_navigator5 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.webdriver/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/navigator.webdriver";
+        }
+        async onPageCreated(page2) {
+          await page2.evaluateOnNewDocument(() => {
+            if (navigator.webdriver === false) {
+            } else if (navigator.webdriver === void 0) {
+            } else {
+              delete Object.getPrototypeOf(navigator).webdriver;
+            }
+          });
+        }
+        // Post Chrome 88.0.4291.0
+        // Note: this will add an infobar to Chrome with a warning that an unsupported flag is set
+        // To remove this bar on Linux, run: mkdir -p /etc/opt/chrome/policies/managed && echo '{ "CommandLineFlagSecurityWarningsEnabled": false }' > /etc/opt/chrome/policies/managed/managed_policies.json
+        async beforeLaunch(options) {
+          const idx = options.args.findIndex((arg) => arg.startsWith("--disable-blink-features="));
+          if (idx !== -1) {
+            const arg = options.args[idx];
+            options.args[idx] = `${arg},AutomationControlled`;
+          } else {
+            options.args.push("--disable-blink-features=AutomationControlled");
+          }
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/sourceurl/index.js
+  var require_sourceurl = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/sourceurl/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/sourceurl";
+        }
+        async onPageCreated(page2) {
+          const client = page2 && typeof page2._client === "function" ? page2._client() : page2._client;
+          if (!client) {
+            this.debug("Warning, missing properties to intercept CDP.", { page: page2 });
+            return;
+          }
+          const debug2 = this.debug;
+          client.send = /* @__PURE__ */ (function(originalMethod, context2) {
+            return async function() {
+              const [method, paramArgs] = arguments || [];
+              const next = async () => {
+                try {
+                  return await originalMethod.apply(context2, [method, paramArgs]);
+                } catch (error) {
+                  if (error instanceof Error && error.message.includes(
+                    `Protocol error (Network.getResponseBody): No resource with given identifier found`
+                  )) {
+                    debug2(
+                      `Caught and ignored an error about a missing network resource.`,
+                      { error }
+                    );
+                  } else {
+                    throw error;
+                  }
+                }
+              };
+              if (!method || !paramArgs) {
+                return next();
+              }
+              const methodsToPatch = {
+                "Runtime.evaluate": "expression",
+                "Runtime.callFunctionOn": "functionDeclaration"
+              };
+              const SOURCE_URL_SUFFIX = "//# sourceURL=__puppeteer_evaluation_script__";
+              if (!methodsToPatch[method] || !paramArgs[methodsToPatch[method]]) {
+                return next();
+              }
+              debug2("Stripping sourceURL", { method });
+              paramArgs[methodsToPatch[method]] = paramArgs[methodsToPatch[method]].replace(SOURCE_URL_SUFFIX, "");
+              return next();
+            };
+          })(client.send, client);
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/user-agent-override/index.js
+  var require_user_agent_override = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/user-agent-override/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+          this._headless = false;
+        }
+        get name() {
+          return "stealth/evasions/user-agent-override";
+        }
+        get dependencies() {
+          return /* @__PURE__ */ new Set(["user-preferences"]);
+        }
+        get defaults() {
+          return {
+            userAgent: null,
+            locale: "en-US,en",
+            maskLinux: true
+          };
+        }
+        async onPageCreated(page2) {
+          let ua = this.opts.userAgent || (await page2.browser().userAgent()).replace("HeadlessChrome/", "Chrome/");
+          if (this.opts.maskLinux && ua.includes("Linux") && !ua.includes("Android")) {
+            ua = ua.replace(/\(([^)]+)\)/, "(Windows NT 10.0; Win64; x64)");
+          }
+          const uaVersion = ua.includes("Chrome/") ? ua.match(/Chrome\/([\d|.]+)/)[1] : (await page2.browser().version()).match(/\/([\d|.]+)/)[1];
+          const _getPlatform = (extended = false) => {
+            if (ua.includes("Mac OS X")) {
+              return extended ? "Mac OS X" : "MacIntel";
+            } else if (ua.includes("Android")) {
+              return "Android";
+            } else if (ua.includes("Linux")) {
+              return "Linux";
+            } else {
+              return extended ? "Windows" : "Win32";
+            }
+          };
+          const _getBrands = () => {
+            const seed = uaVersion.split(".")[0];
+            const order = [
+              [0, 1, 2],
+              [0, 2, 1],
+              [1, 0, 2],
+              [1, 2, 0],
+              [2, 0, 1],
+              [2, 1, 0]
+            ][seed % 6];
+            const escapedChars = [" ", " ", ";"];
+            const greaseyBrand = `${escapedChars[order[0]]}Not${escapedChars[order[1]]}A${escapedChars[order[2]]}Brand`;
+            const greasedBrandVersionList = [];
+            greasedBrandVersionList[order[0]] = {
+              brand: greaseyBrand,
+              version: "99"
+            };
+            greasedBrandVersionList[order[1]] = {
+              brand: "Chromium",
+              version: seed
+            };
+            greasedBrandVersionList[order[2]] = {
+              brand: "Google Chrome",
+              version: seed
+            };
+            return greasedBrandVersionList;
+          };
+          const _getPlatformVersion = () => {
+            if (ua.includes("Mac OS X ")) {
+              return ua.match(/Mac OS X ([^)]+)/)[1];
+            } else if (ua.includes("Android ")) {
+              return ua.match(/Android ([^;]+)/)[1];
+            } else if (ua.includes("Windows ")) {
+              return ua.match(/Windows .*?([\d|.]+);?/)[1];
+            } else {
+              return "";
+            }
+          };
+          const _getPlatformArch = () => _getMobile() ? "" : "x86";
+          const _getPlatformModel = () => _getMobile() ? ua.match(/Android.*?;\s([^)]+)/)[1] : "";
+          const _getMobile = () => ua.includes("Android");
+          const override = {
+            userAgent: ua,
+            platform: _getPlatform(),
+            userAgentMetadata: {
+              brands: _getBrands(),
+              fullVersion: uaVersion,
+              platform: _getPlatform(true),
+              platformVersion: _getPlatformVersion(),
+              architecture: _getPlatformArch(),
+              model: _getPlatformModel(),
+              mobile: _getMobile()
+            }
+          };
+          if (this._headless) {
+            override.acceptLanguage = this.opts.locale || "en-US,en";
+          }
+          this.debug("onPageCreated - Will set these user agent options", {
+            override,
+            opts: this.opts
+          });
+          const client = typeof page2._client === "function" ? page2._client() : page2._client;
+          client.send("Network.setUserAgentOverride", override);
+        }
+        async beforeLaunch(options) {
+          this._headless = options.headless;
+        }
+        async beforeConnect() {
+          this._headless = true;
+        }
+        get data() {
+          return [
+            {
+              name: "userPreferences",
+              value: {
+                intl: { accept_languages: this.opts.locale || "en-US,en" }
+              }
+            }
+          ];
+        }
+      };
+      var defaultExport = (opts) => new Plugin2(opts);
+      module2.exports = defaultExport;
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/webgl.vendor/index.js
+  var require_webgl = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/webgl.vendor/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/webgl.vendor";
+        }
+        /* global WebGLRenderingContext WebGL2RenderingContext */
+        async onPageCreated(page2) {
+          await withUtils(page2).evaluateOnNewDocument((utils2, opts) => {
+            const getParameterProxyHandler = {
+              apply: function(target, ctx, args2) {
+                const param = (args2 || [])[0];
+                const result = utils2.cache.Reflect.apply(target, ctx, args2);
+                if (param === 37445) {
+                  return opts.vendor || "Intel Inc.";
+                }
+                if (param === 37446) {
+                  return opts.renderer || "Intel Iris OpenGL Engine";
+                }
+                return result;
+              }
+            };
+            const addProxy = (obj2, propName2) => {
+              utils2.replaceWithProxy(obj2, propName2, getParameterProxyHandler);
+            };
+            addProxy(WebGLRenderingContext.prototype, "getParameter");
+            addProxy(WebGL2RenderingContext.prototype, "getParameter");
+          }, this.opts);
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/window.outerdimensions/index.js
+  var require_window = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/window.outerdimensions/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/window.outerdimensions";
+        }
+        async onPageCreated(page2) {
+          await page2.evaluateOnNewDocument(() => {
+            try {
+              if (window.outerWidth && window.outerHeight) {
+                return;
+              }
+              const windowFrame = 85;
+              window.outerWidth = window.innerWidth;
+              window.outerHeight = window.innerHeight + windowFrame;
+            } catch (err) {
+            }
+          });
+        }
+        async beforeLaunch(options) {
+          if (!("defaultViewport" in options)) {
+            options.defaultViewport = null;
+          }
+          return options;
+        }
+      };
+      module2.exports = function(pluginConfig) {
+        return new Plugin2(pluginConfig);
+      };
+    }
+  });
+
+  // node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.vendor/index.js
+  var require_navigator6 = __commonJS({
+    "node_modules/puppeteer-extra-plugin-stealth/evasions/navigator.vendor/index.js"(exports2, module2) {
+      "use strict";
+      var { PuppeteerExtraPlugin } = require_index_cjs();
+      var withUtils = require_withUtils();
+      var Plugin2 = class extends PuppeteerExtraPlugin {
+        constructor(opts = {}) {
+          super(opts);
+        }
+        get name() {
+          return "stealth/evasions/navigator.vendor";
+        }
+        get defaults() {
+          return {
+            vendor: "Google Inc."
+          };
+        }
+        async onPageCreated(page2) {
+          this.debug("onPageCreated", {
+            opts: this.opts
+          });
+          await withUtils(page2).evaluateOnNewDocument(
+            (utils2, { opts }) => {
+              utils2.replaceGetterWithProxy(
+                Object.getPrototypeOf(navigator),
+                "vendor",
+                utils2.makeHandler().getterValue(opts.vendor)
+              );
+            },
+            {
+              opts: this.opts
+            }
+          );
+        }
+        // onPageCreated
+      };
+      var defaultExport = (opts) => new Plugin2(opts);
+      module2.exports = defaultExport;
+    }
+  });
+
   // node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js
   function __extends(d, b) {
     if (typeof b !== "function" && b !== null)
@@ -50,22 +3379,22 @@
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   }
   function __awaiter(thisArg, _arguments, P, generator) {
-    function adopt(value) {
-      return value instanceof P ? value : new P(function(resolve) {
-        resolve(value);
+    function adopt(value2) {
+      return value2 instanceof P ? value2 : new P(function(resolve) {
+        resolve(value2);
       });
     }
     return new (P || (P = Promise))(function(resolve, reject) {
-      function fulfilled(value) {
+      function fulfilled(value2) {
         try {
-          step(generator.next(value));
+          step(generator.next(value2));
         } catch (e) {
           reject(e);
         }
       }
-      function rejected(value) {
+      function rejected(value2) {
         try {
-          step(generator["throw"](value));
+          step(generator["throw"](value2));
         } catch (e) {
           reject(e);
         }
@@ -216,11 +3545,11 @@
     function step(r) {
       r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
     }
-    function fulfill(value) {
-      resume("next", value);
+    function fulfill(value2) {
+      resume("next", value2);
     }
-    function reject(value) {
-      resume("throw", value);
+    function reject(value2) {
+      resume("throw", value2);
     }
     function settle(f, v) {
       if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
@@ -245,8 +3574,8 @@
       }, reject);
     }
   }
-  function isFunction(value) {
-    return typeof value === "function";
+  function isFunction(value2) {
+    return typeof value2 === "function";
   }
   function createErrorClass(createImpl) {
     var _super = function(instance) {
@@ -264,8 +3593,8 @@
       0 <= index && arr.splice(index, 1);
     }
   }
-  function isSubscription(value) {
-    return value instanceof Subscription || value && "closed" in value && isFunction(value.remove) && isFunction(value.add) && isFunction(value.unsubscribe);
+  function isSubscription(value2) {
+    return value2 instanceof Subscription || value2 && "closed" in value2 && isFunction(value2.remove) && isFunction(value2.add) && isFunction(value2.unsubscribe);
   }
   function execFinalizer(finalizer) {
     if (isFunction(finalizer)) {
@@ -289,13 +3618,13 @@
   function errorNotification(error) {
     return createNotification("E", void 0, error);
   }
-  function nextNotification(value) {
-    return createNotification("N", value, void 0);
+  function nextNotification(value2) {
+    return createNotification("N", value2, void 0);
   }
-  function createNotification(kind, value, error) {
+  function createNotification(kind, value2, error) {
     return {
       kind,
-      value,
+      value: value2,
       error
     };
   }
@@ -369,11 +3698,11 @@
     var _a3;
     return (_a3 = promiseCtor !== null && promiseCtor !== void 0 ? promiseCtor : config.Promise) !== null && _a3 !== void 0 ? _a3 : Promise;
   }
-  function isObserver(value) {
-    return value && isFunction(value.next) && isFunction(value.error) && isFunction(value.complete);
+  function isObserver(value2) {
+    return value2 && isFunction(value2.next) && isFunction(value2.error) && isFunction(value2.complete);
   }
-  function isSubscriber(value) {
-    return value && value instanceof Subscriber || isObserver(value) && isSubscription(value);
+  function isSubscriber(value2) {
+    return value2 && value2 instanceof Subscriber || isObserver(value2) && isSubscription(value2);
   }
   function hasLift(source2) {
     return isFunction(source2 === null || source2 === void 0 ? void 0 : source2.lift);
@@ -395,29 +3724,29 @@
   function createOperatorSubscriber(destination, onNext, onComplete, onError, onFinalize) {
     return new OperatorSubscriber(destination, onNext, onComplete, onError, onFinalize);
   }
-  function isScheduler(value) {
-    return value && isFunction(value.schedule);
+  function isScheduler(value2) {
+    return value2 && isFunction(value2.schedule);
   }
   function last(arr) {
     return arr[arr.length - 1];
   }
-  function popResultSelector(args) {
-    return isFunction(last(args)) ? args.pop() : void 0;
+  function popResultSelector(args2) {
+    return isFunction(last(args2)) ? args2.pop() : void 0;
   }
-  function popScheduler(args) {
-    return isScheduler(last(args)) ? args.pop() : void 0;
+  function popScheduler(args2) {
+    return isScheduler(last(args2)) ? args2.pop() : void 0;
   }
-  function popNumber(args, defaultValue) {
-    return typeof last(args) === "number" ? args.pop() : defaultValue;
+  function popNumber(args2, defaultValue) {
+    return typeof last(args2) === "number" ? args2.pop() : defaultValue;
   }
-  function isPromise(value) {
-    return isFunction(value === null || value === void 0 ? void 0 : value.then);
+  function isPromise(value2) {
+    return isFunction(value2 === null || value2 === void 0 ? void 0 : value2.then);
   }
   function isInteropObservable(input) {
     return isFunction(input[observable]);
   }
-  function isAsyncIterable(obj) {
-    return Symbol.asyncIterator && isFunction(obj === null || obj === void 0 ? void 0 : obj[Symbol.asyncIterator]);
+  function isAsyncIterable(obj2) {
+    return Symbol.asyncIterator && isFunction(obj2 === null || obj2 === void 0 ? void 0 : obj2[Symbol.asyncIterator]);
   }
   function createInvalidObservableTypeError(input) {
     return new TypeError("You provided " + (input !== null && typeof input === "object" ? "an invalid object" : "'" + input + "'") + " where a stream was expected. You can provide an Observable, Promise, ReadableStream, Array, AsyncIterable, or Iterable.");
@@ -433,7 +3762,7 @@
   }
   function readableStreamLikeToAsyncGenerator(readableStream) {
     return __asyncGenerator(this, arguments, function readableStreamLikeToAsyncGenerator_1() {
-      var reader, _a3, value, done;
+      var reader, _a3, value2, done;
       return __generator(this, function(_b) {
         switch (_b.label) {
           case 0:
@@ -446,13 +3775,13 @@
             if (false) return [3, 8];
             return [4, __await(reader.read())];
           case 3:
-            _a3 = _b.sent(), value = _a3.value, done = _a3.done;
+            _a3 = _b.sent(), value2 = _a3.value, done = _a3.done;
             if (!done) return [3, 5];
             return [4, __await(void 0)];
           case 4:
             return [2, _b.sent()];
           case 5:
-            return [4, __await(value)];
+            return [4, __await(value2)];
           case 6:
             return [4, _b.sent()];
           case 7:
@@ -469,8 +3798,8 @@
       });
     });
   }
-  function isReadableStreamLike(obj) {
-    return isFunction(obj === null || obj === void 0 ? void 0 : obj.getReader);
+  function isReadableStreamLike(obj2) {
+    return isFunction(obj2 === null || obj2 === void 0 ? void 0 : obj2.getReader);
   }
   function innerFrom(input) {
     if (input instanceof Observable) {
@@ -498,9 +3827,9 @@
     }
     throw createInvalidObservableTypeError(input);
   }
-  function fromInteropObservable(obj) {
+  function fromInteropObservable(obj2) {
     return new Observable(function(subscriber) {
-      var obs = obj[observable]();
+      var obs = obj2[observable]();
       if (isFunction(obs.subscribe)) {
         return obs.subscribe(subscriber);
       }
@@ -517,9 +3846,9 @@
   }
   function fromPromise(promise) {
     return new Observable(function(subscriber) {
-      promise.then(function(value) {
+      promise.then(function(value2) {
         if (!subscriber.closed) {
-          subscriber.next(value);
+          subscriber.next(value2);
           subscriber.complete();
         }
       }, function(err) {
@@ -532,8 +3861,8 @@
       var e_1, _a3;
       try {
         for (var iterable_1 = __values(iterable), iterable_1_1 = iterable_1.next(); !iterable_1_1.done; iterable_1_1 = iterable_1.next()) {
-          var value = iterable_1_1.value;
-          subscriber.next(value);
+          var value2 = iterable_1_1.value;
+          subscriber.next(value2);
           if (subscriber.closed) {
             return;
           }
@@ -564,7 +3893,7 @@
     var asyncIterable_1, asyncIterable_1_1;
     var e_2, _a3;
     return __awaiter(this, void 0, void 0, function() {
-      var value, e_2_1;
+      var value2, e_2_1;
       return __generator(this, function(_b) {
         switch (_b.label) {
           case 0:
@@ -575,8 +3904,8 @@
             return [4, asyncIterable_1.next()];
           case 2:
             if (!(asyncIterable_1_1 = _b.sent(), !asyncIterable_1_1.done)) return [3, 4];
-            value = asyncIterable_1_1.value;
-            subscriber.next(value);
+            value2 = asyncIterable_1_1.value;
+            subscriber.next(value2);
             if (subscriber.closed) {
               return [2];
             }
@@ -635,9 +3964,9 @@
       delay2 = 0;
     }
     return operate(function(source2, subscriber) {
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
         return executeSchedule(subscriber, scheduler, function() {
-          return subscriber.next(value);
+          return subscriber.next(value2);
         }, delay2);
       }, function() {
         return executeSchedule(subscriber, scheduler, function() {
@@ -688,10 +4017,10 @@
         iterator2 = input[iterator]();
         executeSchedule(subscriber, scheduler, function() {
           var _a3;
-          var value;
+          var value2;
           var done;
           try {
-            _a3 = iterator2.next(), value = _a3.value, done = _a3.done;
+            _a3 = iterator2.next(), value2 = _a3.value, done = _a3.done;
           } catch (err) {
             subscriber.error(err);
             return;
@@ -699,7 +4028,7 @@
           if (done) {
             subscriber.complete();
           } else {
-            subscriber.next(value);
+            subscriber.next(value2);
           }
         }, 0, true);
       });
@@ -757,19 +4086,19 @@
     return scheduler ? scheduled(input, scheduler) : innerFrom(input);
   }
   function of() {
-    var args = [];
+    var args2 = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-      args[_i] = arguments[_i];
+      args2[_i] = arguments[_i];
     }
-    var scheduler = popScheduler(args);
-    return from(args, scheduler);
+    var scheduler = popScheduler(args2);
+    return from(args2, scheduler);
   }
   function firstValueFrom(source2, config2) {
     var hasConfig = typeof config2 === "object";
     return new Promise(function(resolve, reject) {
       var subscriber = new SafeSubscriber({
-        next: function(value) {
-          resolve(value);
+        next: function(value2) {
+          resolve(value2);
           subscriber.unsubscribe();
         },
         error: reject,
@@ -784,59 +4113,59 @@
       source2.subscribe(subscriber);
     });
   }
-  function isValidDate(value) {
-    return value instanceof Date && !isNaN(value);
+  function isValidDate(value2) {
+    return value2 instanceof Date && !isNaN(value2);
   }
   function map(project, thisArg) {
     return operate(function(source2, subscriber) {
       var index = 0;
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
-        subscriber.next(project.call(thisArg, value, index++));
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
+        subscriber.next(project.call(thisArg, value2, index++));
       }));
     });
   }
-  function callOrApply(fn, args) {
-    return isArray(args) ? fn.apply(void 0, __spreadArray([], __read(args))) : fn(args);
+  function callOrApply(fn, args2) {
+    return isArray(args2) ? fn.apply(void 0, __spreadArray([], __read(args2))) : fn(args2);
   }
   function mapOneOrManyArgs(fn) {
-    return map(function(args) {
-      return callOrApply(fn, args);
+    return map(function(args2) {
+      return callOrApply(fn, args2);
     });
   }
-  function argsArgArrayOrObject(args) {
-    if (args.length === 1) {
-      var first_1 = args[0];
+  function argsArgArrayOrObject(args2) {
+    if (args2.length === 1) {
+      var first_1 = args2[0];
       if (isArray2(first_1)) {
         return { args: first_1, keys: null };
       }
       if (isPOJO(first_1)) {
         var keys = getKeys(first_1);
         return {
-          args: keys.map(function(key) {
-            return first_1[key];
+          args: keys.map(function(key2) {
+            return first_1[key2];
           }),
           keys
         };
       }
     }
-    return { args, keys: null };
+    return { args: args2, keys: null };
   }
-  function isPOJO(obj) {
-    return obj && typeof obj === "object" && getPrototypeOf(obj) === objectProto;
+  function isPOJO(obj2) {
+    return obj2 && typeof obj2 === "object" && getPrototypeOf(obj2) === objectProto;
   }
   function createObject(keys, values) {
-    return keys.reduce(function(result, key, i) {
-      return result[key] = values[i], result;
+    return keys.reduce(function(result, key2, i) {
+      return result[key2] = values[i], result;
     }, {});
   }
   function combineLatest() {
-    var args = [];
+    var args2 = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-      args[_i] = arguments[_i];
+      args2[_i] = arguments[_i];
     }
-    var scheduler = popScheduler(args);
-    var resultSelector = popResultSelector(args);
-    var _a3 = argsArgArrayOrObject(args), observables = _a3.args, keys = _a3.keys;
+    var scheduler = popScheduler(args2);
+    var resultSelector = popResultSelector(args2);
+    var _a3 = argsArgArrayOrObject(args2), observables = _a3.args, keys = _a3.keys;
     if (observables.length === 0) {
       return from([], scheduler);
     }
@@ -859,8 +4188,8 @@
           maybeSchedule(scheduler, function() {
             var source2 = from(observables[i2], scheduler);
             var hasFirstValue = false;
-            source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
-              values[i2] = value;
+            source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
+              values[i2] = value2;
               if (!hasFirstValue) {
                 hasFirstValue = true;
                 remainingFirstValues--;
@@ -898,14 +4227,14 @@
         subscriber.complete();
       }
     };
-    var outerNext = function(value) {
-      return active < concurrent ? doInnerSub(value) : buffer.push(value);
+    var outerNext = function(value2) {
+      return active < concurrent ? doInnerSub(value2) : buffer.push(value2);
     };
-    var doInnerSub = function(value) {
-      expand && subscriber.next(value);
+    var doInnerSub = function(value2) {
+      expand && subscriber.next(value2);
       active++;
       var innerComplete = false;
-      innerFrom(project(value, index++)).subscribe(createOperatorSubscriber(subscriber, function(innerValue) {
+      innerFrom(project(value2, index++)).subscribe(createOperatorSubscriber(subscriber, function(innerValue) {
         onBeforeNext === null || onBeforeNext === void 0 ? void 0 : onBeforeNext(innerValue);
         if (expand) {
           outerNext(innerValue);
@@ -973,11 +4302,11 @@
     return mergeAll(1);
   }
   function concat() {
-    var args = [];
+    var args2 = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-      args[_i] = arguments[_i];
+      args2[_i] = arguments[_i];
     }
-    return concatAll()(from(args, popScheduler(args)));
+    return concatAll()(from(args2, popScheduler(args2)));
   }
   function defer(observableFactory) {
     return new Observable(function(subscriber) {
@@ -993,8 +4322,8 @@
       return fromEvent(target, eventName, options).pipe(mapOneOrManyArgs(resultSelector));
     }
     var _a3 = __read(isEventTarget(target) ? eventTargetMethods.map(function(methodName) {
-      return function(handler) {
-        return target[methodName](eventName, handler, options);
+      return function(handler2) {
+        return target[methodName](eventName, handler2, options);
       };
     }) : isNodeStyleEventEmitter(target) ? nodeEventEmitterMethods.map(toCommonHandlerRegistry(target, eventName)) : isJQueryStyleEventEmitter(target) ? jqueryMethods.map(toCommonHandlerRegistry(target, eventName)) : [], 2), add = _a3[0], remove = _a3[1];
     if (!add) {
@@ -1008,23 +4337,23 @@
       throw new TypeError("Invalid event target");
     }
     return new Observable(function(subscriber) {
-      var handler = function() {
-        var args = [];
+      var handler2 = function() {
+        var args2 = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-          args[_i] = arguments[_i];
+          args2[_i] = arguments[_i];
         }
-        return subscriber.next(1 < args.length ? args : args[0]);
+        return subscriber.next(1 < args2.length ? args2 : args2[0]);
       };
-      add(handler);
+      add(handler2);
       return function() {
-        return remove(handler);
+        return remove(handler2);
       };
     });
   }
   function toCommonHandlerRegistry(target, eventName) {
     return function(methodName) {
-      return function(handler) {
-        return target[methodName](eventName, handler);
+      return function(handler2) {
+        return target[methodName](eventName, handler2);
       };
     };
   }
@@ -1071,23 +4400,23 @@
     });
   }
   function merge() {
-    var args = [];
+    var args2 = [];
     for (var _i = 0; _i < arguments.length; _i++) {
-      args[_i] = arguments[_i];
+      args2[_i] = arguments[_i];
     }
-    var scheduler = popScheduler(args);
-    var concurrent = popNumber(args, Infinity);
-    var sources = args;
+    var scheduler = popScheduler(args2);
+    var concurrent = popNumber(args2, Infinity);
+    var sources = args2;
     return !sources.length ? EMPTY : sources.length === 1 ? innerFrom(sources[0]) : mergeAll(concurrent)(from(sources, scheduler));
   }
-  function argsOrArgArray(args) {
-    return args.length === 1 && isArray3(args[0]) ? args[0] : args;
+  function argsOrArgArray(args2) {
+    return args2.length === 1 && isArray3(args2[0]) ? args2[0] : args2;
   }
   function filter(predicate, thisArg) {
     return operate(function(source2, subscriber) {
       var index = 0;
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
-        return predicate.call(thisArg, value, index++) && subscriber.next(value);
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
+        return predicate.call(thisArg, value2, index++) && subscriber.next(value2);
       }));
     });
   }
@@ -1103,14 +4432,14 @@
     return function(subscriber) {
       var subscriptions = [];
       var _loop_1 = function(i2) {
-        subscriptions.push(innerFrom(sources[i2]).subscribe(createOperatorSubscriber(subscriber, function(value) {
+        subscriptions.push(innerFrom(sources[i2]).subscribe(createOperatorSubscriber(subscriber, function(value2) {
           if (subscriptions) {
             for (var s = 0; s < subscriptions.length; s++) {
               s !== i2 && subscriptions[s].unsubscribe();
             }
             subscriptions = null;
           }
-          subscriber.next(value);
+          subscriber.next(value2);
         })));
       };
       for (var i = 0; subscriptions && !subscriber.closed && i < sources.length; i++) {
@@ -1143,9 +4472,9 @@
   function defaultIfEmpty(defaultValue) {
     return operate(function(source2, subscriber) {
       var hasValue = false;
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
         hasValue = true;
-        subscriber.next(value);
+        subscriber.next(value2);
       }, function() {
         if (!hasValue) {
           subscriber.next(defaultValue);
@@ -1159,9 +4488,9 @@
       return EMPTY;
     } : operate(function(source2, subscriber) {
       var seen = 0;
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
         if (++seen <= count) {
-          subscriber.next(value);
+          subscriber.next(value2);
           if (count <= seen) {
             subscriber.complete();
           }
@@ -1174,9 +4503,9 @@
       source2.subscribe(createOperatorSubscriber(subscriber, noop));
     });
   }
-  function mapTo(value) {
+  function mapTo(value2) {
     return map(function() {
-      return value;
+      return value2;
     });
   }
   function delayWhen(delayDurationSelector, subscriptionDelay) {
@@ -1185,8 +4514,8 @@
         return concat(subscriptionDelay.pipe(take(1), ignoreElements()), source2.pipe(delayWhen(delayDurationSelector)));
       };
     }
-    return mergeMap(function(value, index) {
-      return innerFrom(delayDurationSelector(value, index)).pipe(take(1), mapTo(value));
+    return mergeMap(function(value2, index) {
+      return innerFrom(delayDurationSelector(value2, index)).pipe(take(1), mapTo(value2));
     });
   }
   function distinctUntilChanged(comparator, keySelector) {
@@ -1197,12 +4526,12 @@
     return operate(function(source2, subscriber) {
       var previousKey;
       var first2 = true;
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
-        var currentKey = keySelector(value);
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
+        var currentKey = keySelector(value2);
         if (first2 || !comparator(previousKey, currentKey)) {
           first2 = false;
           previousKey = currentKey;
-          subscriber.next(value);
+          subscriber.next(value2);
         }
       }));
     });
@@ -1216,9 +4545,9 @@
     }
     return operate(function(source2, subscriber) {
       var hasValue = false;
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
         hasValue = true;
-        subscriber.next(value);
+        subscriber.next(value2);
       }, function() {
         return hasValue ? subscriber.complete() : subscriber.error(errorFactory());
       }));
@@ -1243,10 +4572,10 @@
     }
     return operate(function(source2, subscriber) {
       var state = seed;
-      return mergeInternals(source2, subscriber, function(value, index) {
-        return accumulator(state, value, index);
-      }, concurrent, function(value) {
-        state = value;
+      return mergeInternals(source2, subscriber, function(value2, index) {
+        return accumulator(state, value2, index);
+      }, concurrent, function(value2) {
+        state = value2;
       }, false, void 0, function() {
         return state = null;
       });
@@ -1279,11 +4608,11 @@
       var innerSub;
       var subscribeForRetry = function() {
         var syncUnsub = false;
-        innerSub = source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+        innerSub = source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
           if (resetOnSuccess) {
             soFar = 0;
           }
-          subscriber.next(value);
+          subscriber.next(value2);
         }, void 0, function(err) {
           if (soFar++ < count) {
             var resub_1 = function() {
@@ -1338,12 +4667,12 @@
       var checkComplete = function() {
         return isComplete && !innerSubscriber && subscriber.complete();
       };
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
         innerSubscriber === null || innerSubscriber === void 0 ? void 0 : innerSubscriber.unsubscribe();
         var innerIndex = 0;
         var outerIndex = index++;
-        innerFrom(project(value, outerIndex)).subscribe(innerSubscriber = createOperatorSubscriber(subscriber, function(innerValue) {
-          return subscriber.next(resultSelector ? resultSelector(value, innerValue, outerIndex, innerIndex++) : innerValue);
+        innerFrom(project(value2, outerIndex)).subscribe(innerSubscriber = createOperatorSubscriber(subscriber, function(innerValue) {
+          return subscriber.next(resultSelector ? resultSelector(value2, innerValue, outerIndex, innerIndex++) : innerValue);
         }, function() {
           innerSubscriber = null;
           checkComplete();
@@ -1368,10 +4697,10 @@
       var _a3;
       (_a3 = tapObserver.subscribe) === null || _a3 === void 0 ? void 0 : _a3.call(tapObserver);
       var isUnsub = true;
-      source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
         var _a22;
-        (_a22 = tapObserver.next) === null || _a22 === void 0 ? void 0 : _a22.call(tapObserver, value);
-        subscriber.next(value);
+        (_a22 = tapObserver.next) === null || _a22 === void 0 ? void 0 : _a22.call(tapObserver, value2);
+        subscriber.next(value2);
       }, function() {
         var _a22;
         isUnsub = false;
@@ -1541,16 +4870,16 @@
         useDeprecatedNextContext: false
       };
       timeoutProvider = {
-        setTimeout: function(handler, timeout2) {
-          var args = [];
+        setTimeout: function(handler2, timeout2) {
+          var args2 = [];
           for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
+            args2[_i - 2] = arguments[_i];
           }
           var delegate = timeoutProvider.delegate;
           if (delegate === null || delegate === void 0 ? void 0 : delegate.setTimeout) {
-            return delegate.setTimeout.apply(delegate, __spreadArray([handler, timeout2], __read(args)));
+            return delegate.setTimeout.apply(delegate, __spreadArray([handler2, timeout2], __read(args2)));
           }
-          return setTimeout.apply(void 0, __spreadArray([handler, timeout2], __read(args)));
+          return setTimeout.apply(void 0, __spreadArray([handler2, timeout2], __read(args2)));
         },
         clearTimeout: function(handle) {
           var delegate = timeoutProvider.delegate;
@@ -1580,11 +4909,11 @@
         Subscriber2.create = function(next, error, complete) {
           return new SafeSubscriber(next, error, complete);
         };
-        Subscriber2.prototype.next = function(value) {
+        Subscriber2.prototype.next = function(value2) {
           if (this.isStopped) {
-            handleStoppedNotification(nextNotification(value), this);
+            handleStoppedNotification(nextNotification(value2), this);
           } else {
-            this._next(value);
+            this._next(value2);
           }
         };
         Subscriber2.prototype.error = function(err) {
@@ -1610,8 +4939,8 @@
             this.destination = null;
           }
         };
-        Subscriber2.prototype._next = function(value) {
-          this.destination.next(value);
+        Subscriber2.prototype._next = function(value2) {
+          this.destination.next(value2);
         };
         Subscriber2.prototype._error = function(err) {
           try {
@@ -1634,11 +4963,11 @@
         function ConsumerObserver2(partialObserver) {
           this.partialObserver = partialObserver;
         }
-        ConsumerObserver2.prototype.next = function(value) {
+        ConsumerObserver2.prototype.next = function(value2) {
           var partialObserver = this.partialObserver;
           if (partialObserver.next) {
             try {
-              partialObserver.next(value);
+              partialObserver.next(value2);
             } catch (error) {
               handleUnhandledError(error);
             }
@@ -1742,9 +5071,9 @@
           promiseCtor = getPromiseCtor(promiseCtor);
           return new promiseCtor(function(resolve, reject) {
             var subscriber = new SafeSubscriber({
-              next: function(value) {
+              next: function(value2) {
                 try {
-                  next(value);
+                  next(value2);
                 } catch (err) {
                   reject(err);
                   subscriber.unsubscribe();
@@ -1774,13 +5103,13 @@
           var _this = this;
           promiseCtor = getPromiseCtor(promiseCtor);
           return new promiseCtor(function(resolve, reject) {
-            var value;
+            var value2;
             _this.subscribe(function(x) {
-              return value = x;
+              return value2 = x;
             }, function(err) {
               return reject(err);
             }, function() {
-              return resolve(value);
+              return resolve(value2);
             });
           });
         };
@@ -1795,9 +5124,9 @@
           var _this = _super.call(this, destination) || this;
           _this.onFinalize = onFinalize;
           _this.shouldUnsubscribe = shouldUnsubscribe;
-          _this._next = onNext ? function(value) {
+          _this._next = onNext ? function(value2) {
             try {
-              onNext(value);
+              onNext(value2);
             } catch (err) {
               destination.error(err);
             }
@@ -1861,7 +5190,7 @@
             throw new ObjectUnsubscribedError();
           }
         };
-        Subject2.prototype.next = function(value) {
+        Subject2.prototype.next = function(value2) {
           var _this = this;
           errorContext(function() {
             var e_1, _a3;
@@ -1873,7 +5202,7 @@
               try {
                 for (var _b = __values(_this.currentObservers), _c = _b.next(); !_c.done; _c = _b.next()) {
                   var observer = _c.value;
-                  observer.next(value);
+                  observer.next(value2);
                 }
               } catch (e_1_1) {
                 e_1 = { error: e_1_1 };
@@ -1974,9 +5303,9 @@
           _this.source = source2;
           return _this;
         }
-        AnonymousSubject2.prototype.next = function(value) {
+        AnonymousSubject2.prototype.next = function(value2) {
           var _a3, _b;
-          (_b = (_a3 = this.destination) === null || _a3 === void 0 ? void 0 : _a3.next) === null || _b === void 0 ? void 0 : _b.call(_a3, value);
+          (_b = (_a3 = this.destination) === null || _a3 === void 0 ? void 0 : _a3.next) === null || _b === void 0 ? void 0 : _b.call(_a3, value2);
         };
         AnonymousSubject2.prototype.error = function(err) {
           var _a3, _b;
@@ -2021,14 +5350,14 @@
           _this._windowTime = Math.max(1, _windowTime);
           return _this;
         }
-        ReplaySubject2.prototype.next = function(value) {
+        ReplaySubject2.prototype.next = function(value2) {
           var _a3 = this, isStopped = _a3.isStopped, _buffer = _a3._buffer, _infiniteTimeWindow = _a3._infiniteTimeWindow, _timestampProvider = _a3._timestampProvider, _windowTime = _a3._windowTime;
           if (!isStopped) {
-            _buffer.push(value);
+            _buffer.push(value2);
             !_infiniteTimeWindow && _buffer.push(_timestampProvider.now() + _windowTime);
           }
           this._trimBuffer();
-          _super.prototype.next.call(this, value);
+          _super.prototype.next.call(this, value2);
         };
         ReplaySubject2.prototype._subscribe = function(subscriber) {
           this._throwIfClosed();
@@ -2071,16 +5400,16 @@
         return Action2;
       })(Subscription);
       intervalProvider = {
-        setInterval: function(handler, timeout2) {
-          var args = [];
+        setInterval: function(handler2, timeout2) {
+          var args2 = [];
           for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
+            args2[_i - 2] = arguments[_i];
           }
           var delegate = intervalProvider.delegate;
           if (delegate === null || delegate === void 0 ? void 0 : delegate.setInterval) {
-            return delegate.setInterval.apply(delegate, __spreadArray([handler, timeout2], __read(args)));
+            return delegate.setInterval.apply(delegate, __spreadArray([handler2, timeout2], __read(args2)));
           }
-          return setInterval.apply(void 0, __spreadArray([handler, timeout2], __read(args)));
+          return setInterval.apply(void 0, __spreadArray([handler2, timeout2], __read(args2)));
         },
         clearInterval: function(handle) {
           var delegate = intervalProvider.delegate;
@@ -2309,11 +5638,11 @@
          * `null` and `undefined` will not be added, but will be returned.
          * @returns The provided `value`.
          */
-        use(value) {
-          if (value && typeof value[disposeSymbol] === "function") {
-            this.#stack.push(value);
+        use(value2) {
+          if (value2 && typeof value2[disposeSymbol] === "function") {
+            this.#stack.push(value2);
           }
-          return value;
+          return value2;
         }
         /**
          * Adds a non-disposable resource and a disposal callback to the top of the stack.
@@ -2323,13 +5652,13 @@
          * Will be invoked with `value` as the first parameter.
          * @returns The provided `value`.
          */
-        adopt(value, onDispose) {
+        adopt(value2, onDispose) {
           this.#stack.push({
             [disposeSymbol]() {
-              onDispose(value);
+              onDispose(value2);
             }
           });
-          return value;
+          return value2;
         }
         /**
          * Add a disposal callback to the top of the stack to be invoked when stack is disposed.
@@ -2441,21 +5770,21 @@
          * `null` and `undefined` will not be added, but will be returned.
          * @returns The provided `value`.
          */
-        use(value) {
-          if (value) {
-            const asyncDispose = value[asyncDisposeSymbol];
-            const dispose = value[disposeSymbol];
+        use(value2) {
+          if (value2) {
+            const asyncDispose = value2[asyncDisposeSymbol];
+            const dispose = value2[disposeSymbol];
             if (typeof asyncDispose === "function") {
-              this.#stack.push(value);
+              this.#stack.push(value2);
             } else if (typeof dispose === "function") {
               this.#stack.push({
                 [asyncDisposeSymbol]: async () => {
-                  value[disposeSymbol]();
+                  value2[disposeSymbol]();
                 }
               });
             }
           }
-          return value;
+          return value2;
         }
         /**
          * Adds a non-disposable resource and a disposal callback to the top of the stack.
@@ -2465,13 +5794,13 @@
          * Will be invoked with `value` as the first parameter.
          * @returns The provided `value`.
          */
-        adopt(value, onDispose) {
+        adopt(value2, onDispose) {
           this.#stack.push({
             [asyncDisposeSymbol]() {
-              return onDispose(value);
+              return onDispose(value2);
             }
           });
-          return value;
+          return value2;
         }
         /**
          * Add a disposal callback to the top of the stack to be invoked when stack is disposed.
@@ -2610,14 +5939,14 @@
          * @param handler - the function to be called when the event occurs.
          * @returns `this` to enable you to chain method calls.
          */
-        on(type, handler) {
+        on(type, handler2) {
           const handlers = this.#handlers.get(type);
           if (handlers === void 0) {
-            this.#handlers.set(type, [handler]);
+            this.#handlers.set(type, [handler2]);
           } else {
-            handlers.push(handler);
+            handlers.push(handler2);
           }
-          this.#emitter.on(type, handler);
+          this.#emitter.on(type, handler2);
           return this;
         }
         /**
@@ -2626,16 +5955,16 @@
          * @param handler - the function that should be removed.
          * @returns `this` to enable you to chain method calls.
          */
-        off(type, handler) {
+        off(type, handler2) {
           const handlers = this.#handlers.get(type) ?? [];
-          if (handler === void 0) {
-            for (const handler2 of handlers) {
-              this.#emitter.off(type, handler2);
+          if (handler2 === void 0) {
+            for (const handler3 of handlers) {
+              this.#emitter.off(type, handler3);
             }
             this.#handlers.delete(type);
             return this;
           }
-          const index = handlers.lastIndexOf(handler);
+          const index = handlers.lastIndexOf(handler2);
           if (index > -1) {
             this.#emitter.off(type, ...handlers.splice(index, 1));
           }
@@ -2658,9 +5987,9 @@
          * @param handler - the handler function to run when the event occurs
          * @returns `this` to enable you to chain method calls.
          */
-        once(type, handler) {
+        once(type, handler2) {
           const onceHandler = (eventData) => {
-            handler(eventData);
+            handler2(eventData);
             this.off(type, onceHandler);
           };
           return this.on(type, onceHandler);
@@ -2693,8 +6022,8 @@
          */
         [disposeSymbol]() {
           for (const [type, handlers] of this.#handlers) {
-            for (const handler of handlers) {
-              this.#emitter.off(type, handler);
+            for (const handler2 of handlers) {
+              this.#emitter.off(type, handler2);
             }
           }
           this.#handlers.clear();
@@ -2725,8 +6054,8 @@
   var assert;
   var init_assert = __esm({
     "node_modules/puppeteer-core/lib/esm/puppeteer/util/assert.js"() {
-      assert = (value, message) => {
-        if (!value) {
+      assert = (value2, message) => {
+        if (!value2) {
           throw new Error(message);
         }
       };
@@ -2781,469 +6110,6 @@
   var init_version = __esm({
     "node_modules/puppeteer-core/lib/esm/puppeteer/util/version.js"() {
       packageVersion = "24.36.1";
-    }
-  });
-
-  // node_modules/ms/index.js
-  var require_ms = __commonJS({
-    "node_modules/ms/index.js"(exports, module) {
-      var s = 1e3;
-      var m = s * 60;
-      var h = m * 60;
-      var d = h * 24;
-      var w = d * 7;
-      var y = d * 365.25;
-      module.exports = function(val, options) {
-        options = options || {};
-        var type = typeof val;
-        if (type === "string" && val.length > 0) {
-          return parse(val);
-        } else if (type === "number" && isFinite(val)) {
-          return options.long ? fmtLong(val) : fmtShort(val);
-        }
-        throw new Error(
-          "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
-        );
-      };
-      function parse(str) {
-        str = String(str);
-        if (str.length > 100) {
-          return;
-        }
-        var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
-          str
-        );
-        if (!match) {
-          return;
-        }
-        var n = parseFloat(match[1]);
-        var type = (match[2] || "ms").toLowerCase();
-        switch (type) {
-          case "years":
-          case "year":
-          case "yrs":
-          case "yr":
-          case "y":
-            return n * y;
-          case "weeks":
-          case "week":
-          case "w":
-            return n * w;
-          case "days":
-          case "day":
-          case "d":
-            return n * d;
-          case "hours":
-          case "hour":
-          case "hrs":
-          case "hr":
-          case "h":
-            return n * h;
-          case "minutes":
-          case "minute":
-          case "mins":
-          case "min":
-          case "m":
-            return n * m;
-          case "seconds":
-          case "second":
-          case "secs":
-          case "sec":
-          case "s":
-            return n * s;
-          case "milliseconds":
-          case "millisecond":
-          case "msecs":
-          case "msec":
-          case "ms":
-            return n;
-          default:
-            return void 0;
-        }
-      }
-      function fmtShort(ms) {
-        var msAbs = Math.abs(ms);
-        if (msAbs >= d) {
-          return Math.round(ms / d) + "d";
-        }
-        if (msAbs >= h) {
-          return Math.round(ms / h) + "h";
-        }
-        if (msAbs >= m) {
-          return Math.round(ms / m) + "m";
-        }
-        if (msAbs >= s) {
-          return Math.round(ms / s) + "s";
-        }
-        return ms + "ms";
-      }
-      function fmtLong(ms) {
-        var msAbs = Math.abs(ms);
-        if (msAbs >= d) {
-          return plural(ms, msAbs, d, "day");
-        }
-        if (msAbs >= h) {
-          return plural(ms, msAbs, h, "hour");
-        }
-        if (msAbs >= m) {
-          return plural(ms, msAbs, m, "minute");
-        }
-        if (msAbs >= s) {
-          return plural(ms, msAbs, s, "second");
-        }
-        return ms + " ms";
-      }
-      function plural(ms, msAbs, n, name) {
-        var isPlural = msAbs >= n * 1.5;
-        return Math.round(ms / n) + " " + name + (isPlural ? "s" : "");
-      }
-    }
-  });
-
-  // node_modules/debug/src/common.js
-  var require_common = __commonJS({
-    "node_modules/debug/src/common.js"(exports, module) {
-      function setup(env) {
-        createDebug.debug = createDebug;
-        createDebug.default = createDebug;
-        createDebug.coerce = coerce;
-        createDebug.disable = disable;
-        createDebug.enable = enable;
-        createDebug.enabled = enabled;
-        createDebug.humanize = require_ms();
-        createDebug.destroy = destroy;
-        Object.keys(env).forEach((key) => {
-          createDebug[key] = env[key];
-        });
-        createDebug.names = [];
-        createDebug.skips = [];
-        createDebug.formatters = {};
-        function selectColor(namespace) {
-          let hash = 0;
-          for (let i = 0; i < namespace.length; i++) {
-            hash = (hash << 5) - hash + namespace.charCodeAt(i);
-            hash |= 0;
-          }
-          return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
-        }
-        createDebug.selectColor = selectColor;
-        function createDebug(namespace) {
-          let prevTime;
-          let enableOverride = null;
-          let namespacesCache;
-          let enabledCache;
-          function debug2(...args) {
-            if (!debug2.enabled) {
-              return;
-            }
-            const self2 = debug2;
-            const curr = Number(/* @__PURE__ */ new Date());
-            const ms = curr - (prevTime || curr);
-            self2.diff = ms;
-            self2.prev = prevTime;
-            self2.curr = curr;
-            prevTime = curr;
-            args[0] = createDebug.coerce(args[0]);
-            if (typeof args[0] !== "string") {
-              args.unshift("%O");
-            }
-            let index = 0;
-            args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
-              if (match === "%%") {
-                return "%";
-              }
-              index++;
-              const formatter = createDebug.formatters[format];
-              if (typeof formatter === "function") {
-                const val = args[index];
-                match = formatter.call(self2, val);
-                args.splice(index, 1);
-                index--;
-              }
-              return match;
-            });
-            createDebug.formatArgs.call(self2, args);
-            const logFn = self2.log || createDebug.log;
-            logFn.apply(self2, args);
-          }
-          debug2.namespace = namespace;
-          debug2.useColors = createDebug.useColors();
-          debug2.color = createDebug.selectColor(namespace);
-          debug2.extend = extend;
-          debug2.destroy = createDebug.destroy;
-          Object.defineProperty(debug2, "enabled", {
-            enumerable: true,
-            configurable: false,
-            get: () => {
-              if (enableOverride !== null) {
-                return enableOverride;
-              }
-              if (namespacesCache !== createDebug.namespaces) {
-                namespacesCache = createDebug.namespaces;
-                enabledCache = createDebug.enabled(namespace);
-              }
-              return enabledCache;
-            },
-            set: (v) => {
-              enableOverride = v;
-            }
-          });
-          if (typeof createDebug.init === "function") {
-            createDebug.init(debug2);
-          }
-          return debug2;
-        }
-        function extend(namespace, delimiter) {
-          const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
-          newDebug.log = this.log;
-          return newDebug;
-        }
-        function enable(namespaces) {
-          createDebug.save(namespaces);
-          createDebug.namespaces = namespaces;
-          createDebug.names = [];
-          createDebug.skips = [];
-          const split = (typeof namespaces === "string" ? namespaces : "").trim().replace(/\s+/g, ",").split(",").filter(Boolean);
-          for (const ns of split) {
-            if (ns[0] === "-") {
-              createDebug.skips.push(ns.slice(1));
-            } else {
-              createDebug.names.push(ns);
-            }
-          }
-        }
-        function matchesTemplate(search, template) {
-          let searchIndex = 0;
-          let templateIndex = 0;
-          let starIndex = -1;
-          let matchIndex = 0;
-          while (searchIndex < search.length) {
-            if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) {
-              if (template[templateIndex] === "*") {
-                starIndex = templateIndex;
-                matchIndex = searchIndex;
-                templateIndex++;
-              } else {
-                searchIndex++;
-                templateIndex++;
-              }
-            } else if (starIndex !== -1) {
-              templateIndex = starIndex + 1;
-              matchIndex++;
-              searchIndex = matchIndex;
-            } else {
-              return false;
-            }
-          }
-          while (templateIndex < template.length && template[templateIndex] === "*") {
-            templateIndex++;
-          }
-          return templateIndex === template.length;
-        }
-        function disable() {
-          const namespaces = [
-            ...createDebug.names,
-            ...createDebug.skips.map((namespace) => "-" + namespace)
-          ].join(",");
-          createDebug.enable("");
-          return namespaces;
-        }
-        function enabled(name) {
-          for (const skip of createDebug.skips) {
-            if (matchesTemplate(name, skip)) {
-              return false;
-            }
-          }
-          for (const ns of createDebug.names) {
-            if (matchesTemplate(name, ns)) {
-              return true;
-            }
-          }
-          return false;
-        }
-        function coerce(val) {
-          if (val instanceof Error) {
-            return val.stack || val.message;
-          }
-          return val;
-        }
-        function destroy() {
-          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
-        }
-        createDebug.enable(createDebug.load());
-        return createDebug;
-      }
-      module.exports = setup;
-    }
-  });
-
-  // node_modules/debug/src/browser.js
-  var require_browser = __commonJS({
-    "node_modules/debug/src/browser.js"(exports, module) {
-      exports.formatArgs = formatArgs;
-      exports.save = save;
-      exports.load = load;
-      exports.useColors = useColors;
-      exports.storage = localstorage();
-      exports.destroy = /* @__PURE__ */ (() => {
-        let warned = false;
-        return () => {
-          if (!warned) {
-            warned = true;
-            console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
-          }
-        };
-      })();
-      exports.colors = [
-        "#0000CC",
-        "#0000FF",
-        "#0033CC",
-        "#0033FF",
-        "#0066CC",
-        "#0066FF",
-        "#0099CC",
-        "#0099FF",
-        "#00CC00",
-        "#00CC33",
-        "#00CC66",
-        "#00CC99",
-        "#00CCCC",
-        "#00CCFF",
-        "#3300CC",
-        "#3300FF",
-        "#3333CC",
-        "#3333FF",
-        "#3366CC",
-        "#3366FF",
-        "#3399CC",
-        "#3399FF",
-        "#33CC00",
-        "#33CC33",
-        "#33CC66",
-        "#33CC99",
-        "#33CCCC",
-        "#33CCFF",
-        "#6600CC",
-        "#6600FF",
-        "#6633CC",
-        "#6633FF",
-        "#66CC00",
-        "#66CC33",
-        "#9900CC",
-        "#9900FF",
-        "#9933CC",
-        "#9933FF",
-        "#99CC00",
-        "#99CC33",
-        "#CC0000",
-        "#CC0033",
-        "#CC0066",
-        "#CC0099",
-        "#CC00CC",
-        "#CC00FF",
-        "#CC3300",
-        "#CC3333",
-        "#CC3366",
-        "#CC3399",
-        "#CC33CC",
-        "#CC33FF",
-        "#CC6600",
-        "#CC6633",
-        "#CC9900",
-        "#CC9933",
-        "#CCCC00",
-        "#CCCC33",
-        "#FF0000",
-        "#FF0033",
-        "#FF0066",
-        "#FF0099",
-        "#FF00CC",
-        "#FF00FF",
-        "#FF3300",
-        "#FF3333",
-        "#FF3366",
-        "#FF3399",
-        "#FF33CC",
-        "#FF33FF",
-        "#FF6600",
-        "#FF6633",
-        "#FF9900",
-        "#FF9933",
-        "#FFCC00",
-        "#FFCC33"
-      ];
-      function useColors() {
-        if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
-          return true;
-        }
-        if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
-          return false;
-        }
-        let m;
-        return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
-        typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
-        // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-        typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
-        typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
-      }
-      function formatArgs(args) {
-        args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
-        if (!this.useColors) {
-          return;
-        }
-        const c = "color: " + this.color;
-        args.splice(1, 0, c, "color: inherit");
-        let index = 0;
-        let lastC = 0;
-        args[0].replace(/%[a-zA-Z%]/g, (match) => {
-          if (match === "%%") {
-            return;
-          }
-          index++;
-          if (match === "%c") {
-            lastC = index;
-          }
-        });
-        args.splice(lastC, 0, c);
-      }
-      exports.log = console.debug || console.log || (() => {
-      });
-      function save(namespaces) {
-        try {
-          if (namespaces) {
-            exports.storage.setItem("debug", namespaces);
-          } else {
-            exports.storage.removeItem("debug");
-          }
-        } catch (error) {
-        }
-      }
-      function load() {
-        let r;
-        try {
-          r = exports.storage.getItem("debug") || exports.storage.getItem("DEBUG");
-        } catch (error) {
-        }
-        if (!r && typeof process !== "undefined" && "env" in process) {
-          r = process.env.DEBUG;
-        }
-        return r;
-      }
-      function localstorage() {
-        try {
-          return localStorage;
-        } catch (error) {
-        }
-      }
-      module.exports = require_common()(exports);
-      var { formatters } = module.exports;
-      formatters.j = function(v) {
-        try {
-          return JSON.stringify(v);
-        } catch (error) {
-          return "[UnexpectedJSONParseError]: " + error.message;
-        }
-      };
     }
   });
 
@@ -3401,9 +6267,9 @@
   });
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/common/util.js
-  function evaluationString(fun, ...args) {
+  function evaluationString(fun, ...args2) {
     if (isString(fun)) {
-      assert(args.length === 0, "Cannot evaluate a string with arguments");
+      assert(args2.length === 0, "Cannot evaluate a string with arguments");
       return fun;
     }
     function serializeArgument(arg) {
@@ -3412,7 +6278,7 @@
       }
       return JSON.stringify(arg);
     }
-    return `(${fun})(${args.map(serializeArgument).join(",")})`;
+    return `(${fun})(${args2.map(serializeArgument).join(",")})`;
   }
   async function getReadableAsTypedArray(readable, path) {
     const buffers = [];
@@ -3421,23 +6287,23 @@
       const fileHandle = await environment.value.fs.promises.open(path, "w+");
       try {
         while (true) {
-          const { done, value } = await reader.read();
+          const { done, value: value2 } = await reader.read();
           if (done) {
             break;
           }
-          buffers.push(value);
-          await fileHandle.writeFile(value);
+          buffers.push(value2);
+          await fileHandle.writeFile(value2);
         }
       } finally {
         await fileHandle.close();
       }
     } else {
       while (true) {
-        const { done, value } = await reader.read();
+        const { done, value: value2 } = await reader.read();
         if (done) {
           break;
         }
-        buffers.push(value);
+        buffers.push(value2);
       }
     }
     try {
@@ -3547,9 +6413,9 @@
         unit = "px";
         valueText = text;
       }
-      const value = Number(valueText);
-      assert(!isNaN(value), "Failed to parse parameter value: " + text);
-      pixels = value * unitToPixels[unit];
+      const value2 = Number(valueText);
+      assert(!isNaN(value2), "Failed to parse parameter value: " + text);
+      pixels = value2 * unitToPixels[unit];
     } else {
       throw new Error("page.pdf() Cannot handle parameter type: " + typeof parameter);
     }
@@ -3576,11 +6442,11 @@
     })) : NEVER;
   }
   function filterAsync(predicate) {
-    return mergeMap((value) => {
-      return from(Promise.resolve(predicate(value))).pipe(filter((isMatch) => {
+    return mergeMap((value2) => {
+      return from(Promise.resolve(predicate(value2))).pipe(filter((isMatch) => {
         return isMatch;
       }), map(() => {
-        return value;
+        return value2;
       }));
     });
   }
@@ -3652,20 +6518,20 @@
         }
         return void 0;
       };
-      isString = (obj) => {
-        return typeof obj === "string" || obj instanceof String;
+      isString = (obj2) => {
+        return typeof obj2 === "string" || obj2 instanceof String;
       };
-      isNumber = (obj) => {
-        return typeof obj === "number" || obj instanceof Number;
+      isNumber = (obj2) => {
+        return typeof obj2 === "number" || obj2 instanceof Number;
       };
-      isPlainObject = (obj) => {
-        return typeof obj === "object" && obj?.constructor === Object;
+      isPlainObject = (obj2) => {
+        return typeof obj2 === "object" && obj2?.constructor === Object;
       };
-      isRegExp = (obj) => {
-        return typeof obj === "object" && obj?.constructor === RegExp;
+      isRegExp = (obj2) => {
+        return typeof obj2 === "object" && obj2?.constructor === RegExp;
       };
-      isDate = (obj) => {
-        return typeof obj === "object" && obj?.constructor === Date;
+      isDate = (obj2) => {
+        return typeof obj2 === "object" && obj2?.constructor === Date;
       };
       UTILITY_WORLD_NAME = "__puppeteer_utility_world__" + packageVersion;
       SOURCE_URL_REGEX = /^[\x20\t]*\/\/[@#] sourceURL=\s{0,10}(\S*?)\s{0,10}$/m;
@@ -3847,14 +6713,14 @@
         static async race(awaitables) {
           const deferredWithTimeout = /* @__PURE__ */ new Set();
           try {
-            const promises = awaitables.map((value) => {
-              if (value instanceof _Deferred) {
-                if (value.#timeoutId) {
-                  deferredWithTimeout.add(value);
+            const promises = awaitables.map((value2) => {
+              if (value2 instanceof _Deferred) {
+                if (value2.#timeoutId) {
+                  deferredWithTimeout.add(value2);
                 }
-                return value.valueOrThrow();
+                return value2.valueOrThrow();
               }
-              return value;
+              return value2;
             });
             return await Promise.race(promises);
           } finally {
@@ -3882,17 +6748,17 @@
             }, opts.timeout);
           }
         }
-        #finish(value) {
+        #finish(value2) {
           clearTimeout(this.#timeoutId);
-          this.#value = value;
+          this.#value = value2;
           this.#resolve();
         }
-        resolve(value) {
+        resolve(value2) {
           if (this.#isRejected || this.#isResolved) {
             return;
           }
           this.#isResolved = true;
-          this.#finish(value);
+          this.#finish(value2);
         }
         reject(error) {
           if (this.#isRejected || this.#isResolved) {
@@ -4238,25 +7104,25 @@
     "node_modules/puppeteer-core/lib/esm/puppeteer/util/AsyncIterableUtil.js"() {
       AsyncIterableUtil = class {
         static async *map(iterable, map2) {
-          for await (const value of iterable) {
-            yield await map2(value);
+          for await (const value2 of iterable) {
+            yield await map2(value2);
           }
         }
         static async *flatMap(iterable, map2) {
-          for await (const value of iterable) {
-            yield* map2(value);
+          for await (const value2 of iterable) {
+            yield* map2(value2);
           }
         }
         static async collect(iterable) {
           const result = [];
-          for await (const value of iterable) {
-            result.push(value);
+          for await (const value2 of iterable) {
+            result.push(value2);
           }
           return result;
         }
         static async first(iterable) {
-          for await (const value of iterable) {
-            return value;
+          for await (const value2 of iterable) {
+            return value2;
           }
           return;
         }
@@ -4273,8 +7139,8 @@
   });
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/util/ErrorLike.js
-  function isErrorLike(obj) {
-    return typeof obj === "object" && obj !== null && "name" in obj && "message" in obj;
+  function isErrorLike(obj2) {
+    return typeof obj2 === "object" && obj2 !== null && "name" in obj2 && "message" in obj2;
   }
   function rewriteError(error, message, originalMessage) {
     error.message = message;
@@ -4295,20 +7161,20 @@
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/util/Function.js
   function stringifyFunction(fn) {
-    let value = fn.toString();
-    if (value.match(/^(async )*function(\(|\s)/) || value.match(/^(async )*function\s*\*\s*/)) {
-      return value;
+    let value2 = fn.toString();
+    if (value2.match(/^(async )*function(\(|\s)/) || value2.match(/^(async )*function\s*\*\s*/)) {
+      return value2;
     }
-    const isArrow = value.startsWith("(") || value.match(/^async\s*\(/) || value.match(/^(async)*\s*(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*\s*=>/u);
+    const isArrow = value2.startsWith("(") || value2.match(/^async\s*\(/) || value2.match(/^(async)*\s*(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*\s*=>/u);
     if (isArrow) {
-      return value;
+      return value2;
     }
     let prefix = "function ";
-    if (value.startsWith("async ")) {
+    if (value2.startsWith("async ")) {
       prefix = `async ${prefix}`;
-      value = value.substring("async ".length);
+      value2 = value2.substring("async ".length);
     }
-    return `${prefix}${value}`;
+    return `${prefix}${value2}`;
   }
   var createdFunctions, createFunction, interpolateFunction;
   var init_Function = __esm({
@@ -4324,9 +7190,9 @@
         return fn;
       };
       interpolateFunction = (fn, replacements) => {
-        let value = stringifyFunction(fn);
+        let value2 = stringifyFunction(fn);
         for (const [name, jsValue] of Object.entries(replacements)) {
-          value = value.replace(
+          value2 = value2.replace(
             new RegExp(`PLACEHOLDER\\(\\s*(?:'${name}'|"${name}")\\s*\\)`, "g"),
             // Wrapping this ensures tersers that accidentally inline PLACEHOLDER calls
             // are still valid. Without, we may get calls like ()=>{...}() which is
@@ -4334,7 +7200,7 @@
             `(${jsValue})`
           );
         }
-        return createFunction(value);
+        return createFunction(value2);
       };
     }
   });
@@ -4406,17 +7272,17 @@
   var init_HandleIterator = __esm({
     "node_modules/puppeteer-core/lib/esm/puppeteer/common/HandleIterator.js"() {
       init_disposable();
-      __addDisposableResource = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -4427,11 +7293,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -4497,17 +7363,17 @@
       init_Errors();
       init_HandleIterator();
       init_LazyArg();
-      __addDisposableResource2 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource2 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -4518,11 +7384,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources2 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -4723,9 +7589,9 @@
           throw new Error(`Selector ${selector} is too long`);
         }
         const queryOptions = {};
-        const defaultName = selector.replace(ATTRIBUTE_REGEXP, (_, attribute, __, value) => {
+        const defaultName = selector.replace(ATTRIBUTE_REGEXP, (_, attribute, __, value2) => {
           assert(isKnownAttribute(attribute), `Unknown aria attribute "${attribute}" in selector`);
-          queryOptions[attribute] = value;
+          queryOptions[attribute] = value2;
           return "";
         });
         if (defaultName && !queryOptions.name) {
@@ -4827,8 +7693,8 @@
       CustomQueryHandlerRegistry = class {
         #handlers = /* @__PURE__ */ new Map();
         get(name) {
-          const handler = this.#handlers.get(name);
-          return handler ? handler[1] : void 0;
+          const handler2 = this.#handlers.get(name);
+          return handler2 ? handler2[1] : void 0;
         }
         /**
          * Registers a {@link CustomQueryHandler | custom query handler}.
@@ -4849,10 +7715,10 @@
          * @param queryHandler - {@link CustomQueryHandler | Custom query handler} to
          * register.
          */
-        register(name, handler) {
+        register(name, handler2) {
           assert(!this.#handlers.has(name), `Cannot register over existing handler: ${name}`);
           assert(/^[a-zA-Z]+$/.test(name), `Custom query handler names may only contain [a-zA-Z]`);
-          assert(handler.queryAll || handler.queryOne, `At least one query method must be implemented.`);
+          assert(handler2.queryAll || handler2.queryOne, `At least one query method must be implemented.`);
           const Handler = class extends QueryHandler {
             static querySelectorAll = interpolateFunction((node, selector, PuppeteerUtil) => {
               return PuppeteerUtil.customQuerySelectors.get(PLACEHOLDER("name")).querySelectorAll(node, selector);
@@ -4868,8 +7734,8 @@
             });
           }, {
             name: JSON.stringify(name),
-            queryAll: handler.queryAll ? stringifyFunction(handler.queryAll) : String(void 0),
-            queryOne: handler.queryOne ? stringifyFunction(handler.queryOne) : String(void 0)
+            queryAll: handler2.queryAll ? stringifyFunction(handler2.queryAll) : String(void 0),
+            queryOne: handler2.queryOne ? stringifyFunction(handler2.queryOne) : String(void 0)
           }).toString();
           this.#handlers.set(name, [registerScript, Handler]);
           scriptInjector.append(registerScript);
@@ -4881,11 +7747,11 @@
          * @throws `Error` if there is no handler under the given name.
          */
         unregister(name) {
-          const handler = this.#handlers.get(name);
-          if (!handler) {
+          const handler2 = this.#handlers.get(name);
+          if (!handler2) {
             throw new Error(`Cannot unregister unknown handler: ${name}`);
           }
-          scriptInjector.pop(handler[0]);
+          scriptInjector.pop(handler2[0]);
           this.#handlers.delete(name);
         }
         /**
@@ -4978,22 +7844,22 @@
           continue;
         }
         const from2 = match.index - 1;
-        const args = [];
+        const args2 = [];
         const content = match[0];
         const before = token.slice(0, from2 + 1);
         if (before) {
-          args.push(before);
+          args2.push(before);
         }
-        args.push({
+        args2.push({
           ...match.groups,
           type,
           content
         });
         const after = token.slice(from2 + content.length + 1);
         if (after) {
-          args.push(after);
+          args2.push(after);
         }
-        tokens.splice(i, 1, ...args);
+        tokens.splice(i, 1, ...args2);
       }
     }
     let offset = 0;
@@ -5018,35 +7884,35 @@
       return [];
     }
     const replacements = [];
-    selector = selector.replace(ESCAPE_PATTERN, (value, offset) => {
-      replacements.push({ value, offset });
-      return "\uE000".repeat(value.length);
+    selector = selector.replace(ESCAPE_PATTERN, (value2, offset) => {
+      replacements.push({ value: value2, offset });
+      return "\uE000".repeat(value2.length);
     });
-    selector = selector.replace(STRING_PATTERN, (value, quote, content, offset) => {
-      replacements.push({ value, offset });
+    selector = selector.replace(STRING_PATTERN, (value2, quote, content, offset) => {
+      replacements.push({ value: value2, offset });
       return `${quote}${"\uE001".repeat(content.length)}${quote}`;
     });
     {
       let pos = 0;
       let offset;
       while ((offset = selector.indexOf("(", pos)) > -1) {
-        const value = gobbleParens(selector, offset);
-        replacements.push({ value, offset });
-        selector = `${selector.substring(0, offset)}(${"\xB6".repeat(value.length - 2)})${selector.substring(offset + value.length)}`;
-        pos = offset + value.length;
+        const value2 = gobbleParens(selector, offset);
+        replacements.push({ value: value2, offset });
+        selector = `${selector.substring(0, offset)}(${"\xB6".repeat(value2.length - 2)})${selector.substring(offset + value2.length)}`;
+        pos = offset + value2.length;
       }
     }
     const tokens = tokenizeBy(selector, grammar);
     const changedTokens = /* @__PURE__ */ new Set();
     for (const replacement of replacements.reverse()) {
       for (const token of tokens) {
-        const { offset, value } = replacement;
-        if (!(token.pos[0] <= offset && offset + value.length <= token.pos[1])) {
+        const { offset, value: value2 } = replacement;
+        if (!(token.pos[0] <= offset && offset + value2.length <= token.pos[1])) {
           continue;
         }
         const { content } = token;
         const tokenOffset = offset - token.pos[0];
-        token.content = content.slice(0, tokenOffset) + value + content.slice(tokenOffset + value.length);
+        token.content = content.slice(0, tokenOffset) + value2 + content.slice(tokenOffset + value2.length);
         if (token.content !== content) {
           changedTokens.add(token);
         }
@@ -5347,39 +8213,39 @@
     }
     return Class;
   }
-  function throwIfDisposed(message = (value) => {
-    return `Attempted to use disposed ${value.constructor.name}.`;
+  function throwIfDisposed(message = (value2) => {
+    return `Attempted to use disposed ${value2.constructor.name}.`;
   }) {
     return (target, _) => {
-      return function(...args) {
+      return function(...args2) {
         if (this.disposed) {
           throw new Error(message(this));
         }
-        return target.call(this, ...args);
+        return target.call(this, ...args2);
       };
     };
   }
   function inertIfDisposed(target, _) {
-    return function(...args) {
+    return function(...args2) {
       if (this.disposed) {
         return;
       }
-      return target.call(this, ...args);
+      return target.call(this, ...args2);
     };
   }
   function invokeAtMostOnceForArguments(target, _) {
     const cache = /* @__PURE__ */ new WeakMap();
     let cacheDepth = -1;
-    return function(...args) {
+    return function(...args2) {
       if (cacheDepth === -1) {
-        cacheDepth = args.length;
+        cacheDepth = args2.length;
       }
-      if (cacheDepth !== args.length) {
+      if (cacheDepth !== args2.length) {
         throw new Error("Memoized method was called with the wrong number of arguments");
       }
       let freshArguments = false;
       let cacheIterator = cache;
-      for (const arg of args) {
+      for (const arg of args2) {
         if (cacheIterator.has(arg)) {
           cacheIterator = cacheIterator.get(arg);
         } else {
@@ -5391,7 +8257,7 @@
       if (!freshArguments) {
         return;
       }
-      return target.call(this, ...args);
+      return target.call(this, ...args2);
     };
   }
   function guarded(getKey = function() {
@@ -5399,17 +8265,17 @@
   }) {
     return (target, _) => {
       const mutexes = /* @__PURE__ */ new WeakMap();
-      return async function(...args) {
+      return async function(...args2) {
         const env_1 = { stack: [], error: void 0, hasError: false };
         try {
-          const key = getKey.call(this);
-          let mutex = mutexes.get(key);
+          const key2 = getKey.call(this);
+          let mutex = mutexes.get(key2);
           if (!mutex) {
             mutex = new Mutex();
-            mutexes.set(key, mutex);
+            mutexes.set(key2, mutex);
           }
           const _2 = __addDisposableResource3(env_1, await mutex.acquire(), true);
-          return await target.call(this, ...args);
+          return await target.call(this, ...args2);
         } catch (e_1) {
           env_1.error = e_1;
           env_1.hasError = true;
@@ -5428,15 +8294,15 @@
       });
       return {
         set(emitter) {
-          const handler = bubbleHandlers.get(this).get(events);
+          const handler2 = bubbleHandlers.get(this).get(events);
           const oldEmitter = get.call(this);
           if (oldEmitter !== void 0) {
-            oldEmitter.off("*", handler);
+            oldEmitter.off("*", handler2);
           }
           if (emitter === void 0) {
             return;
           }
-          emitter.on("*", handler);
+          emitter.on("*", handler2);
           set.call(this, emitter);
         },
         init(emitter) {
@@ -5444,8 +8310,8 @@
             return emitter;
           }
           bubbleInitializer.apply(this, [events]);
-          const handler = bubbleHandlers.get(this).get(events);
-          emitter.on("*", handler);
+          const handler2 = bubbleHandlers.get(this).get(events);
+          emitter.on("*", handler2);
           return emitter;
         }
       };
@@ -5456,17 +8322,17 @@
     "node_modules/puppeteer-core/lib/esm/puppeteer/util/decorators.js"() {
       init_disposable();
       init_Mutex();
-      __addDisposableResource3 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource3 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -5477,11 +8343,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources3 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -5521,14 +8387,14 @@
         if (handlers.has(events)) {
           return;
         }
-        const handler = events !== void 0 ? (type, event) => {
+        const handler2 = events !== void 0 ? (type, event) => {
           if (events.includes(type)) {
             this.emit(type, event);
           }
         } : (type, event) => {
           this.emit(type, event);
         };
-        handlers.set(events, handler);
+        handlers.set(events, handler2);
         bubbleHandlers.set(this, handlers);
       };
     }
@@ -5541,19 +8407,19 @@
       init_util();
       init_decorators();
       init_disposable();
-      __runInitializers = function(thisArg, initializers, value) {
+      __runInitializers = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -5565,7 +8431,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -5574,23 +8440,23 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __addDisposableResource4 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource4 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -5601,11 +8467,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources4 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -5652,8 +8518,8 @@
           }
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? /* @__PURE__ */ Object.create(null) : void 0;
-            __esDecorate(this, null, _getProperty_decorators, { kind: "method", name: "getProperty", static: false, private: false, access: { has: (obj) => "getProperty" in obj, get: (obj) => obj.getProperty }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate(this, null, _getProperties_decorators, { kind: "method", name: "getProperties", static: false, private: false, access: { has: (obj) => "getProperties" in obj, get: (obj) => obj.getProperties }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _getProperty_decorators, { kind: "method", name: "getProperty", static: false, private: false, access: { has: (obj2) => "getProperty" in obj2, get: (obj2) => obj2.getProperty }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(this, null, _getProperties_decorators, { kind: "method", name: "getProperties", static: false, private: false, access: { has: (obj2) => "getProperties" in obj2, get: (obj2) => obj2.getProperties }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
             JSHandle2 = _classThis = _classDescriptor.value;
             if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
@@ -5668,17 +8534,17 @@
           /**
            * Evaluates the given function with the current handle as its first argument.
            */
-          async evaluate(pageFunction, ...args) {
+          async evaluate(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluate.name, pageFunction);
-            return await this.realm.evaluate(pageFunction, this, ...args);
+            return await this.realm.evaluate(pageFunction, this, ...args2);
           }
           /**
            * Evaluates the given function with the current handle as its first argument.
            *
            */
-          async evaluateHandle(pageFunction, ...args) {
+          async evaluateHandle(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, pageFunction);
-            return await this.realm.evaluateHandle(pageFunction, this, ...args);
+            return await this.realm.evaluateHandle(pageFunction, this, ...args2);
           }
           /**
            * @internal
@@ -5718,15 +8584,15 @@
               return enumerableProperties;
             });
             const map2 = /* @__PURE__ */ new Map();
-            const results = await Promise.all(propertyNames.map((key) => {
-              return this.getProperty(key);
+            const results = await Promise.all(propertyNames.map((key2) => {
+              return this.getProperty(key2);
             }));
-            for (const [key, value] of Object.entries(propertyNames)) {
+            for (const [key2, value2] of Object.entries(propertyNames)) {
               const env_1 = { stack: [], error: void 0, hasError: false };
               try {
-                const handle = __addDisposableResource4(env_1, results[key], false);
+                const handle = __addDisposableResource4(env_1, results[key2], false);
                 if (handle) {
-                  map2.set(value, handle.move());
+                  map2.set(value2, handle.move());
                 }
               } catch (e_1) {
                 env_1.error = e_1;
@@ -5766,17 +8632,17 @@
       init_rxjs();
       init_EventEmitter();
       init_util();
-      __addDisposableResource5 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource5 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -5787,11 +8653,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources5 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -5901,9 +8767,9 @@
          *
          * @defaultValue `true`
          */
-        setWaitForEnabled(value) {
+        setWaitForEnabled(value2) {
           const locator = this._clone();
-          locator.#waitForEnabled = value;
+          locator.#waitForEnabled = value2;
           return locator;
         }
         /**
@@ -5913,9 +8779,9 @@
          *
          * @defaultValue `true`
          */
-        setEnsureElementIsInTheViewport(value) {
+        setEnsureElementIsInTheViewport(value2) {
           const locator = this._clone();
-          locator.#ensureElementIsInTheViewport = value;
+          locator.#ensureElementIsInTheViewport = value2;
           return locator;
         }
         /**
@@ -5925,9 +8791,9 @@
          *
          * @defaultValue `true`
          */
-        setWaitForStableBoundingBox(value) {
+        setWaitForStableBoundingBox(value2) {
           const locator = this._clone();
-          locator.#waitForStableBoundingBox = value;
+          locator.#waitForStableBoundingBox = value2;
           return locator;
         }
         /**
@@ -6037,7 +8903,7 @@
             }));
           }), this.operators.retryAndRaceWithSignalAndTimer(signal, cause));
         }
-        #fill(value, options) {
+        #fill(value2, options) {
           const signal = options?.signal;
           const cause = new Error("Locator.fill");
           return this._wait(options).pipe(this.operators.conditions([
@@ -6077,7 +8943,7 @@
             })).pipe(mergeMap((inputType) => {
               switch (inputType) {
                 case "select":
-                  return from(handle.select(value).then(noop));
+                  return from(handle.select(value2).then(noop));
                 case "contenteditable":
                 case "typeable-input":
                   return from(handle.evaluate((input, newValue) => {
@@ -6099,16 +8965,16 @@
                       input.value = originalValue;
                     }
                     return newValue.substring(originalValue.length);
-                  }, value)).pipe(mergeMap((textToType) => {
+                  }, value2)).pipe(mergeMap((textToType) => {
                     return from(handle.type(textToType));
                   }));
                 case "other-input":
                   return from(handle.focus()).pipe(mergeMap(() => {
-                    return from(handle.evaluate((input, value2) => {
-                      input.value = value2;
+                    return from(handle.evaluate((input, value3) => {
+                      input.value = value3;
                       input.dispatchEvent(new Event("input", { bubbles: true }));
                       input.dispatchEvent(new Event("change", { bubbles: true }));
-                    }, value));
+                    }, value2));
                   }));
                 case "unknown":
                   throw new Error(`Element cannot be filled out.`);
@@ -6243,8 +9109,8 @@
          * method is chosen based on the type. `contenteditable`, select, textarea and
          * input elements are supported.
          */
-        fill(value, options) {
-          return firstValueFrom(this.#fill(value, options));
+        fill(value2, options) {
+          return firstValueFrom(this.#fill(value2, options));
         }
         /**
          * Hovers over the located element.
@@ -6303,19 +9169,19 @@
           locator.#delegate = locator.#delegate.setVisibility(visibility);
           return locator;
         }
-        setWaitForEnabled(value) {
-          const locator = super.setWaitForEnabled(value);
-          locator.#delegate = this.#delegate.setWaitForEnabled(value);
+        setWaitForEnabled(value2) {
+          const locator = super.setWaitForEnabled(value2);
+          locator.#delegate = this.#delegate.setWaitForEnabled(value2);
           return locator;
         }
-        setEnsureElementIsInTheViewport(value) {
-          const locator = super.setEnsureElementIsInTheViewport(value);
-          locator.#delegate = this.#delegate.setEnsureElementIsInTheViewport(value);
+        setEnsureElementIsInTheViewport(value2) {
+          const locator = super.setEnsureElementIsInTheViewport(value2);
+          locator.#delegate = this.#delegate.setEnsureElementIsInTheViewport(value2);
           return locator;
         }
-        setWaitForStableBoundingBox(value) {
-          const locator = super.setWaitForStableBoundingBox(value);
-          locator.#delegate = this.#delegate.setWaitForStableBoundingBox(value);
+        setWaitForStableBoundingBox(value2) {
+          const locator = super.setWaitForStableBoundingBox(value2);
+          locator.#delegate = this.#delegate.setWaitForStableBoundingBox(value2);
           return locator;
         }
       };
@@ -6330,8 +9196,8 @@
         }
         _wait(options) {
           return this.delegate._wait(options).pipe(mergeMap((handle) => {
-            return from(Promise.resolve(this.#predicate(handle, options?.signal))).pipe(filter((value) => {
-              return value;
+            return from(Promise.resolve(this.#predicate(handle, options?.signal))).pipe(filter((value2) => {
+              return value2;
             }), map(() => {
               return handle;
             }));
@@ -6409,8 +9275,8 @@
             } else {
               return of(this.#selectorOrHandle);
             }
-          }).pipe(filter((value) => {
-            return value !== null;
+          }).pipe(filter((value2) => {
+            return value2 !== null;
           }), throwIfEmpty(), this.operators.conditions([this.#waitForVisibilityIfNeeded], signal));
         }
       };
@@ -6441,9 +9307,9 @@
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/api/ElementHandle.js
   function bindIsolatedHandle(target, _) {
-    return async function(...args) {
+    return async function(...args2) {
       if (this.realm === this.frame.isolatedRealm()) {
-        return await target.call(this, ...args);
+        return await target.call(this, ...args2);
       }
       let adoptedThis;
       if (this["isolatedHandle"]) {
@@ -6451,7 +9317,7 @@
       } else {
         this["isolatedHandle"] = adoptedThis = await this.frame.isolatedRealm().adoptHandle(this);
       }
-      const result = await target.call(adoptedThis, ...args);
+      const result = await target.call(adoptedThis, ...args2);
       if (result === adoptedThis) {
         return this;
       }
@@ -6466,9 +9332,9 @@
         }));
       }
       if (result instanceof Map) {
-        await Promise.all([...result.entries()].map(async ([key, value]) => {
-          if (value instanceof JSHandle) {
-            result.set(key, await this.realm.transferHandle(value));
+        await Promise.all([...result.entries()].map(async ([key2, value2]) => {
+          if (value2 instanceof JSHandle) {
+            result.set(key2, await this.realm.transferHandle(value2));
           }
         }));
       }
@@ -6493,19 +9359,19 @@
       init_ElementHandleSymbol();
       init_JSHandle();
       init_locators();
-      __runInitializers2 = function(thisArg, initializers, value) {
+      __runInitializers2 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate2 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -6517,7 +9383,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -6526,23 +9392,23 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __addDisposableResource6 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource6 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -6553,11 +9419,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources6 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -6665,40 +9531,40 @@
             _isIntersectingViewport_decorators = [throwIfDisposed(), bindIsolatedHandle];
             _scrollIntoView_decorators = [throwIfDisposed(), bindIsolatedHandle];
             _asLocator_decorators = [throwIfDisposed()];
-            __esDecorate2(this, null, _getProperty_decorators, { kind: "method", name: "getProperty", static: false, private: false, access: { has: (obj) => "getProperty" in obj, get: (obj) => obj.getProperty }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _getProperties_decorators, { kind: "method", name: "getProperties", static: false, private: false, access: { has: (obj) => "getProperties" in obj, get: (obj) => obj.getProperties }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _jsonValue_decorators, { kind: "method", name: "jsonValue", static: false, private: false, access: { has: (obj) => "jsonValue" in obj, get: (obj) => obj.jsonValue }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _$_decorators, { kind: "method", name: "$", static: false, private: false, access: { has: (obj) => "$" in obj, get: (obj) => obj.$ }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _$$_decorators, { kind: "method", name: "$$", static: false, private: false, access: { has: (obj) => "$$" in obj, get: (obj) => obj.$$ }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _getProperty_decorators, { kind: "method", name: "getProperty", static: false, private: false, access: { has: (obj2) => "getProperty" in obj2, get: (obj2) => obj2.getProperty }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _getProperties_decorators, { kind: "method", name: "getProperties", static: false, private: false, access: { has: (obj2) => "getProperties" in obj2, get: (obj2) => obj2.getProperties }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _jsonValue_decorators, { kind: "method", name: "jsonValue", static: false, private: false, access: { has: (obj2) => "jsonValue" in obj2, get: (obj2) => obj2.jsonValue }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _$_decorators, { kind: "method", name: "$", static: false, private: false, access: { has: (obj2) => "$" in obj2, get: (obj2) => obj2.$ }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _$$_decorators, { kind: "method", name: "$$", static: false, private: false, access: { has: (obj2) => "$$" in obj2, get: (obj2) => obj2.$$ }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate2(this, _private_$$_descriptor = { value: __setFunctionName(async function(selector) {
               return await this.#$$impl(selector);
-            }, "#$$") }, _private_$$_decorators, { kind: "method", name: "#$$", static: false, private: true, access: { has: (obj) => #$$ in obj, get: (obj) => obj.#$$ }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _waitForSelector_decorators, { kind: "method", name: "waitForSelector", static: false, private: false, access: { has: (obj) => "waitForSelector" in obj, get: (obj) => obj.waitForSelector }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _isVisible_decorators, { kind: "method", name: "isVisible", static: false, private: false, access: { has: (obj) => "isVisible" in obj, get: (obj) => obj.isVisible }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _isHidden_decorators, { kind: "method", name: "isHidden", static: false, private: false, access: { has: (obj) => "isHidden" in obj, get: (obj) => obj.isHidden }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _toElement_decorators, { kind: "method", name: "toElement", static: false, private: false, access: { has: (obj) => "toElement" in obj, get: (obj) => obj.toElement }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _clickablePoint_decorators, { kind: "method", name: "clickablePoint", static: false, private: false, access: { has: (obj) => "clickablePoint" in obj, get: (obj) => obj.clickablePoint }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _hover_decorators, { kind: "method", name: "hover", static: false, private: false, access: { has: (obj) => "hover" in obj, get: (obj) => obj.hover }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _click_decorators, { kind: "method", name: "click", static: false, private: false, access: { has: (obj) => "click" in obj, get: (obj) => obj.click }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _drag_decorators, { kind: "method", name: "drag", static: false, private: false, access: { has: (obj) => "drag" in obj, get: (obj) => obj.drag }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _dragEnter_decorators, { kind: "method", name: "dragEnter", static: false, private: false, access: { has: (obj) => "dragEnter" in obj, get: (obj) => obj.dragEnter }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _dragOver_decorators, { kind: "method", name: "dragOver", static: false, private: false, access: { has: (obj) => "dragOver" in obj, get: (obj) => obj.dragOver }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _drop_decorators, { kind: "method", name: "drop", static: false, private: false, access: { has: (obj) => "drop" in obj, get: (obj) => obj.drop }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _dragAndDrop_decorators, { kind: "method", name: "dragAndDrop", static: false, private: false, access: { has: (obj) => "dragAndDrop" in obj, get: (obj) => obj.dragAndDrop }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _select_decorators, { kind: "method", name: "select", static: false, private: false, access: { has: (obj) => "select" in obj, get: (obj) => obj.select }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _tap_decorators, { kind: "method", name: "tap", static: false, private: false, access: { has: (obj) => "tap" in obj, get: (obj) => obj.tap }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _touchStart_decorators, { kind: "method", name: "touchStart", static: false, private: false, access: { has: (obj) => "touchStart" in obj, get: (obj) => obj.touchStart }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _touchMove_decorators, { kind: "method", name: "touchMove", static: false, private: false, access: { has: (obj) => "touchMove" in obj, get: (obj) => obj.touchMove }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _touchEnd_decorators, { kind: "method", name: "touchEnd", static: false, private: false, access: { has: (obj) => "touchEnd" in obj, get: (obj) => obj.touchEnd }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _focus_decorators, { kind: "method", name: "focus", static: false, private: false, access: { has: (obj) => "focus" in obj, get: (obj) => obj.focus }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _type_decorators, { kind: "method", name: "type", static: false, private: false, access: { has: (obj) => "type" in obj, get: (obj) => obj.type }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _press_decorators, { kind: "method", name: "press", static: false, private: false, access: { has: (obj) => "press" in obj, get: (obj) => obj.press }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _boundingBox_decorators, { kind: "method", name: "boundingBox", static: false, private: false, access: { has: (obj) => "boundingBox" in obj, get: (obj) => obj.boundingBox }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _boxModel_decorators, { kind: "method", name: "boxModel", static: false, private: false, access: { has: (obj) => "boxModel" in obj, get: (obj) => obj.boxModel }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _screenshot_decorators, { kind: "method", name: "screenshot", static: false, private: false, access: { has: (obj) => "screenshot" in obj, get: (obj) => obj.screenshot }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _isIntersectingViewport_decorators, { kind: "method", name: "isIntersectingViewport", static: false, private: false, access: { has: (obj) => "isIntersectingViewport" in obj, get: (obj) => obj.isIntersectingViewport }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _scrollIntoView_decorators, { kind: "method", name: "scrollIntoView", static: false, private: false, access: { has: (obj) => "scrollIntoView" in obj, get: (obj) => obj.scrollIntoView }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate2(this, null, _asLocator_decorators, { kind: "method", name: "asLocator", static: false, private: false, access: { has: (obj) => "asLocator" in obj, get: (obj) => obj.asLocator }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#$$") }, _private_$$_decorators, { kind: "method", name: "#$$", static: false, private: true, access: { has: (obj2) => #$$ in obj2, get: (obj2) => obj2.#$$ }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _waitForSelector_decorators, { kind: "method", name: "waitForSelector", static: false, private: false, access: { has: (obj2) => "waitForSelector" in obj2, get: (obj2) => obj2.waitForSelector }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _isVisible_decorators, { kind: "method", name: "isVisible", static: false, private: false, access: { has: (obj2) => "isVisible" in obj2, get: (obj2) => obj2.isVisible }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _isHidden_decorators, { kind: "method", name: "isHidden", static: false, private: false, access: { has: (obj2) => "isHidden" in obj2, get: (obj2) => obj2.isHidden }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _toElement_decorators, { kind: "method", name: "toElement", static: false, private: false, access: { has: (obj2) => "toElement" in obj2, get: (obj2) => obj2.toElement }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _clickablePoint_decorators, { kind: "method", name: "clickablePoint", static: false, private: false, access: { has: (obj2) => "clickablePoint" in obj2, get: (obj2) => obj2.clickablePoint }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _hover_decorators, { kind: "method", name: "hover", static: false, private: false, access: { has: (obj2) => "hover" in obj2, get: (obj2) => obj2.hover }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _click_decorators, { kind: "method", name: "click", static: false, private: false, access: { has: (obj2) => "click" in obj2, get: (obj2) => obj2.click }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _drag_decorators, { kind: "method", name: "drag", static: false, private: false, access: { has: (obj2) => "drag" in obj2, get: (obj2) => obj2.drag }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _dragEnter_decorators, { kind: "method", name: "dragEnter", static: false, private: false, access: { has: (obj2) => "dragEnter" in obj2, get: (obj2) => obj2.dragEnter }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _dragOver_decorators, { kind: "method", name: "dragOver", static: false, private: false, access: { has: (obj2) => "dragOver" in obj2, get: (obj2) => obj2.dragOver }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _drop_decorators, { kind: "method", name: "drop", static: false, private: false, access: { has: (obj2) => "drop" in obj2, get: (obj2) => obj2.drop }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _dragAndDrop_decorators, { kind: "method", name: "dragAndDrop", static: false, private: false, access: { has: (obj2) => "dragAndDrop" in obj2, get: (obj2) => obj2.dragAndDrop }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _select_decorators, { kind: "method", name: "select", static: false, private: false, access: { has: (obj2) => "select" in obj2, get: (obj2) => obj2.select }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _tap_decorators, { kind: "method", name: "tap", static: false, private: false, access: { has: (obj2) => "tap" in obj2, get: (obj2) => obj2.tap }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _touchStart_decorators, { kind: "method", name: "touchStart", static: false, private: false, access: { has: (obj2) => "touchStart" in obj2, get: (obj2) => obj2.touchStart }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _touchMove_decorators, { kind: "method", name: "touchMove", static: false, private: false, access: { has: (obj2) => "touchMove" in obj2, get: (obj2) => obj2.touchMove }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _touchEnd_decorators, { kind: "method", name: "touchEnd", static: false, private: false, access: { has: (obj2) => "touchEnd" in obj2, get: (obj2) => obj2.touchEnd }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _focus_decorators, { kind: "method", name: "focus", static: false, private: false, access: { has: (obj2) => "focus" in obj2, get: (obj2) => obj2.focus }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _type_decorators, { kind: "method", name: "type", static: false, private: false, access: { has: (obj2) => "type" in obj2, get: (obj2) => obj2.type }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _press_decorators, { kind: "method", name: "press", static: false, private: false, access: { has: (obj2) => "press" in obj2, get: (obj2) => obj2.press }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _boundingBox_decorators, { kind: "method", name: "boundingBox", static: false, private: false, access: { has: (obj2) => "boundingBox" in obj2, get: (obj2) => obj2.boundingBox }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _boxModel_decorators, { kind: "method", name: "boxModel", static: false, private: false, access: { has: (obj2) => "boxModel" in obj2, get: (obj2) => obj2.boxModel }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _screenshot_decorators, { kind: "method", name: "screenshot", static: false, private: false, access: { has: (obj2) => "screenshot" in obj2, get: (obj2) => obj2.screenshot }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _isIntersectingViewport_decorators, { kind: "method", name: "isIntersectingViewport", static: false, private: false, access: { has: (obj2) => "isIntersectingViewport" in obj2, get: (obj2) => obj2.isIntersectingViewport }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _scrollIntoView_decorators, { kind: "method", name: "scrollIntoView", static: false, private: false, access: { has: (obj2) => "scrollIntoView" in obj2, get: (obj2) => obj2.scrollIntoView }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate2(this, null, _asLocator_decorators, { kind: "method", name: "asLocator", static: false, private: false, access: { has: (obj2) => "asLocator" in obj2, get: (obj2) => obj2.asLocator }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           /**
@@ -6746,16 +9612,16 @@
           /**
            * @internal
            */
-          async evaluate(pageFunction, ...args) {
+          async evaluate(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluate.name, pageFunction);
-            return await this.handle.evaluate(pageFunction, ...args);
+            return await this.handle.evaluate(pageFunction, ...args2);
           }
           /**
            * @internal
            */
-          async evaluateHandle(pageFunction, ...args) {
+          async evaluateHandle(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, pageFunction);
-            return await this.handle.evaluateHandle(pageFunction, ...args);
+            return await this.handle.evaluateHandle(pageFunction, ...args2);
           }
           /**
            * @internal
@@ -6896,7 +9762,7 @@
            * @param args - Additional arguments to pass to `pageFunction`.
            * @returns A promise to the result of the function.
            */
-          async $eval(selector, pageFunction, ...args) {
+          async $eval(selector, pageFunction, ...args2) {
             const env_1 = { stack: [], error: void 0, hasError: false };
             try {
               pageFunction = withSourcePuppeteerURLIfNone(this.$eval.name, pageFunction);
@@ -6904,7 +9770,7 @@
               if (!elementHandle) {
                 throw new Error(`Error: failed to find element matching selector "${selector}"`);
               }
-              return await elementHandle.evaluate(pageFunction, ...args);
+              return await elementHandle.evaluate(pageFunction, ...args2);
             } catch (e_1) {
               env_1.error = e_1;
               env_1.hasError = true;
@@ -6960,7 +9826,7 @@
            * @param args - Additional arguments to pass to `pageFunction`.
            * @returns A promise to the result of the function.
            */
-          async $$eval(selector, pageFunction, ...args) {
+          async $$eval(selector, pageFunction, ...args2) {
             const env_2 = { stack: [], error: void 0, hasError: false };
             try {
               pageFunction = withSourcePuppeteerURLIfNone(this.$$eval.name, pageFunction);
@@ -6969,7 +9835,7 @@
                 return elements2;
               }, ...results), false);
               const [result] = await Promise.all([
-                elements.evaluate(pageFunction, ...args),
+                elements.evaluate(pageFunction, ...args2),
                 ...results.map((results2) => {
                   return results2.dispose();
                 })
@@ -7171,27 +10037,27 @@
            */
           async drag(target) {
             await this.scrollIntoViewIfNeeded();
-            const page = this.frame.page();
-            if (page.isDragInterceptionEnabled()) {
+            const page2 = this.frame.page();
+            if (page2.isDragInterceptionEnabled()) {
               const source2 = await this.clickablePoint();
               if (target instanceof ElementHandle2) {
                 target = await target.clickablePoint();
               }
-              return await page.mouse.drag(source2, target);
+              return await page2.mouse.drag(source2, target);
             }
             try {
-              if (!page._isDragging) {
-                page._isDragging = true;
+              if (!page2._isDragging) {
+                page2._isDragging = true;
                 await this.hover();
-                await page.mouse.down();
+                await page2.mouse.down();
               }
               if (target instanceof ElementHandle2) {
                 await target.hover();
               } else {
-                await page.mouse.move(target.x, target.y);
+                await page2.mouse.move(target.x, target.y);
               }
             } catch (error) {
-              page._isDragging = false;
+              page2._isDragging = false;
               throw error;
             }
           }
@@ -7199,19 +10065,19 @@
            * @deprecated Do not use. `dragenter` will automatically be performed during dragging.
            */
           async dragEnter(data = { items: [], dragOperationsMask: 1 }) {
-            const page = this.frame.page();
+            const page2 = this.frame.page();
             await this.scrollIntoViewIfNeeded();
             const target = await this.clickablePoint();
-            await page.mouse.dragEnter(target, data);
+            await page2.mouse.dragEnter(target, data);
           }
           /**
            * @deprecated Do not use. `dragover` will automatically be performed during dragging.
            */
           async dragOver(data = { items: [], dragOperationsMask: 1 }) {
-            const page = this.frame.page();
+            const page2 = this.frame.page();
             await this.scrollIntoViewIfNeeded();
             const target = await this.clickablePoint();
-            await page.mouse.dragOver(target, data);
+            await page2.mouse.dragOver(target, data);
           }
           /**
            * @internal
@@ -7220,27 +10086,27 @@
             items: [],
             dragOperationsMask: 1
           }) {
-            const page = this.frame.page();
+            const page2 = this.frame.page();
             if ("items" in dataOrElement) {
               await this.scrollIntoViewIfNeeded();
               const destination = await this.clickablePoint();
-              await page.mouse.drop(destination, dataOrElement);
+              await page2.mouse.drop(destination, dataOrElement);
             } else {
               await dataOrElement.drag(this);
-              page._isDragging = false;
-              await page.mouse.up();
+              page2._isDragging = false;
+              await page2.mouse.up();
             }
           }
           /**
            * @deprecated Use `ElementHandle.drop` instead.
            */
           async dragAndDrop(target, options) {
-            const page = this.frame.page();
-            assert(page.isDragInterceptionEnabled(), "Drag Interception is not enabled!");
+            const page2 = this.frame.page();
+            assert(page2.isDragInterceptionEnabled(), "Drag Interception is not enabled!");
             await this.scrollIntoViewIfNeeded();
             const startPoint = await this.clickablePoint();
             const targetPoint = await target.clickablePoint();
-            await page.mouse.dragAndDrop(startPoint, targetPoint, options);
+            await page2.mouse.dragAndDrop(startPoint, targetPoint, options);
           }
           /**
            * Triggers a `change` and `input` event once all the provided options have been
@@ -7259,8 +10125,8 @@
            * one is taken into account.
            */
           async select(...values) {
-            for (const value of values) {
-              assert(isString(value), 'Values must be strings. Found value "' + value + '" of type "' + typeof value + '"');
+            for (const value2 of values) {
+              assert(isString(value2), 'Values must be strings. Found value "' + value2 + '" of type "' + typeof value2 + '"');
             }
             return await this.evaluate((element, vals) => {
               const values2 = new Set(vals);
@@ -7384,9 +10250,9 @@
            * @param key - Name of key to press, such as `ArrowLeft`.
            * See {@link KeyInput} for a list of all key names.
            */
-          async press(key, options) {
+          async press(key2, options) {
             await this.focus();
-            await this.frame.page().keyboard.press(key, options);
+            await this.frame.page().keyboard.press(key2, options);
           }
           async #clickableBox() {
             const boxes = await this.evaluate((element) => {
@@ -7628,7 +10494,7 @@
           }
           async screenshot(options = {}) {
             const { scrollIntoView = true, clip } = options;
-            const page = this.frame.page();
+            const page2 = this.frame.page();
             if (scrollIntoView) {
               await this.scrollIntoViewIfNeeded();
             }
@@ -7650,7 +10516,7 @@
               elementClip.height = clip.height;
               elementClip.width = clip.width;
             }
-            return await page.screenshot({ ...options, clip: elementClip });
+            return await page2.screenshot({ ...options, clip: elementClip });
           }
           async #nonEmptyVisibleBoundingBox() {
             const box = await this.boundingBox();
@@ -7778,19 +10644,19 @@
       init_assert();
       init_decorators();
       init_locators();
-      __runInitializers3 = function(thisArg, initializers, value) {
+      __runInitializers3 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate3 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -7802,7 +10668,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -7811,23 +10677,23 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __addDisposableResource7 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource7 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -7838,11 +10704,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources7 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -7932,26 +10798,26 @@
             _tap_decorators = [throwIfDetached];
             _type_decorators = [throwIfDetached];
             _title_decorators = [throwIfDetached];
-            __esDecorate3(this, null, _frameElement_decorators, { kind: "method", name: "frameElement", static: false, private: false, access: { has: (obj) => "frameElement" in obj, get: (obj) => obj.frameElement }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _evaluateHandle_decorators, { kind: "method", name: "evaluateHandle", static: false, private: false, access: { has: (obj) => "evaluateHandle" in obj, get: (obj) => obj.evaluateHandle }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _evaluate_decorators, { kind: "method", name: "evaluate", static: false, private: false, access: { has: (obj) => "evaluate" in obj, get: (obj) => obj.evaluate }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _locator_decorators, { kind: "method", name: "locator", static: false, private: false, access: { has: (obj) => "locator" in obj, get: (obj) => obj.locator }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _$_decorators, { kind: "method", name: "$", static: false, private: false, access: { has: (obj) => "$" in obj, get: (obj) => obj.$ }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _$$_decorators, { kind: "method", name: "$$", static: false, private: false, access: { has: (obj) => "$$" in obj, get: (obj) => obj.$$ }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _$eval_decorators, { kind: "method", name: "$eval", static: false, private: false, access: { has: (obj) => "$eval" in obj, get: (obj) => obj.$eval }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _$$eval_decorators, { kind: "method", name: "$$eval", static: false, private: false, access: { has: (obj) => "$$eval" in obj, get: (obj) => obj.$$eval }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _waitForSelector_decorators, { kind: "method", name: "waitForSelector", static: false, private: false, access: { has: (obj) => "waitForSelector" in obj, get: (obj) => obj.waitForSelector }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _waitForFunction_decorators, { kind: "method", name: "waitForFunction", static: false, private: false, access: { has: (obj) => "waitForFunction" in obj, get: (obj) => obj.waitForFunction }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _content_decorators, { kind: "method", name: "content", static: false, private: false, access: { has: (obj) => "content" in obj, get: (obj) => obj.content }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _addScriptTag_decorators, { kind: "method", name: "addScriptTag", static: false, private: false, access: { has: (obj) => "addScriptTag" in obj, get: (obj) => obj.addScriptTag }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _addStyleTag_decorators, { kind: "method", name: "addStyleTag", static: false, private: false, access: { has: (obj) => "addStyleTag" in obj, get: (obj) => obj.addStyleTag }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _click_decorators, { kind: "method", name: "click", static: false, private: false, access: { has: (obj) => "click" in obj, get: (obj) => obj.click }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _focus_decorators, { kind: "method", name: "focus", static: false, private: false, access: { has: (obj) => "focus" in obj, get: (obj) => obj.focus }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _hover_decorators, { kind: "method", name: "hover", static: false, private: false, access: { has: (obj) => "hover" in obj, get: (obj) => obj.hover }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _select_decorators, { kind: "method", name: "select", static: false, private: false, access: { has: (obj) => "select" in obj, get: (obj) => obj.select }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _tap_decorators, { kind: "method", name: "tap", static: false, private: false, access: { has: (obj) => "tap" in obj, get: (obj) => obj.tap }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _type_decorators, { kind: "method", name: "type", static: false, private: false, access: { has: (obj) => "type" in obj, get: (obj) => obj.type }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate3(this, null, _title_decorators, { kind: "method", name: "title", static: false, private: false, access: { has: (obj) => "title" in obj, get: (obj) => obj.title }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _frameElement_decorators, { kind: "method", name: "frameElement", static: false, private: false, access: { has: (obj2) => "frameElement" in obj2, get: (obj2) => obj2.frameElement }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _evaluateHandle_decorators, { kind: "method", name: "evaluateHandle", static: false, private: false, access: { has: (obj2) => "evaluateHandle" in obj2, get: (obj2) => obj2.evaluateHandle }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _evaluate_decorators, { kind: "method", name: "evaluate", static: false, private: false, access: { has: (obj2) => "evaluate" in obj2, get: (obj2) => obj2.evaluate }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _locator_decorators, { kind: "method", name: "locator", static: false, private: false, access: { has: (obj2) => "locator" in obj2, get: (obj2) => obj2.locator }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _$_decorators, { kind: "method", name: "$", static: false, private: false, access: { has: (obj2) => "$" in obj2, get: (obj2) => obj2.$ }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _$$_decorators, { kind: "method", name: "$$", static: false, private: false, access: { has: (obj2) => "$$" in obj2, get: (obj2) => obj2.$$ }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _$eval_decorators, { kind: "method", name: "$eval", static: false, private: false, access: { has: (obj2) => "$eval" in obj2, get: (obj2) => obj2.$eval }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _$$eval_decorators, { kind: "method", name: "$$eval", static: false, private: false, access: { has: (obj2) => "$$eval" in obj2, get: (obj2) => obj2.$$eval }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _waitForSelector_decorators, { kind: "method", name: "waitForSelector", static: false, private: false, access: { has: (obj2) => "waitForSelector" in obj2, get: (obj2) => obj2.waitForSelector }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _waitForFunction_decorators, { kind: "method", name: "waitForFunction", static: false, private: false, access: { has: (obj2) => "waitForFunction" in obj2, get: (obj2) => obj2.waitForFunction }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _content_decorators, { kind: "method", name: "content", static: false, private: false, access: { has: (obj2) => "content" in obj2, get: (obj2) => obj2.content }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _addScriptTag_decorators, { kind: "method", name: "addScriptTag", static: false, private: false, access: { has: (obj2) => "addScriptTag" in obj2, get: (obj2) => obj2.addScriptTag }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _addStyleTag_decorators, { kind: "method", name: "addStyleTag", static: false, private: false, access: { has: (obj2) => "addStyleTag" in obj2, get: (obj2) => obj2.addStyleTag }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _click_decorators, { kind: "method", name: "click", static: false, private: false, access: { has: (obj2) => "click" in obj2, get: (obj2) => obj2.click }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _focus_decorators, { kind: "method", name: "focus", static: false, private: false, access: { has: (obj2) => "focus" in obj2, get: (obj2) => obj2.focus }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _hover_decorators, { kind: "method", name: "hover", static: false, private: false, access: { has: (obj2) => "hover" in obj2, get: (obj2) => obj2.hover }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _select_decorators, { kind: "method", name: "select", static: false, private: false, access: { has: (obj2) => "select" in obj2, get: (obj2) => obj2.select }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _tap_decorators, { kind: "method", name: "tap", static: false, private: false, access: { has: (obj2) => "tap" in obj2, get: (obj2) => obj2.tap }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _type_decorators, { kind: "method", name: "type", static: false, private: false, access: { has: (obj2) => "type" in obj2, get: (obj2) => obj2.type }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate3(this, null, _title_decorators, { kind: "method", name: "title", static: false, private: false, access: { has: (obj2) => "title" in obj2, get: (obj2) => obj2.title }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           /**
@@ -8038,9 +10904,9 @@
            *
            * See {@link Page.evaluateHandle} for details.
            */
-          async evaluateHandle(pageFunction, ...args) {
+          async evaluateHandle(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, pageFunction);
-            return await this.mainRealm().evaluateHandle(pageFunction, ...args);
+            return await this.mainRealm().evaluateHandle(pageFunction, ...args2);
           }
           /**
            * Behaves identically to {@link Page.evaluate} except it's run within
@@ -8048,9 +10914,9 @@
            *
            * See {@link Page.evaluate} for details.
            */
-          async evaluate(pageFunction, ...args) {
+          async evaluate(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluate.name, pageFunction);
-            return await this.mainRealm().evaluate(pageFunction, ...args);
+            return await this.mainRealm().evaluate(pageFunction, ...args2);
           }
           /**
            * @internal
@@ -8148,10 +11014,10 @@
            * @param args - Additional arguments to pass to `pageFunction`.
            * @returns A promise to the result of the function.
            */
-          async $eval(selector, pageFunction, ...args) {
+          async $eval(selector, pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.$eval.name, pageFunction);
             const document2 = await this.#document();
-            return await document2.$eval(selector, pageFunction, ...args);
+            return await document2.$eval(selector, pageFunction, ...args2);
           }
           /**
            * Runs the given function on an array of elements matching the given selector
@@ -8187,10 +11053,10 @@
            * @param args - Additional arguments to pass to `pageFunction`.
            * @returns A promise to the result of the function.
            */
-          async $$eval(selector, pageFunction, ...args) {
+          async $$eval(selector, pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.$$eval.name, pageFunction);
             const document2 = await this.#document();
-            return await document2.$$eval(selector, pageFunction, ...args);
+            return await document2.$$eval(selector, pageFunction, ...args2);
           }
           /**
            * Waits for an element matching the given selector to appear in the frame.
@@ -8265,8 +11131,8 @@
            * @param args - arguments to pass to the `pageFunction`.
            * @returns the promise which resolve when the `pageFunction` returns a truthy value.
            */
-          async waitForFunction(pageFunction, options = {}, ...args) {
-            return await this.mainRealm().waitForFunction(pageFunction, options, ...args);
+          async waitForFunction(pageFunction, options = {}, ...args2) {
+            return await this.mainRealm().waitForFunction(pageFunction, options, ...args2);
           }
           /**
            * The full HTML contents of the frame, including the DOCTYPE.
@@ -8582,11 +11448,11 @@
   function headersArray(headers) {
     const result = [];
     for (const name in headers) {
-      const value = headers[name];
-      if (!Object.is(value, void 0)) {
-        const values = Array.isArray(value) ? value : [value];
-        result.push(...values.map((value2) => {
-          return { name, value: value2 + "" };
+      const value2 = headers[name];
+      if (!Object.is(value2, void 0)) {
+        const values = Array.isArray(value2) ? value2 : [value2];
+        result.push(...values.map((value3) => {
+          return { name, value: value3 + "" };
         }));
       }
     }
@@ -9219,19 +12085,19 @@
       init_disposable();
       init_encoding();
       init_locators();
-      __runInitializers4 = function(thisArg, initializers, value) {
+      __runInitializers4 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate4 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -9243,7 +12109,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -9252,23 +12118,23 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __addDisposableResource8 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource8 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -9279,11 +12145,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources8 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -9323,7 +12189,7 @@
         return class Page extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate4(this, null, _screenshot_decorators, { kind: "method", name: "screenshot", static: false, private: false, access: { has: (obj) => "screenshot" in obj, get: (obj) => obj.screenshot }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate4(this, null, _screenshot_decorators, { kind: "method", name: "screenshot", static: false, private: false, access: { has: (obj2) => "screenshot" in obj2, get: (obj2) => obj2.screenshot }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           /**
@@ -9391,29 +12257,29 @@
            *
            * @internal
            */
-          on(type, handler) {
+          on(type, handler2) {
             if (type !== "request") {
-              return super.on(type, handler);
+              return super.on(type, handler2);
             }
-            let wrapper = this.#requestHandlers.get(handler);
+            let wrapper = this.#requestHandlers.get(handler2);
             if (wrapper === void 0) {
               wrapper = (event) => {
                 event.enqueueInterceptAction(() => {
-                  return handler(event);
+                  return handler2(event);
                 });
               };
-              this.#requestHandlers.set(handler, wrapper);
+              this.#requestHandlers.set(handler2, wrapper);
             }
             return super.on(type, wrapper);
           }
           /**
            * @internal
            */
-          off(type, handler) {
+          off(type, handler2) {
             if (type === "request") {
-              handler = this.#requestHandlers.get(handler) || handler;
+              handler2 = this.#requestHandlers.get(handler2) || handler2;
             }
-            return super.off(type, handler);
+            return super.off(type, handler2);
           }
           /**
            * {@inheritDoc Accessibility}
@@ -9547,9 +12413,9 @@
            * @param pageFunction - a function that is run within the page
            * @param args - arguments to be passed to the pageFunction
            */
-          async evaluateHandle(pageFunction, ...args) {
+          async evaluateHandle(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, pageFunction);
-            return await this.mainFrame().evaluateHandle(pageFunction, ...args);
+            return await this.mainFrame().evaluateHandle(pageFunction, ...args2);
           }
           /**
            * This method finds the first element within the page that matches the selector
@@ -9625,9 +12491,9 @@
            * is wrapped in an {@link ElementHandle}, else the raw value itself is
            * returned.
            */
-          async $eval(selector, pageFunction, ...args) {
+          async $eval(selector, pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.$eval.name, pageFunction);
-            return await this.mainFrame().$eval(selector, pageFunction, ...args);
+            return await this.mainFrame().$eval(selector, pageFunction, ...args2);
           }
           /**
            * This method returns all elements matching the selector and passes the
@@ -9697,9 +12563,9 @@
            * is wrapped in an {@link ElementHandle}, else the raw value itself is
            * returned.
            */
-          async $$eval(selector, pageFunction, ...args) {
+          async $$eval(selector, pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.$$eval.name, pageFunction);
-            return await this.mainFrame().$$eval(selector, pageFunction, ...args);
+            return await this.mainFrame().$$eval(selector, pageFunction, ...args2);
           }
           /**
            * Adds a `<script>` tag into the page with the desired URL or content.
@@ -10022,9 +12888,9 @@
            *
            * @returns the return value of `pageFunction`.
            */
-          async evaluate(pageFunction, ...args) {
+          async evaluate(pageFunction, ...args2) {
             pageFunction = withSourcePuppeteerURLIfNone(this.evaluate.name, pageFunction);
-            return await this.mainFrame().evaluate(pageFunction, ...args);
+            return await this.mainFrame().evaluate(pageFunction, ...args2);
           }
           /**
            * @internal
@@ -10619,8 +13485,8 @@
            * truthy value.
            * @param options - Options for configuring waiting behavior.
            */
-          waitForFunction(pageFunction, options, ...args) {
-            return this.mainFrame().waitForFunction(pageFunction, options, ...args);
+          waitForFunction(pageFunction, options, ...args2) {
+            return this.mainFrame().waitForFunction(pageFunction, options, ...args2);
           }
           /** @internal */
           [(_screenshot_decorators = [guarded(function() {
@@ -10659,7 +13525,7 @@
         #poller;
         #signal;
         #reruns = [];
-        constructor(world, options, fn, ...args) {
+        constructor(world, options, fn, ...args2) {
           this.#world = world;
           this.#polling = options.polling;
           this.#root = options.root;
@@ -10675,7 +13541,7 @@
               this.#fn = stringifyFunction(fn);
               break;
           }
-          this.#args = args;
+          this.#args = args2;
           this.#world.taskManager.add(this);
           if (options.timeout) {
             this.#timeoutError = new TimeoutError(`Waiting failed: ${options.timeout}ms exceeded`);
@@ -10698,30 +13564,30 @@
           try {
             switch (this.#polling) {
               case "raf":
-                this.#poller = await this.#world.evaluateHandle(({ RAFPoller, createFunction: createFunction2 }, fn, ...args) => {
+                this.#poller = await this.#world.evaluateHandle(({ RAFPoller, createFunction: createFunction2 }, fn, ...args2) => {
                   const fun = createFunction2(fn);
                   return new RAFPoller(() => {
-                    return fun(...args);
+                    return fun(...args2);
                   });
                 }, LazyArg.create((context2) => {
                   return context2.puppeteerUtil;
                 }), this.#fn, ...this.#args);
                 break;
               case "mutation":
-                this.#poller = await this.#world.evaluateHandle(({ MutationPoller, createFunction: createFunction2 }, root, fn, ...args) => {
+                this.#poller = await this.#world.evaluateHandle(({ MutationPoller, createFunction: createFunction2 }, root, fn, ...args2) => {
                   const fun = createFunction2(fn);
                   return new MutationPoller(() => {
-                    return fun(...args);
+                    return fun(...args2);
                   }, root || document);
                 }, LazyArg.create((context2) => {
                   return context2.puppeteerUtil;
                 }), this.#root, this.#fn, ...this.#args);
                 break;
               default:
-                this.#poller = await this.#world.evaluateHandle(({ IntervalPoller, createFunction: createFunction2 }, ms, fn, ...args) => {
+                this.#poller = await this.#world.evaluateHandle(({ IntervalPoller, createFunction: createFunction2 }, ms, fn, ...args2) => {
                   const fun = createFunction2(fn);
                   return new IntervalPoller(() => {
-                    return fun(...args);
+                    return fun(...args2);
                   }, ms);
                 }, LazyArg.create((context2) => {
                   return context2.puppeteerUtil;
@@ -10829,7 +13695,7 @@
         constructor(timeoutSettings) {
           this.timeoutSettings = timeoutSettings;
         }
-        async waitForFunction(pageFunction, options = {}, ...args) {
+        async waitForFunction(pageFunction, options = {}, ...args2) {
           const { polling = "raf", timeout: timeout2 = this.timeoutSettings.timeout(), root, signal } = options;
           if (typeof polling === "number" && polling < 0) {
             throw new Error("Cannot poll with non-positive interval");
@@ -10839,7 +13705,7 @@
             root,
             timeout: timeout2,
             signal
-          }, pageFunction, ...args);
+          }, pageFunction, ...args2);
           return await waitTask.result;
         }
         get disposed() {
@@ -10946,9 +13812,9 @@
          * @param args - Arguments to pass into `func`.
          * @returns The result of `func`.
          */
-        async evaluate(func, ...args) {
+        async evaluate(func, ...args2) {
           func = withSourcePuppeteerURLIfNone(this.evaluate.name, func);
-          return await this.mainRealm().evaluate(func, ...args);
+          return await this.mainRealm().evaluate(func, ...args2);
         }
         /**
          * Evaluates a given function in the {@link WebWorker | worker}.
@@ -10966,9 +13832,9 @@
          * @param args - Arguments to pass into `func`.
          * @returns A {@link JSHandle | handle} to the return value of `func`.
          */
-        async evaluateHandle(func, ...args) {
+        async evaluateHandle(func, ...args2) {
           func = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, func);
-          return await this.mainRealm().evaluateHandle(func, ...args);
+          return await this.mainRealm().evaluateHandle(func, ...args2);
         }
         async close() {
           throw new UnsupportedOperation("WebWorker.close() is not supported");
@@ -10982,17 +13848,17 @@
   var init_Accessibility = __esm({
     "node_modules/puppeteer-core/lib/esm/puppeteer/cdp/Accessibility.js"() {
       init_util();
-      __addDisposableResource9 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource9 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -11003,11 +13869,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources9 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -11396,8 +14262,8 @@
             "valuetext",
             "url"
           ];
-          const getUserStringPropertyValue = (key) => {
-            return properties.get(key);
+          const getUserStringPropertyValue = (key2) => {
+            return properties.get(key2);
           };
           for (const userStringProperty of userStringProperties) {
             if (!properties.has(userStringProperty)) {
@@ -11416,15 +14282,15 @@
             "required",
             "selected"
           ];
-          const getBooleanPropertyValue = (key) => {
-            return properties.get(key);
+          const getBooleanPropertyValue = (key2) => {
+            return properties.get(key2);
           };
           for (const booleanProperty of booleanProperties) {
             if (booleanProperty === "focused" && this.#role === "RootWebArea") {
               continue;
             }
-            const value = getBooleanPropertyValue(booleanProperty);
-            if (value === void 0) {
+            const value2 = getBooleanPropertyValue(booleanProperty);
+            if (value2 === void 0) {
               continue;
             }
             node[booleanProperty] = getBooleanPropertyValue(booleanProperty);
@@ -11434,16 +14300,16 @@
             if (!properties.has(tristateProperty)) {
               continue;
             }
-            const value = properties.get(tristateProperty);
-            node[tristateProperty] = value === "mixed" ? "mixed" : value === "true" ? true : false;
+            const value2 = properties.get(tristateProperty);
+            node[tristateProperty] = value2 === "mixed" ? "mixed" : value2 === "true" ? true : false;
           }
           const numericalProperties = [
             "level",
             "valuemax",
             "valuemin"
           ];
-          const getNumericalPropertyValue = (key) => {
-            return properties.get(key);
+          const getNumericalPropertyValue = (key2) => {
+            return properties.get(key2);
           };
           for (const numericalProperty of numericalProperties) {
             if (!properties.has(numericalProperty)) {
@@ -11457,12 +14323,12 @@
             "invalid",
             "orientation"
           ];
-          const getTokenPropertyValue = (key) => {
-            return properties.get(key);
+          const getTokenPropertyValue = (key2) => {
+            return properties.get(key2);
           };
           for (const tokenProperty of tokenProperties) {
-            const value = getTokenPropertyValue(tokenProperty);
-            if (!value || value === "false") {
+            const value2 = getTokenPropertyValue(tokenProperty);
+            if (!value2 || value2 === "false") {
               continue;
             }
             node[tokenProperty] = getTokenPropertyValue(tokenProperty);
@@ -11503,10 +14369,10 @@
         /**
          * @internal
          */
-        constructor(type, text, args, stackTraceLocations, frame, rawStackTrace, targetId) {
+        constructor(type, text, args2, stackTraceLocations, frame, rawStackTrace, targetId) {
           this.#type = type;
           this.#text = text;
-          this.#args = args;
+          this.#args = args2;
           this.#stackTraceLocations = stackTraceLocations;
           this.#frame = frame;
           this.#rawStackTrace = rawStackTrace;
@@ -11671,12 +14537,12 @@
           }
           callback.reject(rewriteError(error, `Protocol error (${callback.label}): ${message}`, originalMessage));
         }
-        resolve(id, value) {
+        resolve(id, value2) {
           const callback = this.#callbacks.get(id);
           if (!callback) {
             return;
           }
-          callback.resolve(value);
+          callback.resolve(value2);
         }
         clear() {
           for (const callback of this.#callbacks.values()) {
@@ -11710,9 +14576,9 @@
             }, timeout2);
           }
         }
-        resolve(value) {
+        resolve(value2) {
           clearTimeout(this.#timer);
-          this.#deferred.resolve(value);
+          this.#deferred.resolve(value2);
         }
         reject(error) {
           clearTimeout(this.#timer);
@@ -12053,19 +14919,19 @@
       init_assert();
       init_decorators();
       init_ErrorLike();
-      __runInitializers5 = function(thisArg, initializers, value) {
+      __runInitializers5 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate5 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -12077,7 +14943,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -12086,7 +14952,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -12192,7 +15058,7 @@
                   enabled: hasTouch
                 })
               ]);
-            }, "#applyViewport") }, _private_applyViewport_decorators, { kind: "method", name: "#applyViewport", static: false, private: true, access: { has: (obj) => #applyViewport in obj, get: (obj) => obj.#applyViewport }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#applyViewport") }, _private_applyViewport_decorators, { kind: "method", name: "#applyViewport", static: false, private: true, access: { has: (obj2) => #applyViewport in obj2, get: (obj2) => obj2.#applyViewport }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_emulateIdleState_descriptor = { value: __setFunctionName2(async function(client, idleStateState) {
               if (!idleStateState.active) {
                 return;
@@ -12205,7 +15071,7 @@
               } else {
                 await client.send("Emulation.clearIdleOverride");
               }
-            }, "#emulateIdleState") }, _private_emulateIdleState_decorators, { kind: "method", name: "#emulateIdleState", static: false, private: true, access: { has: (obj) => #emulateIdleState in obj, get: (obj) => obj.#emulateIdleState }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#emulateIdleState") }, _private_emulateIdleState_decorators, { kind: "method", name: "#emulateIdleState", static: false, private: true, access: { has: (obj2) => #emulateIdleState in obj2, get: (obj2) => obj2.#emulateIdleState }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_emulateTimezone_descriptor = { value: __setFunctionName2(async function(client, timezoneState) {
               if (!timezoneState.active) {
                 return;
@@ -12220,7 +15086,7 @@
                 }
                 throw error;
               }
-            }, "#emulateTimezone") }, _private_emulateTimezone_decorators, { kind: "method", name: "#emulateTimezone", static: false, private: true, access: { has: (obj) => #emulateTimezone in obj, get: (obj) => obj.#emulateTimezone }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#emulateTimezone") }, _private_emulateTimezone_decorators, { kind: "method", name: "#emulateTimezone", static: false, private: true, access: { has: (obj2) => #emulateTimezone in obj2, get: (obj2) => obj2.#emulateTimezone }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_emulateVisionDeficiency_descriptor = { value: __setFunctionName2(async function(client, visionDeficiency) {
               if (!visionDeficiency.active) {
                 return;
@@ -12228,7 +15094,7 @@
               await client.send("Emulation.setEmulatedVisionDeficiency", {
                 type: visionDeficiency.visionDeficiency || "none"
               });
-            }, "#emulateVisionDeficiency") }, _private_emulateVisionDeficiency_decorators, { kind: "method", name: "#emulateVisionDeficiency", static: false, private: true, access: { has: (obj) => #emulateVisionDeficiency in obj, get: (obj) => obj.#emulateVisionDeficiency }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#emulateVisionDeficiency") }, _private_emulateVisionDeficiency_decorators, { kind: "method", name: "#emulateVisionDeficiency", static: false, private: true, access: { has: (obj2) => #emulateVisionDeficiency in obj2, get: (obj2) => obj2.#emulateVisionDeficiency }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_emulateCpuThrottling_descriptor = { value: __setFunctionName2(async function(client, state) {
               if (!state.active) {
                 return;
@@ -12236,7 +15102,7 @@
               await client.send("Emulation.setCPUThrottlingRate", {
                 rate: state.factor ?? 1
               });
-            }, "#emulateCpuThrottling") }, _private_emulateCpuThrottling_decorators, { kind: "method", name: "#emulateCpuThrottling", static: false, private: true, access: { has: (obj) => #emulateCpuThrottling in obj, get: (obj) => obj.#emulateCpuThrottling }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#emulateCpuThrottling") }, _private_emulateCpuThrottling_decorators, { kind: "method", name: "#emulateCpuThrottling", static: false, private: true, access: { has: (obj2) => #emulateCpuThrottling in obj2, get: (obj2) => obj2.#emulateCpuThrottling }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_emulateMediaFeatures_descriptor = { value: __setFunctionName2(async function(client, state) {
               if (!state.active) {
                 return;
@@ -12244,7 +15110,7 @@
               await client.send("Emulation.setEmulatedMedia", {
                 features: state.mediaFeatures
               });
-            }, "#emulateMediaFeatures") }, _private_emulateMediaFeatures_decorators, { kind: "method", name: "#emulateMediaFeatures", static: false, private: true, access: { has: (obj) => #emulateMediaFeatures in obj, get: (obj) => obj.#emulateMediaFeatures }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#emulateMediaFeatures") }, _private_emulateMediaFeatures_decorators, { kind: "method", name: "#emulateMediaFeatures", static: false, private: true, access: { has: (obj2) => #emulateMediaFeatures in obj2, get: (obj2) => obj2.#emulateMediaFeatures }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_emulateMediaType_descriptor = { value: __setFunctionName2(async function(client, state) {
               if (!state.active) {
                 return;
@@ -12252,7 +15118,7 @@
               await client.send("Emulation.setEmulatedMedia", {
                 media: state.type || ""
               });
-            }, "#emulateMediaType") }, _private_emulateMediaType_decorators, { kind: "method", name: "#emulateMediaType", static: false, private: true, access: { has: (obj) => #emulateMediaType in obj, get: (obj) => obj.#emulateMediaType }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#emulateMediaType") }, _private_emulateMediaType_decorators, { kind: "method", name: "#emulateMediaType", static: false, private: true, access: { has: (obj2) => #emulateMediaType in obj2, get: (obj2) => obj2.#emulateMediaType }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_setGeolocation_descriptor = { value: __setFunctionName2(async function(client, state) {
               if (!state.active) {
                 return;
@@ -12262,7 +15128,7 @@
                 latitude: state.geoLocation.latitude,
                 accuracy: state.geoLocation.accuracy
               } : void 0);
-            }, "#setGeolocation") }, _private_setGeolocation_decorators, { kind: "method", name: "#setGeolocation", static: false, private: true, access: { has: (obj) => #setGeolocation in obj, get: (obj) => obj.#setGeolocation }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#setGeolocation") }, _private_setGeolocation_decorators, { kind: "method", name: "#setGeolocation", static: false, private: true, access: { has: (obj2) => #setGeolocation in obj2, get: (obj2) => obj2.#setGeolocation }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_setDefaultBackgroundColor_descriptor = { value: __setFunctionName2(async function(client, state) {
               if (!state.active) {
                 return;
@@ -12270,7 +15136,7 @@
               await client.send("Emulation.setDefaultBackgroundColorOverride", {
                 color: state.color
               });
-            }, "#setDefaultBackgroundColor") }, _private_setDefaultBackgroundColor_decorators, { kind: "method", name: "#setDefaultBackgroundColor", static: false, private: true, access: { has: (obj) => #setDefaultBackgroundColor in obj, get: (obj) => obj.#setDefaultBackgroundColor }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#setDefaultBackgroundColor") }, _private_setDefaultBackgroundColor_decorators, { kind: "method", name: "#setDefaultBackgroundColor", static: false, private: true, access: { has: (obj2) => #setDefaultBackgroundColor in obj2, get: (obj2) => obj2.#setDefaultBackgroundColor }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_setJavaScriptEnabled_descriptor = { value: __setFunctionName2(async function(client, state) {
               if (!state.active) {
                 return;
@@ -12278,7 +15144,7 @@
               await client.send("Emulation.setScriptExecutionDisabled", {
                 value: !state.javaScriptEnabled
               });
-            }, "#setJavaScriptEnabled") }, _private_setJavaScriptEnabled_decorators, { kind: "method", name: "#setJavaScriptEnabled", static: false, private: true, access: { has: (obj) => #setJavaScriptEnabled in obj, get: (obj) => obj.#setJavaScriptEnabled }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#setJavaScriptEnabled") }, _private_setJavaScriptEnabled_decorators, { kind: "method", name: "#setJavaScriptEnabled", static: false, private: true, access: { has: (obj2) => #setJavaScriptEnabled in obj2, get: (obj2) => obj2.#setJavaScriptEnabled }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate5(this, _private_emulateFocus_descriptor = { value: __setFunctionName2(async function(client, state) {
               if (!state.active) {
                 return;
@@ -12286,7 +15152,7 @@
               await client.send("Emulation.setFocusEmulationEnabled", {
                 enabled: state.enabled
               });
-            }, "#emulateFocus") }, _private_emulateFocus_decorators, { kind: "method", name: "#emulateFocus", static: false, private: true, access: { has: (obj) => #emulateFocus in obj, get: (obj) => obj.#emulateFocus }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#emulateFocus") }, _private_emulateFocus_decorators, { kind: "method", name: "#emulateFocus", static: false, private: true, access: { has: (obj2) => #emulateFocus in obj2, get: (obj2) => obj2.#emulateFocus }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           #client = __runInitializers5(this, _instanceExtraInitializers);
@@ -12748,18 +15614,18 @@
 
   // node_modules/chromium-bidi/lib/cjs/utils/EventEmitter.js
   var require_EventEmitter = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/EventEmitter.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/EventEmitter.js"(exports2) {
       "use strict";
-      var __importDefault = exports && exports.__importDefault || function(mod) {
+      var __importDefault = exports2 && exports2.__importDefault || function(mod) {
         return mod && mod.__esModule ? mod : { "default": mod };
       };
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.EventEmitter = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.EventEmitter = void 0;
       var mitt_1 = __importDefault((init_mitt2(), __toCommonJS(mitt_exports)));
       var EventEmitter3 = class {
         #emitter = (0, mitt_1.default)();
-        on(type, handler) {
-          this.#emitter.on(type, handler);
+        on(type, handler2) {
+          this.#emitter.on(type, handler2);
           return this;
         }
         /**
@@ -12768,15 +15634,15 @@
          * @param handler The handler function to run when the event occurs
          * @return `this` to enable chaining method calls.
          */
-        once(event, handler) {
+        once(event, handler2) {
           const onceHandler = (eventData) => {
-            handler(eventData);
+            handler2(eventData);
             this.off(event, onceHandler);
           };
           return this.on(event, onceHandler);
         }
-        off(type, handler) {
-          this.#emitter.off(type, handler);
+        off(type, handler2) {
+          this.#emitter.off(type, handler2);
           return this;
         }
         /**
@@ -12804,16 +15670,16 @@
           return this;
         }
       };
-      exports.EventEmitter = EventEmitter3;
+      exports2.EventEmitter = EventEmitter3;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/log.js
   var require_log = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/log.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/log.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.LogType = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.LogType = void 0;
       var LogType;
       (function(LogType2) {
         LogType2["bidi"] = "bidi";
@@ -12822,17 +15688,17 @@
         LogType2["debugError"] = "debug:error";
         LogType2["debugInfo"] = "debug:info";
         LogType2["debugWarn"] = "debug:warn";
-      })(LogType || (exports.LogType = LogType = {}));
+      })(LogType || (exports2.LogType = LogType = {}));
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/ProcessingQueue.js
   var require_ProcessingQueue = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/ProcessingQueue.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/ProcessingQueue.js"(exports2) {
       "use strict";
       var _a3;
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.ProcessingQueue = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.ProcessingQueue = void 0;
       var log_js_1 = require_log();
       var ProcessingQueue = class {
         static LOGGER_PREFIX = `${log_js_1.LogType.debug}:queue`;
@@ -12874,25 +15740,25 @@
           this.#isProcessing = false;
         }
       };
-      exports.ProcessingQueue = ProcessingQueue;
+      exports2.ProcessingQueue = ProcessingQueue;
       _a3 = ProcessingQueue;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/cdp.js
   var require_cdp = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/cdp.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/cdp.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
+      Object.defineProperty(exports2, "__esModule", { value: true });
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/chromium-bidi.js
   var require_chromium_bidi = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/chromium-bidi.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/chromium-bidi.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.EVENT_NAMES = exports.Speculation = exports.Bluetooth = exports.Network = exports.Input = exports.BrowsingContext = exports.Log = exports.Script = exports.BiDiModule = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.EVENT_NAMES = exports2.Speculation = exports2.Bluetooth = exports2.Network = exports2.Input = exports2.BrowsingContext = exports2.Log = exports2.Script = exports2.BiDiModule = void 0;
       var BiDiModule;
       (function(BiDiModule2) {
         BiDiModule2["Bluetooth"] = "bluetooth";
@@ -12905,7 +15771,7 @@
         BiDiModule2["Script"] = "script";
         BiDiModule2["Session"] = "session";
         BiDiModule2["Speculation"] = "speculation";
-      })(BiDiModule || (exports.BiDiModule = BiDiModule = {}));
+      })(BiDiModule || (exports2.BiDiModule = BiDiModule = {}));
       var Script;
       (function(Script2) {
         let EventNames;
@@ -12914,14 +15780,14 @@
           EventNames2["RealmCreated"] = "script.realmCreated";
           EventNames2["RealmDestroyed"] = "script.realmDestroyed";
         })(EventNames = Script2.EventNames || (Script2.EventNames = {}));
-      })(Script || (exports.Script = Script = {}));
+      })(Script || (exports2.Script = Script = {}));
       var Log;
       (function(Log2) {
         let EventNames;
         (function(EventNames2) {
           EventNames2["LogEntryAdded"] = "log.entryAdded";
         })(EventNames = Log2.EventNames || (Log2.EventNames = {}));
-      })(Log || (exports.Log = Log = {}));
+      })(Log || (exports2.Log = Log = {}));
       var BrowsingContext2;
       (function(BrowsingContext3) {
         let EventNames;
@@ -12941,14 +15807,14 @@
           EventNames2["UserPromptClosed"] = "browsingContext.userPromptClosed";
           EventNames2["UserPromptOpened"] = "browsingContext.userPromptOpened";
         })(EventNames = BrowsingContext3.EventNames || (BrowsingContext3.EventNames = {}));
-      })(BrowsingContext2 || (exports.BrowsingContext = BrowsingContext2 = {}));
+      })(BrowsingContext2 || (exports2.BrowsingContext = BrowsingContext2 = {}));
       var Input;
       (function(Input2) {
         let EventNames;
         (function(EventNames2) {
           EventNames2["FileDialogOpened"] = "input.fileDialogOpened";
         })(EventNames = Input2.EventNames || (Input2.EventNames = {}));
-      })(Input || (exports.Input = Input = {}));
+      })(Input || (exports2.Input = Input = {}));
       var Network;
       (function(Network2) {
         let EventNames;
@@ -12959,7 +15825,7 @@
           EventNames2["ResponseCompleted"] = "network.responseCompleted";
           EventNames2["ResponseStarted"] = "network.responseStarted";
         })(EventNames = Network2.EventNames || (Network2.EventNames = {}));
-      })(Network || (exports.Network = Network = {}));
+      })(Network || (exports2.Network = Network = {}));
       var Bluetooth;
       (function(Bluetooth2) {
         let EventNames;
@@ -12969,15 +15835,15 @@
           EventNames2["CharacteristicEventGenerated"] = "bluetooth.characteristicEventGenerated";
           EventNames2["DescriptorEventGenerated"] = "bluetooth.descriptorEventGenerated";
         })(EventNames = Bluetooth2.EventNames || (Bluetooth2.EventNames = {}));
-      })(Bluetooth || (exports.Bluetooth = Bluetooth = {}));
+      })(Bluetooth || (exports2.Bluetooth = Bluetooth = {}));
       var Speculation;
       (function(Speculation2) {
         let EventNames;
         (function(EventNames2) {
           EventNames2["PrefetchStatusUpdated"] = "speculation.prefetchStatusUpdated";
         })(EventNames = Speculation2.EventNames || (Speculation2.EventNames = {}));
-      })(Speculation || (exports.Speculation = Speculation = {}));
-      exports.EVENT_NAMES = /* @__PURE__ */ new Set([
+      })(Speculation || (exports2.Speculation = Speculation = {}));
+      exports2.EVENT_NAMES = /* @__PURE__ */ new Set([
         // keep-sorted start
         ...Object.values(BiDiModule),
         ...Object.values(Bluetooth.EventNames),
@@ -12994,18 +15860,18 @@
 
   // node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi.js
   var require_webdriver_bidi = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
+      Object.defineProperty(exports2, "__esModule", { value: true });
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/ErrorResponse.js
   var require_ErrorResponse = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/ErrorResponse.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/ErrorResponse.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.UnavailableNetworkDataException = exports.NoSuchNetworkDataException = exports.NoSuchNetworkCollectorException = exports.NoSuchWebExtensionException = exports.InvalidWebExtensionException = exports.UnderspecifiedStoragePartitionException = exports.UnableToSetFileInputException = exports.UnableToSetCookieException = exports.NoSuchStoragePartitionException = exports.UnsupportedOperationException = exports.UnableToCloseBrowserException = exports.UnableToCaptureScreenException = exports.UnknownErrorException = exports.UnknownCommandException = exports.SessionNotCreatedException = exports.NoSuchUserContextException = exports.NoSuchScriptException = exports.NoSuchRequestException = exports.NoSuchNodeException = exports.NoSuchInterceptException = exports.NoSuchHistoryEntryException = exports.NoSuchHandleException = exports.NoSuchFrameException = exports.NoSuchElementException = exports.NoSuchAlertException = exports.MoveTargetOutOfBoundsException = exports.InvalidSessionIdException = exports.InvalidSelectorException = exports.InvalidArgumentException = exports.Exception = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.UnavailableNetworkDataException = exports2.NoSuchNetworkDataException = exports2.NoSuchNetworkCollectorException = exports2.NoSuchWebExtensionException = exports2.InvalidWebExtensionException = exports2.UnderspecifiedStoragePartitionException = exports2.UnableToSetFileInputException = exports2.UnableToSetCookieException = exports2.NoSuchStoragePartitionException = exports2.UnsupportedOperationException = exports2.UnableToCloseBrowserException = exports2.UnableToCaptureScreenException = exports2.UnknownErrorException = exports2.UnknownCommandException = exports2.SessionNotCreatedException = exports2.NoSuchUserContextException = exports2.NoSuchScriptException = exports2.NoSuchRequestException = exports2.NoSuchNodeException = exports2.NoSuchInterceptException = exports2.NoSuchHistoryEntryException = exports2.NoSuchHandleException = exports2.NoSuchFrameException = exports2.NoSuchElementException = exports2.NoSuchAlertException = exports2.MoveTargetOutOfBoundsException = exports2.InvalidSessionIdException = exports2.InvalidSelectorException = exports2.InvalidArgumentException = exports2.Exception = void 0;
       var Exception = class extends Error {
         error;
         message;
@@ -13026,221 +15892,221 @@
           };
         }
       };
-      exports.Exception = Exception;
+      exports2.Exception = Exception;
       var InvalidArgumentException = class extends Exception {
         constructor(message, stacktrace) {
           super("invalid argument", message, stacktrace);
         }
       };
-      exports.InvalidArgumentException = InvalidArgumentException;
+      exports2.InvalidArgumentException = InvalidArgumentException;
       var InvalidSelectorException = class extends Exception {
         constructor(message, stacktrace) {
           super("invalid selector", message, stacktrace);
         }
       };
-      exports.InvalidSelectorException = InvalidSelectorException;
+      exports2.InvalidSelectorException = InvalidSelectorException;
       var InvalidSessionIdException = class extends Exception {
         constructor(message, stacktrace) {
           super("invalid session id", message, stacktrace);
         }
       };
-      exports.InvalidSessionIdException = InvalidSessionIdException;
+      exports2.InvalidSessionIdException = InvalidSessionIdException;
       var MoveTargetOutOfBoundsException = class extends Exception {
         constructor(message, stacktrace) {
           super("move target out of bounds", message, stacktrace);
         }
       };
-      exports.MoveTargetOutOfBoundsException = MoveTargetOutOfBoundsException;
+      exports2.MoveTargetOutOfBoundsException = MoveTargetOutOfBoundsException;
       var NoSuchAlertException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such alert", message, stacktrace);
         }
       };
-      exports.NoSuchAlertException = NoSuchAlertException;
+      exports2.NoSuchAlertException = NoSuchAlertException;
       var NoSuchElementException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such element", message, stacktrace);
         }
       };
-      exports.NoSuchElementException = NoSuchElementException;
+      exports2.NoSuchElementException = NoSuchElementException;
       var NoSuchFrameException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such frame", message, stacktrace);
         }
       };
-      exports.NoSuchFrameException = NoSuchFrameException;
+      exports2.NoSuchFrameException = NoSuchFrameException;
       var NoSuchHandleException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such handle", message, stacktrace);
         }
       };
-      exports.NoSuchHandleException = NoSuchHandleException;
+      exports2.NoSuchHandleException = NoSuchHandleException;
       var NoSuchHistoryEntryException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such history entry", message, stacktrace);
         }
       };
-      exports.NoSuchHistoryEntryException = NoSuchHistoryEntryException;
+      exports2.NoSuchHistoryEntryException = NoSuchHistoryEntryException;
       var NoSuchInterceptException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such intercept", message, stacktrace);
         }
       };
-      exports.NoSuchInterceptException = NoSuchInterceptException;
+      exports2.NoSuchInterceptException = NoSuchInterceptException;
       var NoSuchNodeException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such node", message, stacktrace);
         }
       };
-      exports.NoSuchNodeException = NoSuchNodeException;
+      exports2.NoSuchNodeException = NoSuchNodeException;
       var NoSuchRequestException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such request", message, stacktrace);
         }
       };
-      exports.NoSuchRequestException = NoSuchRequestException;
+      exports2.NoSuchRequestException = NoSuchRequestException;
       var NoSuchScriptException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such script", message, stacktrace);
         }
       };
-      exports.NoSuchScriptException = NoSuchScriptException;
+      exports2.NoSuchScriptException = NoSuchScriptException;
       var NoSuchUserContextException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such user context", message, stacktrace);
         }
       };
-      exports.NoSuchUserContextException = NoSuchUserContextException;
+      exports2.NoSuchUserContextException = NoSuchUserContextException;
       var SessionNotCreatedException = class extends Exception {
         constructor(message, stacktrace) {
           super("session not created", message, stacktrace);
         }
       };
-      exports.SessionNotCreatedException = SessionNotCreatedException;
+      exports2.SessionNotCreatedException = SessionNotCreatedException;
       var UnknownCommandException = class extends Exception {
         constructor(message, stacktrace) {
           super("unknown command", message, stacktrace);
         }
       };
-      exports.UnknownCommandException = UnknownCommandException;
+      exports2.UnknownCommandException = UnknownCommandException;
       var UnknownErrorException = class extends Exception {
         constructor(message, stacktrace = new Error().stack) {
           super("unknown error", message, stacktrace);
         }
       };
-      exports.UnknownErrorException = UnknownErrorException;
+      exports2.UnknownErrorException = UnknownErrorException;
       var UnableToCaptureScreenException = class extends Exception {
         constructor(message, stacktrace) {
           super("unable to capture screen", message, stacktrace);
         }
       };
-      exports.UnableToCaptureScreenException = UnableToCaptureScreenException;
+      exports2.UnableToCaptureScreenException = UnableToCaptureScreenException;
       var UnableToCloseBrowserException = class extends Exception {
         constructor(message, stacktrace) {
           super("unable to close browser", message, stacktrace);
         }
       };
-      exports.UnableToCloseBrowserException = UnableToCloseBrowserException;
+      exports2.UnableToCloseBrowserException = UnableToCloseBrowserException;
       var UnsupportedOperationException = class extends Exception {
         constructor(message, stacktrace) {
           super("unsupported operation", message, stacktrace);
         }
       };
-      exports.UnsupportedOperationException = UnsupportedOperationException;
+      exports2.UnsupportedOperationException = UnsupportedOperationException;
       var NoSuchStoragePartitionException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such storage partition", message, stacktrace);
         }
       };
-      exports.NoSuchStoragePartitionException = NoSuchStoragePartitionException;
+      exports2.NoSuchStoragePartitionException = NoSuchStoragePartitionException;
       var UnableToSetCookieException = class extends Exception {
         constructor(message, stacktrace) {
           super("unable to set cookie", message, stacktrace);
         }
       };
-      exports.UnableToSetCookieException = UnableToSetCookieException;
+      exports2.UnableToSetCookieException = UnableToSetCookieException;
       var UnableToSetFileInputException = class extends Exception {
         constructor(message, stacktrace) {
           super("unable to set file input", message, stacktrace);
         }
       };
-      exports.UnableToSetFileInputException = UnableToSetFileInputException;
+      exports2.UnableToSetFileInputException = UnableToSetFileInputException;
       var UnderspecifiedStoragePartitionException = class extends Exception {
         constructor(message, stacktrace) {
           super("underspecified storage partition", message, stacktrace);
         }
       };
-      exports.UnderspecifiedStoragePartitionException = UnderspecifiedStoragePartitionException;
+      exports2.UnderspecifiedStoragePartitionException = UnderspecifiedStoragePartitionException;
       var InvalidWebExtensionException = class extends Exception {
         constructor(message, stacktrace) {
           super("invalid web extension", message, stacktrace);
         }
       };
-      exports.InvalidWebExtensionException = InvalidWebExtensionException;
+      exports2.InvalidWebExtensionException = InvalidWebExtensionException;
       var NoSuchWebExtensionException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such web extension", message, stacktrace);
         }
       };
-      exports.NoSuchWebExtensionException = NoSuchWebExtensionException;
+      exports2.NoSuchWebExtensionException = NoSuchWebExtensionException;
       var NoSuchNetworkCollectorException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such network collector", message, stacktrace);
         }
       };
-      exports.NoSuchNetworkCollectorException = NoSuchNetworkCollectorException;
+      exports2.NoSuchNetworkCollectorException = NoSuchNetworkCollectorException;
       var NoSuchNetworkDataException = class extends Exception {
         constructor(message, stacktrace) {
           super("no such network data", message, stacktrace);
         }
       };
-      exports.NoSuchNetworkDataException = NoSuchNetworkDataException;
+      exports2.NoSuchNetworkDataException = NoSuchNetworkDataException;
       var UnavailableNetworkDataException = class extends Exception {
         constructor(message, stacktrace) {
           super("unavailable network data", message, stacktrace);
         }
       };
-      exports.UnavailableNetworkDataException = UnavailableNetworkDataException;
+      exports2.UnavailableNetworkDataException = UnavailableNetworkDataException;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-permissions.js
   var require_webdriver_bidi_permissions = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-permissions.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-permissions.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
+      Object.defineProperty(exports2, "__esModule", { value: true });
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-bluetooth.js
   var require_webdriver_bidi_bluetooth = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-bluetooth.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-bluetooth.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
+      Object.defineProperty(exports2, "__esModule", { value: true });
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-nav-speculation.js
   var require_webdriver_bidi_nav_speculation = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-nav-speculation.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-nav-speculation.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
+      Object.defineProperty(exports2, "__esModule", { value: true });
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-ua-client-hints.js
   var require_webdriver_bidi_ua_client_hints = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-ua-client-hints.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/generated/webdriver-bidi-ua-client-hints.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
+      Object.defineProperty(exports2, "__esModule", { value: true });
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/protocol/protocol.js
   var require_protocol = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/protocol/protocol.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/protocol/protocol.js"(exports2) {
       "use strict";
-      var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
+      var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o, m, k, k2) {
         if (k2 === void 0) k2 = k;
         var desc = Object.getOwnPropertyDescriptor(m, k);
         if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
@@ -13253,12 +16119,12 @@
         if (k2 === void 0) k2 = k;
         o[k2] = m[k];
       }));
-      var __setModuleDefault = exports && exports.__setModuleDefault || (Object.create ? (function(o, v) {
+      var __setModuleDefault = exports2 && exports2.__setModuleDefault || (Object.create ? (function(o, v) {
         Object.defineProperty(o, "default", { enumerable: true, value: v });
       }) : function(o, v) {
         o["default"] = v;
       });
-      var __importStar = exports && exports.__importStar || /* @__PURE__ */ (function() {
+      var __importStar = exports2 && exports2.__importStar || /* @__PURE__ */ (function() {
         var ownKeys = function(o) {
           ownKeys = Object.getOwnPropertyNames || function(o2) {
             var ar = [];
@@ -13277,28 +16143,28 @@
           return result;
         };
       })();
-      var __exportStar = exports && exports.__exportStar || function(m, exports2) {
-        for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports2, p)) __createBinding(exports2, m, p);
+      var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
+        for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
       };
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.UAClientHints = exports.ChromiumBidi = exports.Cdp = void 0;
-      exports.Cdp = __importStar(require_cdp());
-      exports.ChromiumBidi = __importStar(require_chromium_bidi());
-      __exportStar(require_webdriver_bidi(), exports);
-      __exportStar(require_ErrorResponse(), exports);
-      __exportStar(require_webdriver_bidi_permissions(), exports);
-      __exportStar(require_webdriver_bidi_bluetooth(), exports);
-      __exportStar(require_webdriver_bidi_nav_speculation(), exports);
-      exports.UAClientHints = __importStar(require_webdriver_bidi_ua_client_hints());
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.UAClientHints = exports2.ChromiumBidi = exports2.Cdp = void 0;
+      exports2.Cdp = __importStar(require_cdp());
+      exports2.ChromiumBidi = __importStar(require_chromium_bidi());
+      __exportStar(require_webdriver_bidi(), exports2);
+      __exportStar(require_ErrorResponse(), exports2);
+      __exportStar(require_webdriver_bidi_permissions(), exports2);
+      __exportStar(require_webdriver_bidi_bluetooth(), exports2);
+      __exportStar(require_webdriver_bidi_nav_speculation(), exports2);
+      exports2.UAClientHints = __importStar(require_webdriver_bidi_ua_client_hints());
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiNoOpParser.js
   var require_BidiNoOpParser = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiNoOpParser.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiNoOpParser.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.BidiNoOpParser = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.BidiNoOpParser = void 0;
       var BidiNoOpParser = class {
         // Bluetooth module
         // keep-sorted start block=yes
@@ -13552,17 +16418,17 @@
           return params;
         }
       };
-      exports.BidiNoOpParser = BidiNoOpParser;
+      exports2.BidiNoOpParser = BidiNoOpParser;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/BrowserProcessor.js
   var require_BrowserProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/BrowserProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/BrowserProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.BrowserProcessor = void 0;
-      exports.getProxyStr = getProxyStr;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.BrowserProcessor = void 0;
+      exports2.getProxyStr = getProxyStr;
       var protocol_js_1 = require_protocol();
       var BrowserProcessor = class {
         #browserCdpClient;
@@ -13710,7 +16576,7 @@
           return {};
         }
       };
-      exports.BrowserProcessor = BrowserProcessor;
+      exports2.BrowserProcessor = BrowserProcessor;
       function getProxyStr(proxyConfig) {
         if (proxyConfig.proxyType === "direct" || proxyConfig.proxyType === "system") {
           return void 0;
@@ -13750,10 +16616,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpProcessor.js
   var require_CdpProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.CdpProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.CdpProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var CdpProcessor = class {
         #browsingContextStorage;
@@ -13791,16 +16657,16 @@
           };
         }
       };
-      exports.CdpProcessor = CdpProcessor;
+      exports2.CdpProcessor = CdpProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextProcessor.js
   var require_BrowsingContextProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.BrowsingContextProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.BrowsingContextProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var BrowsingContextProcessor = class {
         #browserCdpClient;
@@ -14032,19 +16898,19 @@
           return Promise.resolve();
         }
       };
-      exports.BrowsingContextProcessor = BrowsingContextProcessor;
+      exports2.BrowsingContextProcessor = BrowsingContextProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/emulation/EmulationProcessor.js
   var require_EmulationProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/emulation/EmulationProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/emulation/EmulationProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.EmulationProcessor = void 0;
-      exports.isValidLocale = isValidLocale;
-      exports.isValidTimezone = isValidTimezone;
-      exports.isTimeZoneOffsetString = isTimeZoneOffsetString;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.EmulationProcessor = void 0;
+      exports2.isValidLocale = isValidLocale;
+      exports2.isValidTimezone = isValidTimezone;
+      exports2.isTimeZoneOffsetString = isTimeZoneOffsetString;
       var protocol_js_1 = require_protocol();
       var EmulationProcessor = class {
         #userContextStorage;
@@ -14334,7 +17200,7 @@
           return {};
         }
       };
-      exports.EmulationProcessor = EmulationProcessor;
+      exports2.EmulationProcessor = EmulationProcessor;
       function isValidLocale(locale) {
         try {
           new Intl.Locale(locale);
@@ -14365,10 +17231,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/utils/assert.js
   var require_assert = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/assert.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/assert.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.assert = assert2;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.assert = assert2;
       function assert2(predicate, message) {
         if (!predicate) {
           throw new Error(message ?? "Internal assertion failed.");
@@ -14379,32 +17245,32 @@
 
   // node_modules/chromium-bidi/lib/cjs/utils/graphemeTools.js
   var require_graphemeTools = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/graphemeTools.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/graphemeTools.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.isSingleComplexGrapheme = isSingleComplexGrapheme;
-      exports.isSingleGrapheme = isSingleGrapheme;
-      function isSingleComplexGrapheme(value) {
-        return isSingleGrapheme(value) && value.length > 1;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.isSingleComplexGrapheme = isSingleComplexGrapheme;
+      exports2.isSingleGrapheme = isSingleGrapheme;
+      function isSingleComplexGrapheme(value2) {
+        return isSingleGrapheme(value2) && value2.length > 1;
       }
-      function isSingleGrapheme(value) {
+      function isSingleGrapheme(value2) {
         const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
-        return [...segmenter.segment(value)].length === 1;
+        return [...segmenter.segment(value2)].length === 1;
       }
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputSource.js
   var require_InputSource = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputSource.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputSource.js"(exports2) {
       "use strict";
       var _a3;
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.WheelSource = exports.PointerSource = exports.KeySource = exports.NoneSource = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.WheelSource = exports2.PointerSource = exports2.KeySource = exports2.NoneSource = void 0;
       var NoneSource = class {
         type = "none";
       };
-      exports.NoneSource = NoneSource;
+      exports2.NoneSource = NoneSource;
       var KeySource = class {
         type = "key";
         pressed = /* @__PURE__ */ new Set();
@@ -14417,36 +17283,36 @@
         get alt() {
           return (this.#modifiers & 1) === 1;
         }
-        set alt(value) {
-          this.#setModifier(value, 1);
+        set alt(value2) {
+          this.#setModifier(value2, 1);
         }
         get ctrl() {
           return (this.#modifiers & 2) === 2;
         }
-        set ctrl(value) {
-          this.#setModifier(value, 2);
+        set ctrl(value2) {
+          this.#setModifier(value2, 2);
         }
         get meta() {
           return (this.#modifiers & 4) === 4;
         }
-        set meta(value) {
-          this.#setModifier(value, 4);
+        set meta(value2) {
+          this.#setModifier(value2, 4);
         }
         get shift() {
           return (this.#modifiers & 8) === 8;
         }
-        set shift(value) {
-          this.#setModifier(value, 8);
+        set shift(value2) {
+          this.#setModifier(value2, 8);
         }
-        #setModifier(value, bit) {
-          if (value) {
+        #setModifier(value2, bit) {
+          if (value2) {
             this.#modifiers |= bit;
           } else {
             this.#modifiers &= ~bit;
           }
         }
       };
-      exports.KeySource = KeySource;
+      exports2.KeySource = KeySource;
       var PointerSource = class {
         type = "pointer";
         subtype;
@@ -14532,25 +17398,25 @@
           this.#clickContexts = /* @__PURE__ */ new Map();
         }
       };
-      exports.PointerSource = PointerSource;
+      exports2.PointerSource = PointerSource;
       _a3 = PointerSource;
       var WheelSource = class {
         type = "wheel";
       };
-      exports.WheelSource = WheelSource;
+      exports2.WheelSource = WheelSource;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/keyUtils.js
   var require_keyUtils = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/keyUtils.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/keyUtils.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.getNormalizedKey = getNormalizedKey;
-      exports.getKeyCode = getKeyCode;
-      exports.getKeyLocation = getKeyLocation;
-      function getNormalizedKey(value) {
-        switch (value) {
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.getNormalizedKey = getNormalizedKey;
+      exports2.getKeyCode = getKeyCode;
+      exports2.getKeyLocation = getKeyLocation;
+      function getNormalizedKey(value2) {
+        switch (value2) {
           case "\uE000":
             return "Unidentified";
           case "\uE001":
@@ -14693,11 +17559,11 @@
           case "\uE05D":
             return "Delete";
           default:
-            return value;
+            return value2;
         }
       }
-      function getKeyCode(key) {
-        switch (key) {
+      function getKeyCode(key2) {
+        switch (key2) {
           case "`":
           case "~":
             return "Backquote";
@@ -14967,8 +17833,8 @@
             return;
         }
       }
-      function getKeyLocation(key) {
-        switch (key) {
+      function getKeyLocation(key2) {
+        switch (key2) {
           case "\uE007":
           case "\uE008":
           case "\uE009":
@@ -15017,11 +17883,11 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/USKeyboardLayout.js
   var require_USKeyboardLayout = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/USKeyboardLayout.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/USKeyboardLayout.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.KeyToKeyCode = void 0;
-      exports.KeyToKeyCode = {
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.KeyToKeyCode = void 0;
+      exports2.KeyToKeyCode = {
         "0": 48,
         "1": 49,
         "2": 50,
@@ -15278,10 +18144,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/ActionDispatcher.js
   var require_ActionDispatcher = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/ActionDispatcher.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/ActionDispatcher.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.ActionDispatcher = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.ActionDispatcher = void 0;
       var protocol_js_1 = require_protocol();
       var assert_js_1 = require_assert();
       var graphemeTools_js_1 = require_graphemeTools();
@@ -15665,11 +18531,11 @@
             throw new protocol_js_1.InvalidArgumentException(`Invalid key value: ${rawKey}`);
           }
           const isGrapheme = (0, graphemeTools_js_1.isSingleComplexGrapheme)(rawKey);
-          const key = (0, keyUtils_js_1.getNormalizedKey)(rawKey);
-          const repeat = source2.pressed.has(key);
+          const key2 = (0, keyUtils_js_1.getNormalizedKey)(rawKey);
+          const repeat = source2.pressed.has(key2);
           const code = (0, keyUtils_js_1.getKeyCode)(rawKey);
           const location = (0, keyUtils_js_1.getKeyLocation)(rawKey);
-          switch (key) {
+          switch (key2) {
             case "Alt":
               source2.alt = true;
               break;
@@ -15683,9 +18549,9 @@
               source2.meta = true;
               break;
           }
-          source2.pressed.add(key);
+          source2.pressed.add(key2);
           const { modifiers } = source2;
-          const unmodifiedText = getKeyEventUnmodifiedText(key, source2, isGrapheme);
+          const unmodifiedText = getKeyEventUnmodifiedText(key2, source2, isGrapheme);
           const text = getKeyEventText(code ?? "", source2) ?? unmodifiedText;
           let command;
           if (this.#isMacOS && source2.meta) {
@@ -15711,8 +18577,8 @@
           const promises = [
             this.#context.cdpTarget.cdpClient.sendCommand("Input.dispatchKeyEvent", {
               type: text ? "keyDown" : "rawKeyDown",
-              windowsVirtualKeyCode: USKeyboardLayout_js_1.KeyToKeyCode[key],
-              key,
+              windowsVirtualKeyCode: USKeyboardLayout_js_1.KeyToKeyCode[key2],
+              key: key2,
               code,
               text,
               unmodifiedText,
@@ -15724,7 +18590,7 @@
               commands: command ? [command] : void 0
             })
           ];
-          if (key === "Escape") {
+          if (key2 === "Escape") {
             if (!source2.alt && (this.#isMacOS && !source2.ctrl && !source2.meta || !this.#isMacOS)) {
               promises.push(this.#context.cdpTarget.cdpClient.sendCommand("Input.cancelDragging"));
             }
@@ -15737,13 +18603,13 @@
             throw new protocol_js_1.InvalidArgumentException(`Invalid key value: ${rawKey}`);
           }
           const isGrapheme = (0, graphemeTools_js_1.isSingleComplexGrapheme)(rawKey);
-          const key = (0, keyUtils_js_1.getNormalizedKey)(rawKey);
-          if (!source2.pressed.has(key)) {
+          const key2 = (0, keyUtils_js_1.getNormalizedKey)(rawKey);
+          if (!source2.pressed.has(key2)) {
             return;
           }
           const code = (0, keyUtils_js_1.getKeyCode)(rawKey);
           const location = (0, keyUtils_js_1.getKeyLocation)(rawKey);
-          switch (key) {
+          switch (key2) {
             case "Alt":
               source2.alt = false;
               break;
@@ -15757,14 +18623,14 @@
               source2.meta = false;
               break;
           }
-          source2.pressed.delete(key);
+          source2.pressed.delete(key2);
           const { modifiers } = source2;
-          const unmodifiedText = getKeyEventUnmodifiedText(key, source2, isGrapheme);
+          const unmodifiedText = getKeyEventUnmodifiedText(key2, source2, isGrapheme);
           const text = getKeyEventText(code ?? "", source2) ?? unmodifiedText;
           return this.#context.cdpTarget.cdpClient.sendCommand("Input.dispatchKeyEvent", {
             type: "keyUp",
-            windowsVirtualKeyCode: USKeyboardLayout_js_1.KeyToKeyCode[key],
-            key,
+            windowsVirtualKeyCode: USKeyboardLayout_js_1.KeyToKeyCode[key2],
+            key: key2,
             code,
             text,
             unmodifiedText,
@@ -15775,15 +18641,15 @@
           });
         }
       };
-      exports.ActionDispatcher = ActionDispatcher;
-      var getKeyEventUnmodifiedText = (key, source2, isGrapheme) => {
+      exports2.ActionDispatcher = ActionDispatcher;
+      var getKeyEventUnmodifiedText = (key2, source2, isGrapheme) => {
         if (isGrapheme) {
-          return key;
+          return key2;
         }
-        if (key === "Enter") {
+        if (key2 === "Enter") {
           return "\r";
         }
-        return [...key].length === 1 ? source2.shift ? key.toLocaleUpperCase("en-US") : key : void 0;
+        return [...key2].length === 1 ? source2.shift ? key2.toLocaleUpperCase("en-US") : key2 : void 0;
       };
       var getKeyEventText = (code, source2) => {
         if (source2.ctrl) {
@@ -15939,10 +18805,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/utils/Mutex.js
   var require_Mutex = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/Mutex.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/Mutex.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.Mutex = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.Mutex = void 0;
       var Mutex2 = class {
         #locked = false;
         #acquirers = [];
@@ -15979,16 +18845,16 @@
           }
         }
       };
-      exports.Mutex = Mutex2;
+      exports2.Mutex = Mutex2;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputState.js
   var require_InputState = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputState.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputState.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.InputState = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.InputState = void 0;
       var protocol_js_1 = require_protocol();
       var Mutex_js_1 = require_Mutex();
       var InputSource_js_1 = require_InputSource();
@@ -16061,16 +18927,16 @@
           return this.#mutex;
         }
       };
-      exports.InputState = InputState;
+      exports2.InputState = InputState;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputStateManager.js
   var require_InputStateManager = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputStateManager.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputStateManager.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.InputStateManager = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.InputStateManager = void 0;
       var assert_js_1 = require_assert();
       var InputState_js_1 = require_InputState();
       var InputStateManager = class extends WeakMap {
@@ -16082,16 +18948,16 @@
           return super.get(context2);
         }
       };
-      exports.InputStateManager = InputStateManager;
+      exports2.InputStateManager = InputStateManager;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputProcessor.js
   var require_InputProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/input/InputProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.InputProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.InputProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var assert_js_1 = require_assert();
       var ActionDispatcher_js_1 = require_ActionDispatcher();
@@ -16257,16 +19123,16 @@
           return actionsByTick;
         }
       };
-      exports.InputProcessor = InputProcessor;
+      exports2.InputProcessor = InputProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/base64.js
   var require_base64 = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/base64.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/base64.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.base64ToString = base64ToString;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.base64ToString = base64ToString;
       function base64ToString(base64Str) {
         if ("atob" in globalThis) {
           return globalThis.atob(base64Str);
@@ -16278,26 +19144,26 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkUtils.js
   var require_NetworkUtils = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkUtils.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkUtils.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.computeHeadersSize = computeHeadersSize;
-      exports.stringToBase64 = stringToBase642;
-      exports.bidiNetworkHeadersFromCdpNetworkHeaders = bidiNetworkHeadersFromCdpNetworkHeaders;
-      exports.bidiNetworkHeadersFromCdpNetworkHeadersEntries = bidiNetworkHeadersFromCdpNetworkHeadersEntries;
-      exports.cdpNetworkHeadersFromBidiNetworkHeaders = cdpNetworkHeadersFromBidiNetworkHeaders;
-      exports.bidiNetworkHeadersFromCdpFetchHeaders = bidiNetworkHeadersFromCdpFetchHeaders;
-      exports.cdpFetchHeadersFromBidiNetworkHeaders = cdpFetchHeadersFromBidiNetworkHeaders;
-      exports.networkHeaderFromCookieHeaders = networkHeaderFromCookieHeaders;
-      exports.cdpAuthChallengeResponseFromBidiAuthContinueWithAuthAction = cdpAuthChallengeResponseFromBidiAuthContinueWithAuthAction;
-      exports.cdpToBiDiCookie = cdpToBiDiCookie;
-      exports.deserializeByteValue = deserializeByteValue;
-      exports.bidiToCdpCookie = bidiToCdpCookie;
-      exports.sameSiteBiDiToCdp = sameSiteBiDiToCdp;
-      exports.isSpecialScheme = isSpecialScheme;
-      exports.matchUrlPattern = matchUrlPattern;
-      exports.bidiBodySizeFromCdpPostDataEntries = bidiBodySizeFromCdpPostDataEntries;
-      exports.getTiming = getTiming;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.computeHeadersSize = computeHeadersSize;
+      exports2.stringToBase64 = stringToBase642;
+      exports2.bidiNetworkHeadersFromCdpNetworkHeaders = bidiNetworkHeadersFromCdpNetworkHeaders;
+      exports2.bidiNetworkHeadersFromCdpNetworkHeadersEntries = bidiNetworkHeadersFromCdpNetworkHeadersEntries;
+      exports2.cdpNetworkHeadersFromBidiNetworkHeaders = cdpNetworkHeadersFromBidiNetworkHeaders;
+      exports2.bidiNetworkHeadersFromCdpFetchHeaders = bidiNetworkHeadersFromCdpFetchHeaders;
+      exports2.cdpFetchHeadersFromBidiNetworkHeaders = cdpFetchHeadersFromBidiNetworkHeaders;
+      exports2.networkHeaderFromCookieHeaders = networkHeaderFromCookieHeaders;
+      exports2.cdpAuthChallengeResponseFromBidiAuthContinueWithAuthAction = cdpAuthChallengeResponseFromBidiAuthContinueWithAuthAction;
+      exports2.cdpToBiDiCookie = cdpToBiDiCookie;
+      exports2.deserializeByteValue = deserializeByteValue;
+      exports2.bidiToCdpCookie = bidiToCdpCookie;
+      exports2.sameSiteBiDiToCdp = sameSiteBiDiToCdp;
+      exports2.isSpecialScheme = isSpecialScheme;
+      exports2.matchUrlPattern = matchUrlPattern;
+      exports2.bidiBodySizeFromCdpPostDataEntries = bidiBodySizeFromCdpPostDataEntries;
+      exports2.getTiming = getTiming;
       var ErrorResponse_js_1 = require_ErrorResponse();
       var base64_js_1 = require_base64();
       function computeHeadersSize(headers) {
@@ -16324,11 +19190,11 @@
         if (!headers) {
           return [];
         }
-        return Object.entries(headers).map(([name, value]) => ({
+        return Object.entries(headers).map(([name, value2]) => ({
           name,
           value: {
             type: "string",
-            value
+            value: value2
           }
         }));
       }
@@ -16336,11 +19202,11 @@
         if (!headers) {
           return [];
         }
-        return headers.map(({ name, value }) => ({
+        return headers.map(({ name, value: value2 }) => ({
           name,
           value: {
             type: "string",
-            value
+            value: value2
           }
         }));
       }
@@ -16357,11 +19223,11 @@
         if (!headers) {
           return [];
         }
-        return headers.map(({ name, value }) => ({
+        return headers.map(({ name, value: value2 }) => ({
           name,
           value: {
             type: "string",
-            value
+            value: value2
           }
         }));
       }
@@ -16369,28 +19235,28 @@
         if (headers === void 0) {
           return void 0;
         }
-        return headers.map(({ name, value }) => ({
+        return headers.map(({ name, value: value2 }) => ({
           name,
-          value: value.value
+          value: value2.value
         }));
       }
       function networkHeaderFromCookieHeaders(headers) {
         if (headers === void 0) {
           return void 0;
         }
-        const value = headers.reduce((acc, value2, index) => {
+        const value2 = headers.reduce((acc, value3, index) => {
           if (index > 0) {
             acc += ";";
           }
-          const cookieValue = value2.value.type === "base64" ? btoa(value2.value.value) : value2.value.value;
-          acc += `${value2.name}=${cookieValue}`;
+          const cookieValue = value3.value.type === "base64" ? btoa(value3.value.value) : value3.value.value;
+          acc += `${value3.name}=${cookieValue}`;
           return acc;
         }, "");
         return {
           name: "Cookie",
           value: {
             type: "string",
-            value
+            value: value2
           }
         };
       }
@@ -16428,11 +19294,11 @@
         }
         return result;
       }
-      function deserializeByteValue(value) {
-        if (value.type === "base64") {
-          return (0, base64_js_1.base64ToString)(value.value);
+      function deserializeByteValue(value2) {
+        if (value2.type === "base64") {
+          return (0, base64_js_1.base64ToString)(value2.value);
         }
-        return value.value;
+        return value2.value;
       }
       function bidiToCdpCookie(params, partitionKey) {
         const deserializedValue = deserializeByteValue(params.cookie.value);
@@ -16543,11 +19409,11 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkProcessor.js
   var require_NetworkProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.NetworkProcessor = void 0;
-      exports.parseBiDiHeaders = parseBiDiHeaders;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.NetworkProcessor = void 0;
+      exports2.parseBiDiHeaders = parseBiDiHeaders;
       var protocol_js_1 = require_protocol();
       var NetworkUtils_js_1 = require_NetworkUtils();
       var NetworkProcessor = class _NetworkProcessor {
@@ -16952,7 +19818,7 @@
           return {};
         }
       };
-      exports.NetworkProcessor = NetworkProcessor;
+      exports2.NetworkProcessor = NetworkProcessor;
       function unescapeURLPattern(pattern) {
         const forbidden = /* @__PURE__ */ new Set(["(", ")", "*", "{", "}"]);
         let result = "";
@@ -17008,17 +19874,17 @@
         for (const bidiHeader of headers) {
           if (bidiHeader.value.type === "string") {
             const name = bidiHeader.name;
-            const value = bidiHeader.value.value;
+            const value2 = bidiHeader.value.value;
             if (name.length === 0) {
               throw new protocol_js_1.InvalidArgumentException(`Empty header name is not allowed`);
             }
             if (includesChar(name, FORBIDDEN_HEADER_NAME_SYMBOLS)) {
               throw new protocol_js_1.InvalidArgumentException(`Header name '${name}' contains forbidden symbols`);
             }
-            if (includesChar(value, FORBIDDEN_HEADER_VALUE_SYMBOLS)) {
-              throw new protocol_js_1.InvalidArgumentException(`Header value '${value}' contains forbidden symbols`);
+            if (includesChar(value2, FORBIDDEN_HEADER_VALUE_SYMBOLS)) {
+              throw new protocol_js_1.InvalidArgumentException(`Header value '${value2}' contains forbidden symbols`);
             }
-            if (value.trim() !== value) {
+            if (value2.trim() !== value2) {
               throw new protocol_js_1.InvalidArgumentException(`Header value should not contain trailing or ending whitespaces`);
             }
             parsedHeaders[bidiHeader.name] = bidiHeader.value.value;
@@ -17033,10 +19899,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/permissions/PermissionsProcessor.js
   var require_PermissionsProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/permissions/PermissionsProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/permissions/PermissionsProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.PermissionsProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.PermissionsProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var PermissionsProcessor = class {
         #browserCdpClient;
@@ -17064,16 +19930,16 @@
           return {};
         }
       };
-      exports.PermissionsProcessor = PermissionsProcessor;
+      exports2.PermissionsProcessor = PermissionsProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/uuid.js
   var require_uuid = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/uuid.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/uuid.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.uuidv4 = uuidv4;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.uuidv4 = uuidv4;
       function bytesToHex(bytes) {
         return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
       }
@@ -17102,10 +19968,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/ChannelProxy.js
   var require_ChannelProxy = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/ChannelProxy.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/ChannelProxy.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.ChannelProxy = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.ChannelProxy = void 0;
       var protocol_js_1 = require_protocol();
       var log_js_1 = require_log();
       var uuid_js_1 = require_uuid();
@@ -17299,16 +20165,16 @@
           return `(${delegate})('${this.#id}',${channelProxyEval})`;
         }
       };
-      exports.ChannelProxy = ChannelProxy;
+      exports2.ChannelProxy = ChannelProxy;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/PreloadScript.js
   var require_PreloadScript = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/PreloadScript.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/PreloadScript.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.PreloadScript = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.PreloadScript = void 0;
       var uuid_js_1 = require_uuid();
       var ChannelProxy_js_1 = require_ChannelProxy();
       var PreloadScript = class {
@@ -17407,16 +20273,16 @@
           this.#targetIds.delete(cdpTargetId);
         }
       };
-      exports.PreloadScript = PreloadScript;
+      exports2.PreloadScript = PreloadScript;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/ScriptProcessor.js
   var require_ScriptProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/ScriptProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/ScriptProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.ScriptProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.ScriptProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var PreloadScript_js_1 = require_PreloadScript();
       var ScriptProcessor = class {
@@ -17525,16 +20391,16 @@
           });
         }
       };
-      exports.ScriptProcessor = ScriptProcessor;
+      exports2.ScriptProcessor = ScriptProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/SessionProcessor.js
   var require_SessionProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/SessionProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/SessionProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.SessionProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.SessionProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var SessionProcessor = class {
         #eventManager;
@@ -17555,11 +20421,11 @@
             const result = {
               ...capabilitiesRequest.alwaysMatch
             };
-            for (const key of Object.keys(first2)) {
-              if (result[key] !== void 0) {
-                throw new protocol_js_1.InvalidArgumentException(`Capability ${key} in firstMatch is already defined in alwaysMatch`);
+            for (const key2 of Object.keys(first2)) {
+              if (result[key2] !== void 0) {
+                throw new protocol_js_1.InvalidArgumentException(`Capability ${key2} in firstMatch is already defined in alwaysMatch`);
               }
-              result[key] = first2[key];
+              result[key2] = first2[key2];
             }
             mergedCapabilities.push(result);
           }
@@ -17640,16 +20506,16 @@
           return {};
         }
       };
-      exports.SessionProcessor = SessionProcessor;
+      exports2.SessionProcessor = SessionProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/storage/StorageProcessor.js
   var require_StorageProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/storage/StorageProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/storage/StorageProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.StorageProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.StorageProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var assert_js_1 = require_assert();
       var log_js_1 = require_log();
@@ -17765,9 +20631,9 @@
               sourceOrigin = `${url.protocol}//${url.hostname}`;
             }
           }
-          for (const [key, value] of Object.entries(descriptor)) {
-            if (key !== void 0 && value !== void 0 && !["type", "sourceOrigin", "userContext"].includes(key)) {
-              unsupportedPartitionKeys.set(key, value);
+          for (const [key2, value2] of Object.entries(descriptor)) {
+            if (key2 !== void 0 && value2 !== void 0 && !["type", "sourceOrigin", "userContext"].includes(key2)) {
+              unsupportedPartitionKeys.set(key2, value2);
             }
           }
           if (unsupportedPartitionKeys.size > 0) {
@@ -17797,16 +20663,16 @@
           (filter2.value === void 0 || (0, NetworkUtils_js_1.deserializeByteValue)(filter2.value) === (0, NetworkUtils_js_1.deserializeByteValue)(cookie.value)) && (filter2.path === void 0 || filter2.path === cookie.path) && (filter2.size === void 0 || filter2.size === cookie.size) && (filter2.httpOnly === void 0 || filter2.httpOnly === cookie.httpOnly) && (filter2.secure === void 0 || filter2.secure === cookie.secure) && (filter2.sameSite === void 0 || filter2.sameSite === cookie.sameSite) && (filter2.expiry === void 0 || filter2.expiry === cookie.expiry);
         }
       };
-      exports.StorageProcessor = StorageProcessor;
+      exports2.StorageProcessor = StorageProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/webExtension/WebExtensionProcessor.js
   var require_WebExtensionProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/webExtension/WebExtensionProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/webExtension/WebExtensionProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.WebExtensionProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.WebExtensionProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var WebExtensionProcessor = class {
         #browserCdpClient;
@@ -17849,16 +20715,16 @@
           }
         }
       };
-      exports.WebExtensionProcessor = WebExtensionProcessor;
+      exports2.WebExtensionProcessor = WebExtensionProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/OutgoingMessage.js
   var require_OutgoingMessage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/OutgoingMessage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/OutgoingMessage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.OutgoingMessage = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.OutgoingMessage = void 0;
       var OutgoingMessage = class _OutgoingMessage {
         #message;
         #googChannel;
@@ -17890,16 +20756,16 @@
           return this.#googChannel;
         }
       };
-      exports.OutgoingMessage = OutgoingMessage;
+      exports2.OutgoingMessage = OutgoingMessage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/CommandProcessor.js
   var require_CommandProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/CommandProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/CommandProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.CommandProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.CommandProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var EventEmitter_js_1 = require_EventEmitter();
       var log_js_1 = require_log();
@@ -18188,16 +21054,16 @@
           }
         }
       };
-      exports.CommandProcessor = CommandProcessor;
+      exports2.CommandProcessor = CommandProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/bluetooth/BluetoothProcessor.js
   var require_BluetoothProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/bluetooth/BluetoothProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/bluetooth/BluetoothProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.BluetoothProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.BluetoothProcessor = void 0;
       var protocol_js_1 = require_protocol();
       var BluetoothGattItem = class {
         id;
@@ -18563,16 +21429,16 @@
           return {};
         }
       };
-      exports.BluetoothProcessor = BluetoothProcessor;
+      exports2.BluetoothProcessor = BluetoothProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/ContextConfig.js
   var require_ContextConfig = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/ContextConfig.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/ContextConfig.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.ContextConfig = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.ContextConfig = void 0;
       var ContextConfig = class _ContextConfig {
         // keep-sorted start block=yes
         acceptInsecureCerts;
@@ -18608,28 +21474,28 @@
             if (!config2) {
               continue;
             }
-            for (const key in config2) {
-              const value = config2[key];
-              if (value === null) {
-                delete result[key];
-              } else if (value !== void 0) {
-                result[key] = value;
+            for (const key2 in config2) {
+              const value2 = config2[key2];
+              if (value2 === null) {
+                delete result[key2];
+              } else if (value2 !== void 0) {
+                result[key2] = value2;
               }
             }
           }
           return result;
         }
       };
-      exports.ContextConfig = ContextConfig;
+      exports2.ContextConfig = ContextConfig;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/ContextConfigStorage.js
   var require_ContextConfigStorage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/ContextConfigStorage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/ContextConfigStorage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.ContextConfigStorage = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.ContextConfigStorage = void 0;
       var ContextConfig_js_1 = require_ContextConfig();
       var ContextConfigStorage = class {
         #global = new ContextConfig_js_1.ContextConfig();
@@ -18686,16 +21552,16 @@
           return result;
         }
       };
-      exports.ContextConfigStorage = ContextConfigStorage;
+      exports2.ContextConfigStorage = ContextConfigStorage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/UserContextStorage.js
   var require_UserContextStorage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/UserContextStorage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/browser/UserContextStorage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.UserContextStorage = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.UserContextStorage = void 0;
       var protocol_js_1 = require_protocol();
       var UserContextStorage = class {
         #browserClient;
@@ -18731,16 +21597,16 @@
           return foundContexts;
         }
       };
-      exports.UserContextStorage = UserContextStorage;
+      exports2.UserContextStorage = UserContextStorage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/Deferred.js
   var require_Deferred = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/Deferred.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/Deferred.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.Deferred = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.Deferred = void 0;
       var Deferred2 = class {
         #isFinished = false;
         #promise;
@@ -18770,11 +21636,11 @@
         catch(onRejected) {
           return this.#promise.catch(onRejected);
         }
-        resolve(value) {
-          this.#result = value;
+        resolve(value2) {
+          this.#result = value2;
           if (!this.#isFinished) {
             this.#isFinished = true;
-            this.#resolve(value);
+            this.#resolve(value2);
           }
         }
         reject(reason) {
@@ -18788,16 +21654,16 @@
         }
         [Symbol.toStringTag] = "Promise";
       };
-      exports.Deferred = Deferred2;
+      exports2.Deferred = Deferred2;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/time.js
   var require_time = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/time.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/time.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.getTimestamp = getTimestamp;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.getTimestamp = getTimestamp;
       function getTimestamp() {
         return (/* @__PURE__ */ new Date()).getTime();
       }
@@ -18806,10 +21672,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/utils/unitConversions.js
   var require_unitConversions = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/unitConversions.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/unitConversions.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.inchesFromCm = inchesFromCm;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.inchesFromCm = inchesFromCm;
       function inchesFromCm(cm) {
         return cm / 2.54;
       }
@@ -18818,11 +21684,11 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/SharedId.js
   var require_SharedId = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/SharedId.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/SharedId.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.getSharedId = getSharedId;
-      exports.parseSharedId = parseSharedId;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.getSharedId = getSharedId;
+      exports2.parseSharedId = parseSharedId;
       var SHARED_ID_DIVIDER = "_element_";
       function getSharedId(frameId, documentId, backendNodeId) {
         return `f.${frameId}.d.${documentId}.e.${backendNodeId}`;
@@ -18876,10 +21742,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/Realm.js
   var require_Realm = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/Realm.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/Realm.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.Realm = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.Realm = void 0;
       var protocol_js_1 = require_protocol();
       var log_js_1 = require_log();
       var uuid_js_1 = require_uuid();
@@ -19063,14 +21929,14 @@
           return result.value;
         }
         async #flattenKeyValuePairs(mappingLocalValue) {
-          const keyValueArray = await Promise.all(mappingLocalValue.map(async ([key, value]) => {
+          const keyValueArray = await Promise.all(mappingLocalValue.map(async ([key2, value2]) => {
             let keyArg;
-            if (typeof key === "string") {
-              keyArg = { value: key };
+            if (typeof key2 === "string") {
+              keyArg = { value: key2 };
             } else {
-              keyArg = await this.deserializeForCdp(key);
+              keyArg = await this.deserializeForCdp(key2);
             }
-            const valueArg = await this.deserializeForCdp(value);
+            const valueArg = await this.deserializeForCdp(value2);
             return [keyArg, valueArg];
           }));
           return keyValueArray.flat();
@@ -19185,10 +22051,10 @@
             case "map": {
               const keyValueArray = await this.#flattenKeyValuePairs(localValue.value);
               const { result } = await this.cdpClient.sendCommand("Runtime.callFunctionOn", {
-                functionDeclaration: String((...args) => {
+                functionDeclaration: String((...args2) => {
                   const result2 = /* @__PURE__ */ new Map();
-                  for (let i = 0; i < args.length; i += 2) {
-                    result2.set(args[i], args[i + 1]);
+                  for (let i = 0; i < args2.length; i += 2) {
+                    result2.set(args2[i], args2[i + 1]);
                   }
                   return result2;
                 }),
@@ -19202,11 +22068,11 @@
             case "object": {
               const keyValueArray = await this.#flattenKeyValuePairs(localValue.value);
               const { result } = await this.cdpClient.sendCommand("Runtime.callFunctionOn", {
-                functionDeclaration: String((...args) => {
+                functionDeclaration: String((...args2) => {
                   const result2 = {};
-                  for (let i = 0; i < args.length; i += 2) {
-                    const key = args[i];
-                    result2[key] = args[i + 1];
+                  for (let i = 0; i < args2.length; i += 2) {
+                    const key2 = args2[i];
+                    result2[key2] = args2[i + 1];
                   }
                   return result2;
                 }),
@@ -19218,22 +22084,22 @@
               return { objectId: result.objectId };
             }
             case "array": {
-              const args = await this.#flattenValueList(localValue.value);
+              const args2 = await this.#flattenValueList(localValue.value);
               const { result } = await this.cdpClient.sendCommand("Runtime.callFunctionOn", {
-                functionDeclaration: String((...args2) => args2),
+                functionDeclaration: String((...args3) => args3),
                 awaitPromise: false,
-                arguments: args,
+                arguments: args2,
                 returnByValue: false,
                 executionContextId: this.executionContextId
               });
               return { objectId: result.objectId };
             }
             case "set": {
-              const args = await this.#flattenValueList(localValue.value);
+              const args2 = await this.#flattenValueList(localValue.value);
               const { result } = await this.cdpClient.sendCommand("Runtime.callFunctionOn", {
-                functionDeclaration: String((...args2) => new Set(args2)),
+                functionDeclaration: String((...args3) => new Set(args3)),
                 awaitPromise: false,
-                arguments: args,
+                arguments: args2,
                 returnByValue: false,
                 executionContextId: this.executionContextId
               });
@@ -19304,16 +22170,16 @@
           }
         }
       };
-      exports.Realm = Realm3;
+      exports2.Realm = Realm3;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/WindowRealm.js
   var require_WindowRealm = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/WindowRealm.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/WindowRealm.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.WindowRealm = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.WindowRealm = void 0;
       var protocol_js_1 = require_protocol();
       var Realm_js_1 = require_Realm();
       var SharedId_js_1 = require_SharedId();
@@ -19421,16 +22287,16 @@
           return await super.callFunction(functionDeclaration, awaitPromise, thisLocalValue, argumentsLocalValues, resultOwnership, serializationOptions, userActivation);
         }
       };
-      exports.WindowRealm = WindowRealm2;
+      exports2.WindowRealm = WindowRealm2;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/urlHelpers.js
   var require_urlHelpers = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/urlHelpers.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/urlHelpers.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.urlMatchesAboutBlank = urlMatchesAboutBlank;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.urlMatchesAboutBlank = urlMatchesAboutBlank;
       function urlMatchesAboutBlank(url) {
         if (url === "") {
           return true;
@@ -19451,10 +22317,10 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/NavigationTracker.js
   var require_NavigationTracker = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/NavigationTracker.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/NavigationTracker.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.NavigationTracker = exports.NavigationState = exports.NavigationResult = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.NavigationTracker = exports2.NavigationState = exports2.NavigationResult = void 0;
       var protocol_js_1 = require_protocol();
       var Deferred_js_1 = require_Deferred();
       var log_js_1 = require_log();
@@ -19469,7 +22335,7 @@
           this.message = message;
         }
       };
-      exports.NavigationResult = NavigationResult;
+      exports2.NavigationResult = NavigationResult;
       var NavigationState = class {
         navigationId = (0, uuid_js_1.uuidv4)();
         #browsingContextId;
@@ -19552,7 +22418,7 @@
           this.#finish(new NavigationResult(this.committed.isFinished ? "browsingContext.navigationAborted" : "browsingContext.navigationFailed", message));
         }
       };
-      exports.NavigationState = NavigationState;
+      exports2.NavigationState = NavigationState;
       var NavigationTracker = class _NavigationTracker {
         #eventManager;
         #logger;
@@ -19727,18 +22593,18 @@
           this.#loaderIdToNavigationsMap.get(loaderId)?.fail(errorText);
         }
       };
-      exports.NavigationTracker = NavigationTracker;
+      exports2.NavigationTracker = NavigationTracker;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextImpl.js
   var require_BrowsingContextImpl = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextImpl.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextImpl.js"(exports2) {
       "use strict";
       var _a3;
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.BrowsingContextImpl = void 0;
-      exports.serializeOrigin = serializeOrigin;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.BrowsingContextImpl = void 0;
+      exports2.serializeOrigin = serializeOrigin;
       var protocol_js_1 = require_protocol();
       var assert_js_1 = require_assert();
       var Deferred_js_1 = require_Deferred();
@@ -20898,11 +23764,11 @@
           if (locatorResult.result.type !== "array") {
             throw new protocol_js_1.UnknownErrorException(`Unexpected selector script result type: ${locatorResult.result.type}`);
           }
-          const nodes = locatorResult.result.value.map((value) => {
-            if (value.type !== "node") {
-              throw new protocol_js_1.UnknownErrorException(`Unexpected selector script result element: ${value.type}`);
+          const nodes = locatorResult.result.value.map((value2) => {
+            if (value2.type !== "node") {
+              throw new protocol_js_1.UnknownErrorException(`Unexpected selector script result element: ${value2.type}`);
             }
-            return value;
+            return value2;
           });
           return { nodes };
         }
@@ -20937,7 +23803,7 @@
           await Promise.all(this.#getAllRelatedCdpTargets().map(async (cdpTarget) => await cdpTarget.setExtraHeaders(cdpExtraHeaders)));
         }
       };
-      exports.BrowsingContextImpl = BrowsingContextImpl;
+      exports2.BrowsingContextImpl = BrowsingContextImpl;
       _a3 = BrowsingContextImpl;
       function serializeOrigin(origin) {
         if (["://", ""].includes(origin)) {
@@ -20972,17 +23838,17 @@
         if (result.type !== "object" || result.value === void 0) {
           return;
         }
-        const x = result.value.find(([key]) => {
-          return key === "x";
+        const x = result.value.find(([key2]) => {
+          return key2 === "x";
         })?.[1];
-        const y = result.value.find(([key]) => {
-          return key === "y";
+        const y = result.value.find(([key2]) => {
+          return key2 === "y";
         })?.[1];
-        const height = result.value.find(([key]) => {
-          return key === "height";
+        const height = result.value.find(([key2]) => {
+          return key2 === "height";
         })?.[1];
-        const width = result.value.find(([key]) => {
-          return key === "width";
+        const width = result.value.find(([key2]) => {
+          return key2 === "width";
         })?.[1];
         if (x?.type !== "number" || y?.type !== "number" || height?.type !== "number" || width?.type !== "number") {
           return;
@@ -21024,22 +23890,22 @@
           height: Math.max(Math.min(first2.y + first2.height, second.y + second.height) - y, 0)
         };
       }
-      function parseInteger(value) {
-        value = value.trim();
-        if (!/^[0-9]+$/.test(value)) {
-          throw new protocol_js_1.InvalidArgumentException(`Invalid integer: ${value}`);
+      function parseInteger(value2) {
+        value2 = value2.trim();
+        if (!/^[0-9]+$/.test(value2)) {
+          throw new protocol_js_1.InvalidArgumentException(`Invalid integer: ${value2}`);
         }
-        return parseInt(value);
+        return parseInt(value2);
       }
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/WorkerRealm.js
   var require_WorkerRealm = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/WorkerRealm.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/WorkerRealm.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.WorkerRealm = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.WorkerRealm = void 0;
       var Realm_js_1 = require_Realm();
       var WorkerRealm = class extends Realm_js_1.Realm {
         #realmType;
@@ -21089,26 +23955,26 @@
           }
         }
       };
-      exports.WorkerRealm = WorkerRealm;
+      exports2.WorkerRealm = WorkerRealm;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/log/logHelper.js
   var require_logHelper = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/log/logHelper.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/log/logHelper.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.logMessageFormatter = logMessageFormatter;
-      exports.getRemoteValuesText = getRemoteValuesText;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.logMessageFormatter = logMessageFormatter;
+      exports2.getRemoteValuesText = getRemoteValuesText;
       var assert_js_1 = require_assert();
       var specifiers = ["%s", "%d", "%i", "%f", "%o", "%O", "%c"];
       function isFormatSpecifier(str) {
         return specifiers.some((spec) => str.includes(spec));
       }
-      function logMessageFormatter(args) {
+      function logMessageFormatter(args2) {
         let output = "";
-        const argFormat = args[0].value.toString();
-        const argValues = args.slice(1, void 0);
+        const argFormat = args2[0].value.toString();
+        const argValues = args2.slice(1, void 0);
         const tokens = argFormat.split(new RegExp(specifiers.map((spec) => `(${spec})`).join("|"), "g"));
         for (const token of tokens) {
           if (token === void 0 || token === "") {
@@ -21116,7 +23982,7 @@
           }
           if (isFormatSpecifier(token)) {
             const arg = argValues.shift();
-            (0, assert_js_1.assert)(arg, `Less value is provided: "${getRemoteValuesText(args, false)}"`);
+            (0, assert_js_1.assert)(arg, `Less value is provided: "${getRemoteValuesText(args2, false)}"`);
             if (token === "%s") {
               output += stringFromArg(arg);
             } else if (token === "%d" || token === "%i") {
@@ -21139,7 +24005,7 @@
           }
         }
         if (argValues.length > 0) {
-          throw new Error(`More value is provided: "${getRemoteValuesText(args, false)}"`);
+          throw new Error(`More value is provided: "${getRemoteValuesText(args2, false)}"`);
         }
         return output;
       }
@@ -21192,15 +24058,15 @@
             return arg.type;
         }
       }
-      function getRemoteValuesText(args, formatText) {
-        const arg = args[0];
+      function getRemoteValuesText(args2, formatText) {
+        const arg = args2[0];
         if (!arg) {
           return "";
         }
         if (arg.type === "string" && isFormatSpecifier(arg.value.toString()) && formatText) {
-          return logMessageFormatter(args);
+          return logMessageFormatter(args2);
         }
-        return args.map((arg2) => {
+        return args2.map((arg2) => {
           return stringFromArg(arg2);
         }).join(" ");
       }
@@ -21209,11 +24075,11 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/log/LogManager.js
   var require_LogManager = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/log/LogManager.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/log/LogManager.js"(exports2) {
       "use strict";
       var _a3;
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.LogManager = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.LogManager = void 0;
       var protocol_js_1 = require_protocol();
       var log_js_1 = require_log();
       var logHelper_js_1 = require_logHelper();
@@ -21319,7 +24185,7 @@
             }
             const argsPromise = Promise.all(params.args.map((arg) => this.#heuristicSerializeArg(arg, realm)));
             for (const browsingContext of realm.associatedBrowsingContexts) {
-              this.#eventManager.registerPromiseEvent(argsPromise.then((args) => ({
+              this.#eventManager.registerPromiseEvent(argsPromise.then((args2) => ({
                 kind: "success",
                 value: {
                   type: "event",
@@ -21327,12 +24193,12 @@
                   params: {
                     level: getLogLevel(params.type),
                     source: realm.source,
-                    text: (0, logHelper_js_1.getRemoteValuesText)(args, true),
+                    text: (0, logHelper_js_1.getRemoteValuesText)(args2, true),
                     timestamp: Math.round(params.timestamp),
                     stackTrace: getBidiStackTrace(params.stackTrace),
                     type: "console",
                     method: getLogMethod(params.type),
-                    args
+                    args: args2
                   }
                 }
               }), (error) => ({
@@ -21385,17 +24251,17 @@
           return await realm.stringifyObject(params.exceptionDetails.exception);
         }
       };
-      exports.LogManager = LogManager;
+      exports2.LogManager = LogManager;
       _a3 = LogManager;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/CollectorsStorage.js
   var require_CollectorsStorage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/CollectorsStorage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/CollectorsStorage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.CollectorsStorage = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.CollectorsStorage = void 0;
       var ErrorResponse_js_1 = require_ErrorResponse();
       var log_js_1 = require_log();
       var uuid_js_1 = require_uuid();
@@ -21513,16 +24379,16 @@
           return affectedRequests;
         }
       };
-      exports.CollectorsStorage = CollectorsStorage;
+      exports2.CollectorsStorage = CollectorsStorage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/DefaultMap.js
   var require_DefaultMap = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/DefaultMap.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/DefaultMap.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.DefaultMap = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.DefaultMap = void 0;
       var DefaultMap = class extends Map {
         /** The default value to return whenever a key is not present in the map. */
         #getDefaultValue;
@@ -21530,24 +24396,24 @@
           super(entries);
           this.#getDefaultValue = getDefaultValue;
         }
-        get(key) {
-          if (!this.has(key)) {
-            this.set(key, this.#getDefaultValue(key));
+        get(key2) {
+          if (!this.has(key2)) {
+            this.set(key2, this.#getDefaultValue(key2));
           }
-          return super.get(key);
+          return super.get(key2);
         }
       };
-      exports.DefaultMap = DefaultMap;
+      exports2.DefaultMap = DefaultMap;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkRequest.js
   var require_NetworkRequest = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkRequest.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkRequest.js"(exports2) {
       "use strict";
       var _a3;
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.NetworkRequest = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.NetworkRequest = void 0;
       var protocol_js_1 = require_protocol();
       var assert_js_1 = require_assert();
       var DefaultMap_js_1 = require_DefaultMap();
@@ -21713,12 +24579,12 @@
             for (const header of this.#requestOverrides.headers) {
               headerMap.get(header.name).push(header.value.value);
             }
-            for (const [name, value] of headerMap.entries()) {
+            for (const [name, value2] of headerMap.entries()) {
               headers.push({
                 name,
                 value: {
                   type: "string",
-                  value: value.join("\n").trimEnd()
+                  value: value2.join("\n").trimEnd()
                 }
               });
             }
@@ -21739,11 +24605,11 @@
           }
           const headerName = this.#statusCode === 401 ? "WWW-Authenticate" : "Proxy-Authenticate";
           const authChallenges = [];
-          for (const [header, value] of Object.entries(this.#response.info.headers)) {
+          for (const [header, value2] of Object.entries(this.#response.info.headers)) {
             if (header.localeCompare(headerName, void 0, { sensitivity: "base" }) === 0) {
               authChallenges.push({
-                scheme: value.split(" ").at(0) ?? "",
-                realm: value.match(REALM_REGEX)?.at(0) ?? ""
+                scheme: value2.split(" ").at(0) ?? "",
+                realm: value2.match(REALM_REGEX)?.at(0) ?? ""
               });
             }
           }
@@ -22132,8 +24998,8 @@
           }
           const cdpHeaders = this.#response.info?.headers ?? {};
           const cdpRawHeaders = this.#response.extraInfo?.headers ?? {};
-          for (const [key, value] of Object.entries(cdpRawHeaders)) {
-            cdpHeaders[key] = value;
+          for (const [key2, value2] of Object.entries(cdpRawHeaders)) {
+            cdpHeaders[key2] = value2;
           }
           const headers = (0, NetworkUtils_js_1.bidiNetworkHeadersFromCdpNetworkHeaders)(cdpHeaders);
           const authChallenges = this.#authChallenges;
@@ -22310,7 +25176,7 @@
           }
         }
       };
-      exports.NetworkRequest = NetworkRequest;
+      exports2.NetworkRequest = NetworkRequest;
       _a3 = NetworkRequest;
       function getCdpBodyFromBiDiBytesValue(body) {
         let parsedBody;
@@ -22334,16 +25200,16 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkStorage.js
   var require_NetworkStorage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkStorage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/network/NetworkStorage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.NetworkStorage = exports.MAX_TOTAL_COLLECTED_SIZE = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.NetworkStorage = exports2.MAX_TOTAL_COLLECTED_SIZE = void 0;
       var protocol_js_1 = require_protocol();
       var uuid_js_1 = require_uuid();
       var CollectorsStorage_js_1 = require_CollectorsStorage();
       var NetworkRequest_js_1 = require_NetworkRequest();
       var NetworkUtils_js_1 = require_NetworkUtils();
-      exports.MAX_TOTAL_COLLECTED_SIZE = 2e8;
+      exports2.MAX_TOTAL_COLLECTED_SIZE = 2e8;
       var NetworkStorage = class {
         #browsingContextStorage;
         #eventManager;
@@ -22360,7 +25226,7 @@
         constructor(eventManager, browsingContextStorage, browserClient, logger) {
           this.#browsingContextStorage = browsingContextStorage;
           this.#eventManager = eventManager;
-          this.#collectorsStorage = new CollectorsStorage_js_1.CollectorsStorage(exports.MAX_TOTAL_COLLECTED_SIZE, logger);
+          this.#collectorsStorage = new CollectorsStorage_js_1.CollectorsStorage(exports2.MAX_TOTAL_COLLECTED_SIZE, logger);
           browserClient.on("Target.detachedFromTarget", ({ sessionId }) => {
             this.disposeRequestMap(sessionId);
           });
@@ -22600,9 +25466,9 @@
          *
          * @return The intercept ID.
          */
-        addIntercept(value) {
+        addIntercept(value2) {
           const interceptId = (0, uuid_js_1.uuidv4)();
-          this.#intercepts.set(interceptId, value);
+          this.#intercepts.set(interceptId, value2);
           return interceptId;
         }
         /**
@@ -22677,16 +25543,16 @@
           this.disposeRequest(params.request);
         }
       };
-      exports.NetworkStorage = NetworkStorage;
+      exports2.NetworkStorage = NetworkStorage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpTarget.js
   var require_CdpTarget = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpTarget.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpTarget.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.CdpTarget = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.CdpTarget = void 0;
       var chromium_bidi_js_1 = require_chromium_bidi();
       var protocol_js_1 = require_protocol();
       var Deferred_js_1 = require_Deferred();
@@ -23019,7 +25885,7 @@
         }
         async toggleNetwork() {
           const stages = this.#networkStorage.getInterceptionStages(this.topLevelId);
-          const fetchEnable = Object.values(stages).some((value) => value);
+          const fetchEnable = Object.values(stages).some((value2) => value2);
           const fetchChanged = this.#fetchDomainStages.request !== stages.request || this.#fetchDomainStages.response !== stages.response || this.#fetchDomainStages.auth !== stages.auth;
           this.#logger?.(log_js_1.LogType.debugInfo, "Toggle Network", `Fetch (${fetchEnable}) ${fetchChanged}`);
           if (fetchEnable && fetchChanged) {
@@ -23296,16 +26162,16 @@
           ]);
         }
       };
-      exports.CdpTarget = CdpTarget2;
+      exports2.CdpTarget = CdpTarget2;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpTargetManager.js
   var require_CdpTargetManager = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpTargetManager.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/cdp/CdpTargetManager.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.CdpTargetManager = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.CdpTargetManager = void 0;
       var log_js_1 = require_log();
       var BrowsingContextImpl_js_1 = require_BrowsingContextImpl();
       var WorkerRealm_js_1 = require_WorkerRealm();
@@ -23554,16 +26420,16 @@
           }
         }
       };
-      exports.CdpTargetManager = CdpTargetManager;
+      exports2.CdpTargetManager = CdpTargetManager;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextStorage.js
   var require_BrowsingContextStorage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextStorage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/context/BrowsingContextStorage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.BrowsingContextStorage = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.BrowsingContextStorage = void 0;
       var protocol_js_1 = require_protocol();
       var EventEmitter_js_1 = require_EventEmitter();
       var BrowsingContextStorage = class {
@@ -23675,16 +26541,16 @@
           }
         }
       };
-      exports.BrowsingContextStorage = BrowsingContextStorage;
+      exports2.BrowsingContextStorage = BrowsingContextStorage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/PreloadScriptStorage.js
   var require_PreloadScriptStorage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/PreloadScriptStorage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/PreloadScriptStorage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.PreloadScriptStorage = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.PreloadScriptStorage = void 0;
       var ErrorResponse_js_1 = require_ErrorResponse();
       var PreloadScriptStorage = class {
         /** Tracks all BiDi preload scripts.  */
@@ -23737,16 +26603,16 @@
           }
         }
       };
-      exports.PreloadScriptStorage = PreloadScriptStorage;
+      exports2.PreloadScriptStorage = PreloadScriptStorage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/RealmStorage.js
   var require_RealmStorage = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/RealmStorage.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/script/RealmStorage.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.RealmStorage = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.RealmStorage = void 0;
       var protocol_js_1 = require_protocol();
       var WindowRealm_js_1 = require_WindowRealm();
       var RealmStorage = class {
@@ -23813,16 +26679,16 @@
           });
         }
       };
-      exports.RealmStorage = RealmStorage;
+      exports2.RealmStorage = RealmStorage;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/Buffer.js
   var require_Buffer = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/Buffer.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/Buffer.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.Buffer = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.Buffer = void 0;
       var Buffer2 = class {
         #capacity;
         #entries = [];
@@ -23838,8 +26704,8 @@
         get() {
           return this.#entries;
         }
-        add(value) {
-          this.#entries.push(value);
+        add(value2) {
+          this.#entries.push(value2);
           while (this.#entries.length > this.#capacity) {
             const item = this.#entries.shift();
             if (item !== void 0) {
@@ -23848,16 +26714,16 @@
           }
         }
       };
-      exports.Buffer = Buffer2;
+      exports2.Buffer = Buffer2;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/utils/IdWrapper.js
   var require_IdWrapper = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/utils/IdWrapper.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/utils/IdWrapper.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.IdWrapper = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.IdWrapper = void 0;
       var IdWrapper = class _IdWrapper {
         static #counter = 0;
         #id;
@@ -23868,17 +26734,17 @@
           return this.#id;
         }
       };
-      exports.IdWrapper = IdWrapper;
+      exports2.IdWrapper = IdWrapper;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/events.js
   var require_events = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/events.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/events.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.isCdpEvent = isCdpEvent2;
-      exports.assertSupportedEvent = assertSupportedEvent;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.isCdpEvent = isCdpEvent2;
+      exports2.assertSupportedEvent = assertSupportedEvent;
       var protocol_js_1 = require_protocol();
       function isCdpEvent2(name) {
         return name.split(".").at(0)?.startsWith(protocol_js_1.ChromiumBidi.BiDiModule.Cdp) ?? false;
@@ -23893,13 +26759,13 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/SubscriptionManager.js
   var require_SubscriptionManager = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/SubscriptionManager.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/SubscriptionManager.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.SubscriptionManager = void 0;
-      exports.cartesianProduct = cartesianProduct;
-      exports.unrollEvents = unrollEvents;
-      exports.difference = difference;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.SubscriptionManager = void 0;
+      exports2.cartesianProduct = cartesianProduct;
+      exports2.unrollEvents = unrollEvents;
+      exports2.difference = difference;
       var protocol_js_1 = require_protocol();
       var uuid_js_1 = require_uuid();
       function cartesianProduct(...a) {
@@ -24094,7 +26960,7 @@
           this.#knownSubscriptionIds = difference(this.#knownSubscriptionIds, subscriptionIdsSet);
         }
       };
-      exports.SubscriptionManager = SubscriptionManager;
+      exports2.SubscriptionManager = SubscriptionManager;
       function intersection(setA, setB) {
         const result = /* @__PURE__ */ new Set();
         for (const a of setA) {
@@ -24129,11 +26995,11 @@
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/EventManager.js
   var require_EventManager = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/EventManager.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/session/EventManager.js"(exports2) {
       "use strict";
       var _a3;
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.EventManager = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.EventManager = void 0;
       var protocol_js_1 = require_protocol();
       var Buffer_js_1 = require_Buffer();
       var DefaultMap_js_1 = require_DefaultMap();
@@ -24354,17 +27220,17 @@
           return result.sort((e1, e2) => e1.id - e2.id);
         }
       };
-      exports.EventManager = EventManager;
+      exports2.EventManager = EventManager;
       _a3 = EventManager;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/speculation/SpeculationProcessor.js
   var require_SpeculationProcessor = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/speculation/SpeculationProcessor.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/modules/speculation/SpeculationProcessor.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.SpeculationProcessor = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.SpeculationProcessor = void 0;
       var log_js_1 = require_log();
       var SpeculationProcessor = class {
         #eventManager;
@@ -24405,16 +27271,16 @@
           });
         }
       };
-      exports.SpeculationProcessor = SpeculationProcessor;
+      exports2.SpeculationProcessor = SpeculationProcessor;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiServer.js
   var require_BidiServer = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiServer.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiServer.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.BidiServer = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.BidiServer = void 0;
       var EventEmitter_js_1 = require_EventEmitter();
       var log_js_1 = require_log();
       var ProcessingQueue_js_1 = require_ProcessingQueue();
@@ -24547,26 +27413,26 @@
           await Promise.all(this.#browsingContextStorage.getTopLevelContexts().map((c) => c.lifecycleLoaded()));
         }
       };
-      exports.BidiServer = BidiServer2;
+      exports2.BidiServer = BidiServer2;
     }
   });
 
   // node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiMapper.js
   var require_BidiMapper = __commonJS({
-    "node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiMapper.js"(exports) {
+    "node_modules/chromium-bidi/lib/cjs/bidiMapper/BidiMapper.js"(exports2) {
       "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      exports.OutgoingMessage = exports.EventEmitter = exports.BidiServer = void 0;
+      Object.defineProperty(exports2, "__esModule", { value: true });
+      exports2.OutgoingMessage = exports2.EventEmitter = exports2.BidiServer = void 0;
       var BidiServer_js_1 = require_BidiServer();
-      Object.defineProperty(exports, "BidiServer", { enumerable: true, get: function() {
+      Object.defineProperty(exports2, "BidiServer", { enumerable: true, get: function() {
         return BidiServer_js_1.BidiServer;
       } });
       var EventEmitter_js_1 = require_EventEmitter();
-      Object.defineProperty(exports, "EventEmitter", { enumerable: true, get: function() {
+      Object.defineProperty(exports2, "EventEmitter", { enumerable: true, get: function() {
         return EventEmitter_js_1.EventEmitter;
       } });
       var OutgoingMessage_js_1 = require_OutgoingMessage();
-      Object.defineProperty(exports, "OutgoingMessage", { enumerable: true, get: function() {
+      Object.defineProperty(exports2, "OutgoingMessage", { enumerable: true, get: function() {
         return OutgoingMessage_js_1.OutgoingMessage;
       } });
     }
@@ -24652,8 +27518,8 @@
           this.#detached = true;
         };
         id() {
-          const value = this.#sessionId.value();
-          return typeof value === "string" ? value : "";
+          const value2 = this.#sessionId.value();
+          return typeof value2 === "string" ? value2 : "";
         }
       };
     }
@@ -24709,12 +27575,12 @@
           this.#emitters.push(emitter);
         }
         #toWebDriverOnlyEvent(event) {
-          for (const key in event) {
-            if (key.startsWith("goog:")) {
-              delete event[key];
+          for (const key2 in event) {
+            if (key2.startsWith("goog:")) {
+              delete event[key2];
             } else {
-              if (typeof event[key] === "object" && event[key] !== null) {
-                this.#toWebDriverOnlyEvent(event[key]);
+              if (typeof event[key2] === "object" && event[key2] !== null) {
+                this.#toWebDriverOnlyEvent(event[key2]);
               }
             }
           }
@@ -24846,8 +27712,8 @@
       init_Debug();
       init_Errors();
       init_Connection();
-      bidiServerLogger = (prefix, ...args) => {
-        debug(`bidi:${prefix}`)(args);
+      bidiServerLogger = (prefix, ...args2) => {
+        debug(`bidi:${prefix}`)(args2);
       };
       CdpConnectionAdapter = class {
         #cdp;
@@ -25063,19 +27929,19 @@
       init_EventEmitter();
       init_decorators();
       init_disposable();
-      __runInitializers8 = function(thisArg, initializers, value) {
+      __runInitializers8 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate8 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -25087,7 +27953,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -25096,7 +27962,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -25110,7 +27976,7 @@
         return class Navigation2 extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate8(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate8(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static from(context2) {
@@ -25227,19 +28093,19 @@
       init_EventEmitter();
       init_decorators();
       init_disposable();
-      __runInitializers9 = function(thisArg, initializers, value) {
+      __runInitializers9 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate9 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -25251,7 +28117,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -25260,7 +28126,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -25277,11 +28143,11 @@
         return class Realm extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate9(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate9(this, null, _disown_decorators, { kind: "method", name: "disown", static: false, private: false, access: { has: (obj) => "disown" in obj, get: (obj) => obj.disown }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate9(this, null, _callFunction_decorators, { kind: "method", name: "callFunction", static: false, private: false, access: { has: (obj) => "callFunction" in obj, get: (obj) => obj.callFunction }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate9(this, null, _evaluate_decorators, { kind: "method", name: "evaluate", static: false, private: false, access: { has: (obj) => "evaluate" in obj, get: (obj) => obj.evaluate }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate9(this, null, _resolveExecutionContextId_decorators, { kind: "method", name: "resolveExecutionContextId", static: false, private: false, access: { has: (obj) => "resolveExecutionContextId" in obj, get: (obj) => obj.resolveExecutionContextId }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate9(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate9(this, null, _disown_decorators, { kind: "method", name: "disown", static: false, private: false, access: { has: (obj2) => "disown" in obj2, get: (obj2) => obj2.disown }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate9(this, null, _callFunction_decorators, { kind: "method", name: "callFunction", static: false, private: false, access: { has: (obj2) => "callFunction" in obj2, get: (obj2) => obj2.callFunction }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate9(this, null, _evaluate_decorators, { kind: "method", name: "evaluate", static: false, private: false, access: { has: (obj2) => "evaluate" in obj2, get: (obj2) => obj2.evaluate }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate9(this, null, _resolveExecutionContextId_decorators, { kind: "method", name: "resolveExecutionContextId", static: false, private: false, access: { has: (obj2) => "resolveExecutionContextId" in obj2, get: (obj2) => obj2.resolveExecutionContextId }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           #reason = __runInitializers9(this, _instanceExtraInitializers);
@@ -25497,19 +28363,19 @@
       init_decorators();
       init_disposable();
       init_encoding();
-      __runInitializers10 = function(thisArg, initializers, value) {
+      __runInitializers10 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate10 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -25521,7 +28387,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -25530,7 +28396,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -25544,7 +28410,7 @@
         return class Request2 extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate10(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate10(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static from(browsingContext, event) {
@@ -25786,19 +28652,19 @@
       init_EventEmitter();
       init_decorators();
       init_disposable();
-      __runInitializers11 = function(thisArg, initializers, value) {
+      __runInitializers11 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate11 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -25810,7 +28676,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -25819,7 +28685,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -25833,8 +28699,8 @@
         return class UserPrompt2 extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate11(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate11(this, null, _handle_decorators, { kind: "method", name: "handle", static: false, private: false, access: { has: (obj) => "handle" in obj, get: (obj) => obj.handle }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate11(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate11(this, null, _handle_decorators, { kind: "method", name: "handle", static: false, private: false, access: { has: (obj2) => "handle" in obj2, get: (obj2) => obj2.handle }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static from(browsingContext, info) {
@@ -25924,19 +28790,19 @@
       init_Realm2();
       init_Request();
       init_UserPrompt();
-      __runInitializers12 = function(thisArg, initializers, value) {
+      __runInitializers12 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate12 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -25948,7 +28814,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -25957,7 +28823,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -26004,34 +28870,34 @@
             _locateNodes_decorators = [throwIfDisposed((context2) => {
               return context2.#reason;
             })];
-            __esDecorate12(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _activate_decorators, { kind: "method", name: "activate", static: false, private: false, access: { has: (obj) => "activate" in obj, get: (obj) => obj.activate }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _captureScreenshot_decorators, { kind: "method", name: "captureScreenshot", static: false, private: false, access: { has: (obj) => "captureScreenshot" in obj, get: (obj) => obj.captureScreenshot }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _close_decorators, { kind: "method", name: "close", static: false, private: false, access: { has: (obj) => "close" in obj, get: (obj) => obj.close }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _traverseHistory_decorators, { kind: "method", name: "traverseHistory", static: false, private: false, access: { has: (obj) => "traverseHistory" in obj, get: (obj) => obj.traverseHistory }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _navigate_decorators, { kind: "method", name: "navigate", static: false, private: false, access: { has: (obj) => "navigate" in obj, get: (obj) => obj.navigate }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _reload_decorators, { kind: "method", name: "reload", static: false, private: false, access: { has: (obj) => "reload" in obj, get: (obj) => obj.reload }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setCacheBehavior_decorators, { kind: "method", name: "setCacheBehavior", static: false, private: false, access: { has: (obj) => "setCacheBehavior" in obj, get: (obj) => obj.setCacheBehavior }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _print_decorators, { kind: "method", name: "print", static: false, private: false, access: { has: (obj) => "print" in obj, get: (obj) => obj.print }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _handleUserPrompt_decorators, { kind: "method", name: "handleUserPrompt", static: false, private: false, access: { has: (obj) => "handleUserPrompt" in obj, get: (obj) => obj.handleUserPrompt }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setViewport_decorators, { kind: "method", name: "setViewport", static: false, private: false, access: { has: (obj) => "setViewport" in obj, get: (obj) => obj.setViewport }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setTouchOverride_decorators, { kind: "method", name: "setTouchOverride", static: false, private: false, access: { has: (obj) => "setTouchOverride" in obj, get: (obj) => obj.setTouchOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _performActions_decorators, { kind: "method", name: "performActions", static: false, private: false, access: { has: (obj) => "performActions" in obj, get: (obj) => obj.performActions }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _releaseActions_decorators, { kind: "method", name: "releaseActions", static: false, private: false, access: { has: (obj) => "releaseActions" in obj, get: (obj) => obj.releaseActions }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _createWindowRealm_decorators, { kind: "method", name: "createWindowRealm", static: false, private: false, access: { has: (obj) => "createWindowRealm" in obj, get: (obj) => obj.createWindowRealm }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _addPreloadScript_decorators, { kind: "method", name: "addPreloadScript", static: false, private: false, access: { has: (obj) => "addPreloadScript" in obj, get: (obj) => obj.addPreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _addIntercept_decorators, { kind: "method", name: "addIntercept", static: false, private: false, access: { has: (obj) => "addIntercept" in obj, get: (obj) => obj.addIntercept }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _removePreloadScript_decorators, { kind: "method", name: "removePreloadScript", static: false, private: false, access: { has: (obj) => "removePreloadScript" in obj, get: (obj) => obj.removePreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setGeolocationOverride_decorators, { kind: "method", name: "setGeolocationOverride", static: false, private: false, access: { has: (obj) => "setGeolocationOverride" in obj, get: (obj) => obj.setGeolocationOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setTimezoneOverride_decorators, { kind: "method", name: "setTimezoneOverride", static: false, private: false, access: { has: (obj) => "setTimezoneOverride" in obj, get: (obj) => obj.setTimezoneOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setScreenOrientationOverride_decorators, { kind: "method", name: "setScreenOrientationOverride", static: false, private: false, access: { has: (obj) => "setScreenOrientationOverride" in obj, get: (obj) => obj.setScreenOrientationOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _getCookies_decorators, { kind: "method", name: "getCookies", static: false, private: false, access: { has: (obj) => "getCookies" in obj, get: (obj) => obj.getCookies }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setCookie_decorators, { kind: "method", name: "setCookie", static: false, private: false, access: { has: (obj) => "setCookie" in obj, get: (obj) => obj.setCookie }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _setFiles_decorators, { kind: "method", name: "setFiles", static: false, private: false, access: { has: (obj) => "setFiles" in obj, get: (obj) => obj.setFiles }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _subscribe_decorators, { kind: "method", name: "subscribe", static: false, private: false, access: { has: (obj) => "subscribe" in obj, get: (obj) => obj.subscribe }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _addInterception_decorators, { kind: "method", name: "addInterception", static: false, private: false, access: { has: (obj) => "addInterception" in obj, get: (obj) => obj.addInterception }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _deleteCookie_decorators, { kind: "method", name: "deleteCookie", static: false, private: false, access: { has: (obj) => "deleteCookie" in obj, get: (obj) => obj.deleteCookie }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate12(this, null, _locateNodes_decorators, { kind: "method", name: "locateNodes", static: false, private: false, access: { has: (obj) => "locateNodes" in obj, get: (obj) => obj.locateNodes }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _activate_decorators, { kind: "method", name: "activate", static: false, private: false, access: { has: (obj2) => "activate" in obj2, get: (obj2) => obj2.activate }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _captureScreenshot_decorators, { kind: "method", name: "captureScreenshot", static: false, private: false, access: { has: (obj2) => "captureScreenshot" in obj2, get: (obj2) => obj2.captureScreenshot }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _close_decorators, { kind: "method", name: "close", static: false, private: false, access: { has: (obj2) => "close" in obj2, get: (obj2) => obj2.close }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _traverseHistory_decorators, { kind: "method", name: "traverseHistory", static: false, private: false, access: { has: (obj2) => "traverseHistory" in obj2, get: (obj2) => obj2.traverseHistory }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _navigate_decorators, { kind: "method", name: "navigate", static: false, private: false, access: { has: (obj2) => "navigate" in obj2, get: (obj2) => obj2.navigate }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _reload_decorators, { kind: "method", name: "reload", static: false, private: false, access: { has: (obj2) => "reload" in obj2, get: (obj2) => obj2.reload }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setCacheBehavior_decorators, { kind: "method", name: "setCacheBehavior", static: false, private: false, access: { has: (obj2) => "setCacheBehavior" in obj2, get: (obj2) => obj2.setCacheBehavior }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _print_decorators, { kind: "method", name: "print", static: false, private: false, access: { has: (obj2) => "print" in obj2, get: (obj2) => obj2.print }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _handleUserPrompt_decorators, { kind: "method", name: "handleUserPrompt", static: false, private: false, access: { has: (obj2) => "handleUserPrompt" in obj2, get: (obj2) => obj2.handleUserPrompt }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setViewport_decorators, { kind: "method", name: "setViewport", static: false, private: false, access: { has: (obj2) => "setViewport" in obj2, get: (obj2) => obj2.setViewport }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setTouchOverride_decorators, { kind: "method", name: "setTouchOverride", static: false, private: false, access: { has: (obj2) => "setTouchOverride" in obj2, get: (obj2) => obj2.setTouchOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _performActions_decorators, { kind: "method", name: "performActions", static: false, private: false, access: { has: (obj2) => "performActions" in obj2, get: (obj2) => obj2.performActions }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _releaseActions_decorators, { kind: "method", name: "releaseActions", static: false, private: false, access: { has: (obj2) => "releaseActions" in obj2, get: (obj2) => obj2.releaseActions }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _createWindowRealm_decorators, { kind: "method", name: "createWindowRealm", static: false, private: false, access: { has: (obj2) => "createWindowRealm" in obj2, get: (obj2) => obj2.createWindowRealm }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _addPreloadScript_decorators, { kind: "method", name: "addPreloadScript", static: false, private: false, access: { has: (obj2) => "addPreloadScript" in obj2, get: (obj2) => obj2.addPreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _addIntercept_decorators, { kind: "method", name: "addIntercept", static: false, private: false, access: { has: (obj2) => "addIntercept" in obj2, get: (obj2) => obj2.addIntercept }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _removePreloadScript_decorators, { kind: "method", name: "removePreloadScript", static: false, private: false, access: { has: (obj2) => "removePreloadScript" in obj2, get: (obj2) => obj2.removePreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setGeolocationOverride_decorators, { kind: "method", name: "setGeolocationOverride", static: false, private: false, access: { has: (obj2) => "setGeolocationOverride" in obj2, get: (obj2) => obj2.setGeolocationOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setTimezoneOverride_decorators, { kind: "method", name: "setTimezoneOverride", static: false, private: false, access: { has: (obj2) => "setTimezoneOverride" in obj2, get: (obj2) => obj2.setTimezoneOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setScreenOrientationOverride_decorators, { kind: "method", name: "setScreenOrientationOverride", static: false, private: false, access: { has: (obj2) => "setScreenOrientationOverride" in obj2, get: (obj2) => obj2.setScreenOrientationOverride }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _getCookies_decorators, { kind: "method", name: "getCookies", static: false, private: false, access: { has: (obj2) => "getCookies" in obj2, get: (obj2) => obj2.getCookies }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setCookie_decorators, { kind: "method", name: "setCookie", static: false, private: false, access: { has: (obj2) => "setCookie" in obj2, get: (obj2) => obj2.setCookie }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _setFiles_decorators, { kind: "method", name: "setFiles", static: false, private: false, access: { has: (obj2) => "setFiles" in obj2, get: (obj2) => obj2.setFiles }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _subscribe_decorators, { kind: "method", name: "subscribe", static: false, private: false, access: { has: (obj2) => "subscribe" in obj2, get: (obj2) => obj2.subscribe }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _addInterception_decorators, { kind: "method", name: "addInterception", static: false, private: false, access: { has: (obj2) => "addInterception" in obj2, get: (obj2) => obj2.addInterception }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _deleteCookie_decorators, { kind: "method", name: "deleteCookie", static: false, private: false, access: { has: (obj2) => "deleteCookie" in obj2, get: (obj2) => obj2.deleteCookie }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate12(this, null, _locateNodes_decorators, { kind: "method", name: "locateNodes", static: false, private: false, access: { has: (obj2) => "locateNodes" in obj2, get: (obj2) => obj2.locateNodes }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static from(userContext, parent, id, url, originalOpener) {
@@ -26481,11 +29347,11 @@
           }
           async setExtraHTTPHeaders(headers) {
             await this.#session.send("network.setExtraHeaders", {
-              headers: Object.entries(headers).map(([key, value]) => {
-                assert(isString(value), `Expected value of header "${key}" to be String, but "${typeof value}" is found.`);
+              headers: Object.entries(headers).map(([key2, value2]) => {
+                assert(isString(value2), `Expected value of header "${key2}" to be String, but "${typeof value2}" is found.`);
                 return {
-                  name: key.toLowerCase(),
-                  value: { type: "string", value }
+                  name: key2.toLowerCase(),
+                  value: { type: "string", value: value2 }
                 };
               }),
               contexts: [this.id]
@@ -26505,19 +29371,19 @@
       init_decorators();
       init_disposable();
       init_BrowsingContext();
-      __runInitializers13 = function(thisArg, initializers, value) {
+      __runInitializers13 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate13 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -26529,7 +29395,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -26538,7 +29404,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -26556,12 +29422,12 @@
         return class UserContext2 extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate13(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate13(this, null, _createBrowsingContext_decorators, { kind: "method", name: "createBrowsingContext", static: false, private: false, access: { has: (obj) => "createBrowsingContext" in obj, get: (obj) => obj.createBrowsingContext }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate13(this, null, _remove_decorators, { kind: "method", name: "remove", static: false, private: false, access: { has: (obj) => "remove" in obj, get: (obj) => obj.remove }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate13(this, null, _getCookies_decorators, { kind: "method", name: "getCookies", static: false, private: false, access: { has: (obj) => "getCookies" in obj, get: (obj) => obj.getCookies }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate13(this, null, _setCookie_decorators, { kind: "method", name: "setCookie", static: false, private: false, access: { has: (obj) => "setCookie" in obj, get: (obj) => obj.setCookie }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate13(this, null, _setPermissions_decorators, { kind: "method", name: "setPermissions", static: false, private: false, access: { has: (obj) => "setPermissions" in obj, get: (obj) => obj.setPermissions }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate13(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate13(this, null, _createBrowsingContext_decorators, { kind: "method", name: "createBrowsingContext", static: false, private: false, access: { has: (obj2) => "createBrowsingContext" in obj2, get: (obj2) => obj2.createBrowsingContext }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate13(this, null, _remove_decorators, { kind: "method", name: "remove", static: false, private: false, access: { has: (obj2) => "remove" in obj2, get: (obj2) => obj2.remove }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate13(this, null, _getCookies_decorators, { kind: "method", name: "getCookies", static: false, private: false, access: { has: (obj2) => "getCookies" in obj2, get: (obj2) => obj2.getCookies }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate13(this, null, _setCookie_decorators, { kind: "method", name: "setCookie", static: false, private: false, access: { has: (obj2) => "setCookie" in obj2, get: (obj2) => obj2.setCookie }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate13(this, null, _setPermissions_decorators, { kind: "method", name: "setPermissions", static: false, private: false, access: { has: (obj2) => "setPermissions" in obj2, get: (obj2) => obj2.setPermissions }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static DEFAULT = "default";
@@ -26710,23 +29576,23 @@
           }
           switch (result.type) {
             case "array":
-              return result.value?.map((value) => {
-                return this.deserialize(value);
+              return result.value?.map((value2) => {
+                return this.deserialize(value2);
               });
             case "set":
-              return result.value?.reduce((acc, value) => {
-                return acc.add(this.deserialize(value));
+              return result.value?.reduce((acc, value2) => {
+                return acc.add(this.deserialize(value2));
               }, /* @__PURE__ */ new Set());
             case "object":
               return result.value?.reduce((acc, tuple) => {
-                const { key, value } = this.#deserializeTuple(tuple);
-                acc[key] = value;
+                const { key: key2, value: value2 } = this.#deserializeTuple(tuple);
+                acc[key2] = value2;
                 return acc;
               }, {});
             case "map":
               return result.value?.reduce((acc, tuple) => {
-                const { key, value } = this.#deserializeTuple(tuple);
-                return acc.set(key, value);
+                const { key: key2, value: value2 } = this.#deserializeTuple(tuple);
+                return acc.set(key2, value2);
               }, /* @__PURE__ */ new Map());
             case "promise":
               return {};
@@ -26750,8 +29616,8 @@
           debugError(`Deserialization of type ${result.type} not supported.`);
           return void 0;
         }
-        static #deserializeNumber(value) {
-          switch (value) {
+        static #deserializeNumber(value2) {
+          switch (value2) {
             case "-0":
               return -0;
             case "NaN":
@@ -26761,13 +29627,13 @@
             case "-Infinity":
               return -Infinity;
             default:
-              return value;
+              return value2;
           }
         }
         static #deserializeTuple([serializedKey, serializedValue]) {
-          const key = typeof serializedKey === "string" ? serializedKey : this.deserialize(serializedKey);
-          const value = this.deserialize(serializedValue);
-          return { key, value };
+          const key2 = typeof serializedKey === "string" ? serializedKey : this.deserialize(serializedKey);
+          const value2 = this.deserialize(serializedValue);
+          return { key: key2, value: value2 };
         }
       };
     }
@@ -26781,23 +29647,23 @@
       init_Errors();
       init_Deserializer();
       BidiJSHandle = class _BidiJSHandle extends JSHandle {
-        static from(value, realm) {
-          return new _BidiJSHandle(value, realm);
+        static from(value2, realm) {
+          return new _BidiJSHandle(value2, realm);
         }
         #remoteValue;
         realm;
         #disposed = false;
-        constructor(value, realm) {
+        constructor(value2, realm) {
           super();
-          this.#remoteValue = value;
+          this.#remoteValue = value2;
           this.realm = realm;
         }
         get disposed() {
           return this.#disposed;
         }
         async jsonValue() {
-          return await this.evaluate((value) => {
-            return value;
+          return await this.evaluate((value2) => {
+            return value2;
           });
         }
         asElement() {
@@ -26852,19 +29718,19 @@
       init_AsyncIterableUtil();
       init_decorators();
       init_JSHandle2();
-      __runInitializers14 = function(thisArg, initializers, value) {
+      __runInitializers14 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate14 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -26876,7 +29742,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -26885,23 +29751,23 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __addDisposableResource14 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource14 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -26912,11 +29778,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources14 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -26959,16 +29825,16 @@
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
             _autofill_decorators = [throwIfDisposed()];
             _contentFrame_decorators = [throwIfDisposed(), bindIsolatedHandle];
-            __esDecorate14(this, null, _autofill_decorators, { kind: "method", name: "autofill", static: false, private: false, access: { has: (obj) => "autofill" in obj, get: (obj) => obj.autofill }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate14(this, null, _contentFrame_decorators, { kind: "method", name: "contentFrame", static: false, private: false, access: { has: (obj) => "contentFrame" in obj, get: (obj) => obj.contentFrame }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate14(this, null, _autofill_decorators, { kind: "method", name: "autofill", static: false, private: false, access: { has: (obj2) => "autofill" in obj2, get: (obj2) => obj2.autofill }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate14(this, null, _contentFrame_decorators, { kind: "method", name: "contentFrame", static: false, private: false, access: { has: (obj2) => "contentFrame" in obj2, get: (obj2) => obj2.contentFrame }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           #backendNodeId = __runInitializers14(this, _instanceExtraInitializers);
-          static from(value, realm) {
-            return new BidiElementHandle2(value, realm);
+          static from(value2, realm) {
+            return new BidiElementHandle2(value2, realm);
           }
-          constructor(value, realm) {
-            super(BidiJSHandle.from(value, realm));
+          constructor(value2, realm) {
+            super(BidiJSHandle.from(value2, realm));
           }
           get realm() {
             return this.handle.realm;
@@ -27001,10 +29867,10 @@
                 }
                 return;
               }), false);
-              const value = handle.remoteValue();
-              if (value.type === "window") {
+              const value2 = handle.remoteValue();
+              if (value2.type === "window") {
                 return this.frame.page().frames().find((frame) => {
-                  return frame._id === value.value.context;
+                  return frame._id === value2.value.context;
                 }) ?? null;
               }
               return null;
@@ -27093,17 +29959,17 @@
       init_Function();
       init_ElementHandle2();
       init_JSHandle2();
-      __addDisposableResource15 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource15 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -27114,11 +29980,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources15 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -27184,9 +30050,9 @@
           connectionEmitter.on("script.message", this.#handleMessage);
           const functionDeclaration = stringifyFunction(interpolateFunction((callback) => {
             Object.assign(globalThis, {
-              [PLACEHOLDER("name")]: function(...args) {
+              [PLACEHOLDER("name")]: function(...args2) {
                 return new Promise((resolve, reject) => {
-                  callback([resolve, reject, args]);
+                  callback([resolve, reject, args2]);
                 });
               }
             });
@@ -27228,24 +30094,24 @@
             }
             const dataHandle = __addDisposableResource15(env_1, BidiJSHandle.from(params.data, realm), false);
             const stack = __addDisposableResource15(env_1, new DisposableStack(), false);
-            const args = [];
+            const args2 = [];
             let result;
             try {
               const env_2 = { stack: [], error: void 0, hasError: false };
               try {
-                const argsHandle = __addDisposableResource15(env_2, await dataHandle.evaluateHandle(([, , args2]) => {
-                  return args2;
+                const argsHandle = __addDisposableResource15(env_2, await dataHandle.evaluateHandle(([, , args3]) => {
+                  return args3;
                 }), false);
                 for (const [index, handle] of await argsHandle.getProperties()) {
                   stack.use(handle);
                   if (handle instanceof BidiElementHandle) {
-                    args[+index] = handle;
+                    args2[+index] = handle;
                     stack.use(handle);
                     continue;
                   }
-                  args[+index] = handle.jsonValue();
+                  args2[+index] = handle.jsonValue();
                 }
-                result = await this.#apply(...await Promise.all(args));
+                result = await this.#apply(...await Promise.all(args2));
               } catch (e_1) {
                 env_2.error = e_1;
                 env_2.hasError = true;
@@ -27340,19 +30206,19 @@
       init_Errors();
       init_SecurityDetails();
       init_decorators();
-      __runInitializers15 = function(thisArg, initializers, value) {
+      __runInitializers15 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate15 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -27364,7 +30230,7 @@
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -27373,7 +30239,7 @@
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -27387,7 +30253,7 @@
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
             _remoteAddress_decorators = [invokeAtMostOnceForArguments];
-            __esDecorate15(this, null, _remoteAddress_decorators, { kind: "method", name: "remoteAddress", static: false, private: false, access: { has: (obj) => "remoteAddress" in obj, get: (obj) => obj.remoteAddress }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate15(this, null, _remoteAddress_decorators, { kind: "method", name: "remoteAddress", static: false, private: false, access: { has: (obj2) => "remoteAddress" in obj2, get: (obj2) => obj2.remoteAddress }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           /**
@@ -27503,15 +30369,15 @@
   // node_modules/puppeteer-core/lib/esm/puppeteer/bidi/HTTPRequest.js
   function getBidiHeaders(rawHeaders) {
     const headers = [];
-    for (const [name, value] of Object.entries(rawHeaders ?? [])) {
-      if (!Object.is(value, void 0)) {
-        const values = Array.isArray(value) ? value : [value];
-        for (const value2 of values) {
+    for (const [name, value2] of Object.entries(rawHeaders ?? [])) {
+      if (!Object.is(value2, void 0)) {
+        const values = Array.isArray(value2) ? value2 : [value2];
+        for (const value3 of values) {
           headers.push({
             name: name.toLowerCase(),
             value: {
               type: "string",
-              value: String(value2)
+              value: String(value3)
             }
           });
         }
@@ -27774,21 +30640,21 @@
           }
         }
         static #serializeNumber(arg) {
-          let value;
+          let value2;
           if (Object.is(arg, -0)) {
-            value = "-0";
+            value2 = "-0";
           } else if (Object.is(arg, Infinity)) {
-            value = "Infinity";
+            value2 = "Infinity";
           } else if (Object.is(arg, -Infinity)) {
-            value = "-Infinity";
+            value2 = "-Infinity";
           } else if (Object.is(arg, NaN)) {
-            value = "NaN";
+            value2 = "NaN";
           } else {
-            value = arg;
+            value2 = arg;
           }
           return {
             type: "number",
-            value
+            value: value2
           };
         }
         static #serializeObject(arg) {
@@ -27814,8 +30680,8 @@
               throw error;
             }
             const parsedObject = [];
-            for (const key in arg) {
-              parsedObject.push([this.serialize(key), this.serialize(arg[key])]);
+            for (const key2 in arg) {
+              parsedObject.push([this.serialize(key2), this.serialize(arg[key2])]);
             }
             return {
               type: "object",
@@ -27905,17 +30771,17 @@
       init_JSHandle2();
       init_Serializer();
       init_util2();
-      __addDisposableResource16 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource16 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -27926,11 +30792,11 @@
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources16 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -27994,13 +30860,13 @@
           }, !this.internalPuppeteerUtil);
           return this.internalPuppeteerUtil;
         }
-        async evaluateHandle(pageFunction, ...args) {
-          return await this.#evaluate(false, pageFunction, ...args);
+        async evaluateHandle(pageFunction, ...args2) {
+          return await this.#evaluate(false, pageFunction, ...args2);
         }
-        async evaluate(pageFunction, ...args) {
-          return await this.#evaluate(true, pageFunction, ...args);
+        async evaluate(pageFunction, ...args2) {
+          return await this.#evaluate(true, pageFunction, ...args2);
         }
-        async #evaluate(returnByValue, pageFunction, ...args) {
+        async #evaluate(returnByValue, pageFunction, ...args2) {
           const sourceUrlComment = getSourceUrlComment(getSourcePuppeteerURLIfAvailable(pageFunction)?.toString() ?? PuppeteerURL.INTERNAL_URL);
           let responsePromise;
           const resultOwnership = returnByValue ? "none" : "root";
@@ -28029,11 +30895,11 @@ ${sourceUrlComment}
               {
                 // LazyArgs are used only internally and should not affect the order
                 // evaluate calls for the public APIs.
-                arguments: args.some((arg) => {
+                arguments: args2.some((arg) => {
                   return arg instanceof LazyArg;
-                }) ? await Promise.all(args.map((arg) => {
+                }) ? await Promise.all(args2.map((arg) => {
                   return this.serializeAsync(arg);
-                })) : args.map((arg) => {
+                })) : args2.map((arg) => {
                   return this.serialize(arg);
                 }),
                 resultOwnership,
@@ -28279,19 +31145,19 @@ ${sourceUrlComment}
       init_Realm3();
       init_util2();
       init_WebWorker2();
-      __runInitializers16 = function(thisArg, initializers, value) {
+      __runInitializers16 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate16 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -28303,7 +31169,7 @@ ${sourceUrlComment}
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -28312,7 +31178,7 @@ ${sourceUrlComment}
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -28345,9 +31211,9 @@ ${sourceUrlComment}
             _private_waitForNetworkIdle$_decorators = [throwIfDetached];
             _setFiles_decorators = [throwIfDetached];
             _locateNodes_decorators = [throwIfDetached];
-            __esDecorate16(this, null, _goto_decorators, { kind: "method", name: "goto", static: false, private: false, access: { has: (obj) => "goto" in obj, get: (obj) => obj.goto }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate16(this, null, _setContent_decorators, { kind: "method", name: "setContent", static: false, private: false, access: { has: (obj) => "setContent" in obj, get: (obj) => obj.setContent }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate16(this, null, _waitForNavigation_decorators, { kind: "method", name: "waitForNavigation", static: false, private: false, access: { has: (obj) => "waitForNavigation" in obj, get: (obj) => obj.waitForNavigation }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate16(this, null, _goto_decorators, { kind: "method", name: "goto", static: false, private: false, access: { has: (obj2) => "goto" in obj2, get: (obj2) => obj2.goto }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate16(this, null, _setContent_decorators, { kind: "method", name: "setContent", static: false, private: false, access: { has: (obj2) => "setContent" in obj2, get: (obj2) => obj2.setContent }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate16(this, null, _waitForNavigation_decorators, { kind: "method", name: "waitForNavigation", static: false, private: false, access: { has: (obj2) => "waitForNavigation" in obj2, get: (obj2) => obj2.waitForNavigation }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate16(this, _private_waitForLoad$_descriptor = { value: __setFunctionName3(function(options = {}) {
               let { waitUntil = "load" } = options;
               const { timeout: ms = this.timeoutSettings.navigationTimeout() } = options;
@@ -28376,7 +31242,7 @@ ${sourceUrlComment}
               }), first(), raceWith(timeout(ms), this.#detached$().pipe(map(() => {
                 throw new Error("Frame detached.");
               }))));
-            }, "#waitForLoad$") }, _private_waitForLoad$_decorators, { kind: "method", name: "#waitForLoad$", static: false, private: true, access: { has: (obj) => #waitForLoad$ in obj, get: (obj) => obj.#waitForLoad$ }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#waitForLoad$") }, _private_waitForLoad$_decorators, { kind: "method", name: "#waitForLoad$", static: false, private: true, access: { has: (obj2) => #waitForLoad$ in obj2, get: (obj2) => obj2.#waitForLoad$ }, metadata: _metadata }, null, _instanceExtraInitializers);
             __esDecorate16(this, _private_waitForNetworkIdle$_descriptor = { value: __setFunctionName3(function(options = {}) {
               let { waitUntil = "load" } = options;
               if (!Array.isArray(waitUntil)) {
@@ -28403,9 +31269,9 @@ ${sourceUrlComment}
                 timeout: options.timeout ?? this.timeoutSettings.timeout(),
                 concurrency
               });
-            }, "#waitForNetworkIdle$") }, _private_waitForNetworkIdle$_decorators, { kind: "method", name: "#waitForNetworkIdle$", static: false, private: true, access: { has: (obj) => #waitForNetworkIdle$ in obj, get: (obj) => obj.#waitForNetworkIdle$ }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate16(this, null, _setFiles_decorators, { kind: "method", name: "setFiles", static: false, private: false, access: { has: (obj) => "setFiles" in obj, get: (obj) => obj.setFiles }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate16(this, null, _locateNodes_decorators, { kind: "method", name: "locateNodes", static: false, private: false, access: { has: (obj) => "locateNodes" in obj, get: (obj) => obj.locateNodes }, metadata: _metadata }, null, _instanceExtraInitializers);
+            }, "#waitForNetworkIdle$") }, _private_waitForNetworkIdle$_decorators, { kind: "method", name: "#waitForNetworkIdle$", static: false, private: true, access: { has: (obj2) => #waitForNetworkIdle$ in obj2, get: (obj2) => obj2.#waitForNetworkIdle$ }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate16(this, null, _setFiles_decorators, { kind: "method", name: "setFiles", static: false, private: false, access: { has: (obj2) => "setFiles" in obj2, get: (obj2) => obj2.setFiles }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate16(this, null, _locateNodes_decorators, { kind: "method", name: "locateNodes", static: false, private: false, access: { has: (obj2) => "locateNodes" in obj2, get: (obj2) => obj2.locateNodes }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static from(parent, browsingContext) {
@@ -28478,14 +31344,14 @@ ${sourceUrlComment}
                 return;
               }
               if (isConsoleLogEntry(entry)) {
-                const args = entry.args.map((arg) => {
+                const args2 = entry.args.map((arg) => {
                   return this.mainRealm().createHandle(arg);
                 });
-                const text = args.reduce((value, arg) => {
+                const text = args2.reduce((value2, arg) => {
                   const parsedValue = arg instanceof BidiJSHandle && arg.isPrimitiveValue ? BidiDeserializer.deserialize(arg.remoteValue()) : arg.toString();
-                  return `${value} ${parsedValue}`;
+                  return `${value2} ${parsedValue}`;
                 }, "").slice(1);
-                this.page().trustedEmitter.emit("console", new ConsoleMessage(convertConsoleMessageLevel2(entry.method), text, args, getStackTraceLocations(entry.stackTrace), this, void 0));
+                this.page().trustedEmitter.emit("console", new ConsoleMessage(convertConsoleMessageLevel2(entry.method), text, args2, getStackTraceLocations(entry.stackTrace), this, void 0));
               } else if (isJavaScriptLogEntry(entry)) {
                 const error = new Error(entry.text ?? "");
                 const messageHeight = error.message.split("\n").length;
@@ -28740,17 +31606,17 @@ ${sourceUrlComment}
         ActionType2["PointerMove"] = "pointerMove";
         ActionType2["Scroll"] = "scroll";
       })(ActionType || (ActionType = {}));
-      getBidiKeyValue = (key) => {
-        switch (key) {
+      getBidiKeyValue = (key2) => {
+        switch (key2) {
           case "\r":
           case "\n":
-            key = "Enter";
+            key2 = "Enter";
             break;
         }
-        if ([...key].length === 1) {
-          return key;
+        if ([...key2].length === 1) {
+          return key2;
         }
-        switch (key) {
+        switch (key2) {
           case "Cancel":
             return "\uE001";
           case "Help":
@@ -28958,16 +31824,16 @@ ${sourceUrlComment}
           case "Quote":
             return '"';
           default:
-            throw new Error(`Unknown key: "${key}"`);
+            throw new Error(`Unknown key: "${key2}"`);
         }
       };
       BidiKeyboard = class extends Keyboard {
         #page;
-        constructor(page) {
+        constructor(page2) {
           super();
-          this.#page = page;
+          this.#page = page2;
         }
-        async down(key, _options) {
+        async down(key2, _options) {
           await this.#page.mainFrame().browsingContext.performActions([
             {
               type: SourceActionsType.Key,
@@ -28975,13 +31841,13 @@ ${sourceUrlComment}
               actions: [
                 {
                   type: ActionType.KeyDown,
-                  value: getBidiKeyValue(key)
+                  value: getBidiKeyValue(key2)
                 }
               ]
             }
           ]);
         }
-        async up(key) {
+        async up(key2) {
           await this.#page.mainFrame().browsingContext.performActions([
             {
               type: SourceActionsType.Key,
@@ -28989,18 +31855,18 @@ ${sourceUrlComment}
               actions: [
                 {
                   type: ActionType.KeyUp,
-                  value: getBidiKeyValue(key)
+                  value: getBidiKeyValue(key2)
                 }
               ]
             }
           ]);
         }
-        async press(key, options = {}) {
+        async press(key2, options = {}) {
           const { delay = 0 } = options;
           const actions = [
             {
               type: ActionType.KeyDown,
-              value: getBidiKeyValue(key)
+              value: getBidiKeyValue(key2)
             }
           ];
           if (delay > 0) {
@@ -29011,7 +31877,7 @@ ${sourceUrlComment}
           }
           actions.push({
             type: ActionType.KeyUp,
-            value: getBidiKeyValue(key)
+            value: getBidiKeyValue(key2)
           });
           await this.#page.mainFrame().browsingContext.performActions([
             {
@@ -29026,26 +31892,26 @@ ${sourceUrlComment}
           const values = [...text].map(getBidiKeyValue);
           const actions = [];
           if (delay <= 0) {
-            for (const value of values) {
+            for (const value2 of values) {
               actions.push({
                 type: ActionType.KeyDown,
-                value
+                value: value2
               }, {
                 type: ActionType.KeyUp,
-                value
+                value: value2
               });
             }
           } else {
-            for (const value of values) {
+            for (const value2 of values) {
               actions.push({
                 type: ActionType.KeyDown,
-                value
+                value: value2
               }, {
                 type: ActionType.Pause,
                 duration: delay
               }, {
                 type: ActionType.KeyUp,
-                value
+                value: value2
               });
             }
           }
@@ -29084,9 +31950,9 @@ ${sourceUrlComment}
       BidiMouse = class extends Mouse {
         #page;
         #lastMovePoint = { x: 0, y: 0 };
-        constructor(page) {
+        constructor(page2) {
           super();
-          this.#page = page;
+          this.#page = page2;
         }
         async reset() {
           this.#lastMovePoint = { x: 0, y: 0 };
@@ -29229,8 +32095,8 @@ ${sourceUrlComment}
         #page;
         #touchScreen;
         #properties;
-        constructor(page, touchScreen, id, x, y, properties) {
-          this.#page = page;
+        constructor(page2, touchScreen, id, x, y, properties) {
+          this.#page = page2;
           this.#touchScreen = touchScreen;
           this.#x = Math.round(x);
           this.#y = Math.round(y);
@@ -29307,9 +32173,9 @@ ${sourceUrlComment}
       };
       BidiTouchscreen = class extends Touchscreen {
         #page;
-        constructor(page) {
+        constructor(page2) {
           super();
-          this.#page = page;
+          this.#page = page2;
         }
         async touchStart(x, y, options = {}) {
           const id = this.idGenerator();
@@ -29331,8 +32197,8 @@ ${sourceUrlComment}
   });
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/bidi/Page.js
-  function evaluationExpression(fun, ...args) {
-    return `() => {${evaluationString(fun, ...args)}}`;
+  function evaluationExpression(fun, ...args2) {
+    return `() => {${evaluationString(fun, ...args2)}}`;
   }
   function testUrlMatchCookieHostname(cookie, normalizedUrl) {
     const cookieDomain = cookie.domain.toLowerCase();
@@ -29470,7 +32336,7 @@ ${sourceUrlComment}
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -29482,7 +32348,7 @@ ${sourceUrlComment}
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -29491,30 +32357,30 @@ ${sourceUrlComment}
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __runInitializers17 = function(thisArg, initializers, value) {
+      __runInitializers17 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
-      __addDisposableResource17 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource17 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -29525,11 +32391,11 @@ ${sourceUrlComment}
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources17 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -29571,22 +32437,22 @@ ${sourceUrlComment}
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
             _trustedEmitter_decorators = [bubble()];
-            __esDecorate17(this, null, _trustedEmitter_decorators, { kind: "accessor", name: "trustedEmitter", static: false, private: false, access: { has: (obj) => "trustedEmitter" in obj, get: (obj) => obj.trustedEmitter, set: (obj, value) => {
-              obj.trustedEmitter = value;
+            __esDecorate17(this, null, _trustedEmitter_decorators, { kind: "accessor", name: "trustedEmitter", static: false, private: false, access: { has: (obj2) => "trustedEmitter" in obj2, get: (obj2) => obj2.trustedEmitter, set: (obj2, value2) => {
+              obj2.trustedEmitter = value2;
             } }, metadata: _metadata }, _trustedEmitter_initializers, _trustedEmitter_extraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static from(browserContext, browsingContext) {
-            const page = new BidiPage2(browserContext, browsingContext);
-            page.#initialize();
-            return page;
+            const page2 = new BidiPage2(browserContext, browsingContext);
+            page2.#initialize();
+            return page2;
           }
           #trustedEmitter_accessor_storage = __runInitializers17(this, _trustedEmitter_initializers, new EventEmitter());
           get trustedEmitter() {
             return this.#trustedEmitter_accessor_storage;
           }
-          set trustedEmitter(value) {
-            this.#trustedEmitter_accessor_storage = value;
+          set trustedEmitter(value2) {
+            this.#trustedEmitter_accessor_storage = value2;
           }
           #browserContext = __runInitializers17(this, _trustedEmitter_extraInitializers);
           #frame;
@@ -29699,10 +32565,10 @@ ${sourceUrlComment}
                 }
                 return win;
               }), false);
-              const value = handle.remoteValue();
-              assert(value.type === "window");
+              const value2 = handle.remoteValue();
+              assert(value2.type === "window");
               const frame = this.frames().find((frame2) => {
-                return frame2._id === value.value.context;
+                return frame2._id === value2.value.context;
               });
               assert(frame);
               return frame;
@@ -29930,8 +32796,8 @@ ${sourceUrlComment}
           async bringToFront() {
             await this.#frame.browsingContext.activate();
           }
-          async evaluateOnNewDocument(pageFunction, ...args) {
-            const expression = evaluationExpression(pageFunction, ...args);
+          async evaluateOnNewDocument(pageFunction, ...args2) {
+            const expression = evaluationExpression(pageFunction, ...args2);
             const script = await this.#frame.browsingContext.addPreloadScript(expression);
             return { identifier: script };
           }
@@ -30227,9 +33093,9 @@ ${sourceUrlComment}
       };
       BidiPageTarget = class extends Target {
         #page;
-        constructor(page) {
+        constructor(page2) {
           super();
-          this.#page = page;
+          this.#page = page2;
         }
         async page() {
           return this.#page;
@@ -30344,7 +33210,7 @@ ${sourceUrlComment}
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -30356,7 +33222,7 @@ ${sourceUrlComment}
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -30365,30 +33231,30 @@ ${sourceUrlComment}
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __runInitializers18 = function(thisArg, initializers, value) {
+      __runInitializers18 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
-      __addDisposableResource18 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource18 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -30399,11 +33265,11 @@ ${sourceUrlComment}
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources18 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -30445,8 +33311,8 @@ ${sourceUrlComment}
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
             _trustedEmitter_decorators = [bubble()];
-            __esDecorate18(this, null, _trustedEmitter_decorators, { kind: "accessor", name: "trustedEmitter", static: false, private: false, access: { has: (obj) => "trustedEmitter" in obj, get: (obj) => obj.trustedEmitter, set: (obj, value) => {
-              obj.trustedEmitter = value;
+            __esDecorate18(this, null, _trustedEmitter_decorators, { kind: "accessor", name: "trustedEmitter", static: false, private: false, access: { has: (obj2) => "trustedEmitter" in obj2, get: (obj2) => obj2.trustedEmitter, set: (obj2, value2) => {
+              obj2.trustedEmitter = value2;
             } }, metadata: _metadata }, _trustedEmitter_initializers, _trustedEmitter_extraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
@@ -30459,8 +33325,8 @@ ${sourceUrlComment}
           get trustedEmitter() {
             return this.#trustedEmitter_accessor_storage;
           }
-          set trustedEmitter(value) {
-            this.#trustedEmitter_accessor_storage = value;
+          set trustedEmitter(value2) {
+            this.#trustedEmitter_accessor_storage = value2;
           }
           #browser = __runInitializers18(this, _trustedEmitter_extraInitializers);
           #defaultViewport;
@@ -30480,11 +33346,11 @@ ${sourceUrlComment}
               this.#createPage(browsingContext);
             }
             this.userContext.on("browsingcontext", ({ browsingContext }) => {
-              const page = this.#createPage(browsingContext);
+              const page2 = this.#createPage(browsingContext);
               if (browsingContext.originalOpener) {
                 for (const context2 of this.userContext.browsingContexts) {
                   if (context2.id === browsingContext.originalOpener) {
-                    this.#pages.get(context2).trustedEmitter.emit("popup", page);
+                    this.#pages.get(context2).trustedEmitter.emit("popup", page2);
                   }
                 }
               }
@@ -30494,21 +33360,21 @@ ${sourceUrlComment}
             });
           }
           #createPage(browsingContext) {
-            const page = BidiPage.from(this, browsingContext);
-            this.#pages.set(browsingContext, page);
-            page.trustedEmitter.on("close", () => {
+            const page2 = BidiPage.from(this, browsingContext);
+            this.#pages.set(browsingContext, page2);
+            page2.trustedEmitter.on("close", () => {
               this.#pages.delete(browsingContext);
             });
-            const pageTarget = new BidiPageTarget(page);
+            const pageTarget = new BidiPageTarget(page2);
             const pageTargets = /* @__PURE__ */ new Map();
-            this.#targets.set(page, [pageTarget, pageTargets]);
-            page.trustedEmitter.on("frameattached", (frame) => {
+            this.#targets.set(page2, [pageTarget, pageTargets]);
+            page2.trustedEmitter.on("frameattached", (frame) => {
               const bidiFrame = frame;
               const target = new BidiFrameTarget(bidiFrame);
               pageTargets.set(bidiFrame, target);
               this.trustedEmitter.emit("targetcreated", target);
             });
-            page.trustedEmitter.on("framenavigated", (frame) => {
+            page2.trustedEmitter.on("framenavigated", (frame) => {
               const bidiFrame = frame;
               const target = pageTargets.get(bidiFrame);
               if (target === void 0) {
@@ -30517,7 +33383,7 @@ ${sourceUrlComment}
                 this.trustedEmitter.emit("targetchanged", target);
               }
             });
-            page.trustedEmitter.on("framedetached", (frame) => {
+            page2.trustedEmitter.on("framedetached", (frame) => {
               const bidiFrame = frame;
               const target = pageTargets.get(bidiFrame);
               if (target === void 0) {
@@ -30526,13 +33392,13 @@ ${sourceUrlComment}
               pageTargets.delete(bidiFrame);
               this.trustedEmitter.emit("targetdestroyed", target);
             });
-            page.trustedEmitter.on("workercreated", (worker) => {
+            page2.trustedEmitter.on("workercreated", (worker) => {
               const bidiWorker = worker;
               const target = new BidiWorkerTarget(bidiWorker);
               pageTargets.set(bidiWorker, target);
               this.trustedEmitter.emit("targetcreated", target);
             });
-            page.trustedEmitter.on("workerdestroyed", (worker) => {
+            page2.trustedEmitter.on("workerdestroyed", (worker) => {
               const bidiWorker = worker;
               const target = pageTargets.get(bidiWorker);
               if (target === void 0) {
@@ -30541,12 +33407,12 @@ ${sourceUrlComment}
               pageTargets.delete(worker);
               this.trustedEmitter.emit("targetdestroyed", target);
             });
-            page.trustedEmitter.on("close", () => {
-              this.#targets.delete(page);
+            page2.trustedEmitter.on("close", () => {
+              this.#targets.delete(page2);
               this.trustedEmitter.emit("targetdestroyed", pageTarget);
             });
             this.trustedEmitter.emit("targetcreated", pageTarget);
-            return page;
+            return page2;
           }
           targets() {
             return [...this.#targets.values()].flatMap(([target, frames]) => {
@@ -30561,17 +33427,17 @@ ${sourceUrlComment}
               const context2 = await this.userContext.createBrowsingContext(type, {
                 background: options?.background
               });
-              const page = this.#pages.get(context2);
-              if (!page) {
+              const page2 = this.#pages.get(context2);
+              if (!page2) {
                 throw new Error("Page is not found");
               }
               if (this.#defaultViewport) {
                 try {
-                  await page.setViewport(this.#defaultViewport);
+                  await page2.setViewport(this.#defaultViewport);
                 } catch {
                 }
               }
-              return page;
+              return page2;
             } catch (e_1) {
               env_1.error = e_1;
               env_1.hasError = true;
@@ -30681,19 +33547,19 @@ ${sourceUrlComment}
       init_disposable();
       init_Realm2();
       init_UserContext();
-      __runInitializers19 = function(thisArg, initializers, value) {
+      __runInitializers19 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate19 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -30705,7 +33571,7 @@ ${sourceUrlComment}
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -30714,23 +33580,23 @@ ${sourceUrlComment}
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __addDisposableResource19 = function(env, value, async2) {
-        if (value !== null && value !== void 0) {
-          if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+      __addDisposableResource19 = function(env, value2, async2) {
+        if (value2 !== null && value2 !== void 0) {
+          if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
           var dispose, inner;
           if (async2) {
             if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-            dispose = value[Symbol.asyncDispose];
+            dispose = value2[Symbol.asyncDispose];
           }
           if (dispose === void 0) {
             if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-            dispose = value[Symbol.dispose];
+            dispose = value2[Symbol.dispose];
             if (async2) inner = dispose;
           }
           if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -30741,11 +33607,11 @@ ${sourceUrlComment}
               return Promise.reject(e);
             }
           };
-          env.stack.push({ value, dispose, async: async2 });
+          env.stack.push({ value: value2, dispose, async: async2 });
         } else if (async2) {
           env.stack.push({ async: true });
         }
-        return value;
+        return value2;
       };
       __disposeResources19 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
@@ -30792,14 +33658,14 @@ ${sourceUrlComment}
         return class Browser3 extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate19(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate19(this, null, _close_decorators, { kind: "method", name: "close", static: false, private: false, access: { has: (obj) => "close" in obj, get: (obj) => obj.close }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate19(this, null, _addPreloadScript_decorators, { kind: "method", name: "addPreloadScript", static: false, private: false, access: { has: (obj) => "addPreloadScript" in obj, get: (obj) => obj.addPreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate19(this, null, _removeIntercept_decorators, { kind: "method", name: "removeIntercept", static: false, private: false, access: { has: (obj) => "removeIntercept" in obj, get: (obj) => obj.removeIntercept }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate19(this, null, _removePreloadScript_decorators, { kind: "method", name: "removePreloadScript", static: false, private: false, access: { has: (obj) => "removePreloadScript" in obj, get: (obj) => obj.removePreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate19(this, null, _createUserContext_decorators, { kind: "method", name: "createUserContext", static: false, private: false, access: { has: (obj) => "createUserContext" in obj, get: (obj) => obj.createUserContext }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate19(this, null, _installExtension_decorators, { kind: "method", name: "installExtension", static: false, private: false, access: { has: (obj) => "installExtension" in obj, get: (obj) => obj.installExtension }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate19(this, null, _uninstallExtension_decorators, { kind: "method", name: "uninstallExtension", static: false, private: false, access: { has: (obj) => "uninstallExtension" in obj, get: (obj) => obj.uninstallExtension }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _close_decorators, { kind: "method", name: "close", static: false, private: false, access: { has: (obj2) => "close" in obj2, get: (obj2) => obj2.close }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _addPreloadScript_decorators, { kind: "method", name: "addPreloadScript", static: false, private: false, access: { has: (obj2) => "addPreloadScript" in obj2, get: (obj2) => obj2.addPreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _removeIntercept_decorators, { kind: "method", name: "removeIntercept", static: false, private: false, access: { has: (obj2) => "removeIntercept" in obj2, get: (obj2) => obj2.removeIntercept }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _removePreloadScript_decorators, { kind: "method", name: "removePreloadScript", static: false, private: false, access: { has: (obj2) => "removePreloadScript" in obj2, get: (obj2) => obj2.removePreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _createUserContext_decorators, { kind: "method", name: "createUserContext", static: false, private: false, access: { has: (obj2) => "createUserContext" in obj2, get: (obj2) => obj2.createUserContext }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _installExtension_decorators, { kind: "method", name: "installExtension", static: false, private: false, access: { has: (obj2) => "installExtension" in obj2, get: (obj2) => obj2.installExtension }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate19(this, null, _uninstallExtension_decorators, { kind: "method", name: "uninstallExtension", static: false, private: false, access: { has: (obj2) => "uninstallExtension" in obj2, get: (obj2) => obj2.uninstallExtension }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static async from(session) {
@@ -31000,19 +33866,19 @@ ${sourceUrlComment}
       init_decorators();
       init_disposable();
       init_Browser2();
-      __runInitializers20 = function(thisArg, initializers, value) {
+      __runInitializers20 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __esDecorate20 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
         function accept(f) {
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -31024,7 +33890,7 @@ ${sourceUrlComment}
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -31033,7 +33899,7 @@ ${sourceUrlComment}
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -31053,14 +33919,14 @@ ${sourceUrlComment}
         return class Session2 extends _classSuper {
           static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-            __esDecorate20(this, null, _connection_decorators, { kind: "accessor", name: "connection", static: false, private: false, access: { has: (obj) => "connection" in obj, get: (obj) => obj.connection, set: (obj, value) => {
-              obj.connection = value;
+            __esDecorate20(this, null, _connection_decorators, { kind: "accessor", name: "connection", static: false, private: false, access: { has: (obj2) => "connection" in obj2, get: (obj2) => obj2.connection, set: (obj2, value2) => {
+              obj2.connection = value2;
             } }, metadata: _metadata }, _connection_initializers, _connection_extraInitializers);
-            __esDecorate20(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj) => "dispose" in obj, get: (obj) => obj.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate20(this, null, _send_decorators, { kind: "method", name: "send", static: false, private: false, access: { has: (obj) => "send" in obj, get: (obj) => obj.send }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate20(this, null, _subscribe_decorators, { kind: "method", name: "subscribe", static: false, private: false, access: { has: (obj) => "subscribe" in obj, get: (obj) => obj.subscribe }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate20(this, null, _addIntercepts_decorators, { kind: "method", name: "addIntercepts", static: false, private: false, access: { has: (obj) => "addIntercepts" in obj, get: (obj) => obj.addIntercepts }, metadata: _metadata }, null, _instanceExtraInitializers);
-            __esDecorate20(this, null, _end_decorators, { kind: "method", name: "end", static: false, private: false, access: { has: (obj) => "end" in obj, get: (obj) => obj.end }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate20(this, null, _dispose_decorators, { kind: "method", name: "dispose", static: false, private: false, access: { has: (obj2) => "dispose" in obj2, get: (obj2) => obj2.dispose }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate20(this, null, _send_decorators, { kind: "method", name: "send", static: false, private: false, access: { has: (obj2) => "send" in obj2, get: (obj2) => obj2.send }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate20(this, null, _subscribe_decorators, { kind: "method", name: "subscribe", static: false, private: false, access: { has: (obj2) => "subscribe" in obj2, get: (obj2) => obj2.subscribe }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate20(this, null, _addIntercepts_decorators, { kind: "method", name: "addIntercepts", static: false, private: false, access: { has: (obj2) => "addIntercepts" in obj2, get: (obj2) => obj2.addIntercepts }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate20(this, null, _end_decorators, { kind: "method", name: "end", static: false, private: false, access: { has: (obj2) => "end" in obj2, get: (obj2) => obj2.end }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
           static async from(connection, capabilities) {
@@ -31079,8 +33945,8 @@ ${sourceUrlComment}
           get connection() {
             return this.#connection_accessor_storage;
           }
-          set connection(value) {
-            this.#connection_accessor_storage = value;
+          set connection(value2) {
+            this.#connection_accessor_storage = value2;
           }
           constructor(connection, info) {
             super();
@@ -31186,7 +34052,7 @@ ${sourceUrlComment}
           if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
           return f;
         }
-        var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+        var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
         var _, done = false;
@@ -31198,7 +34064,7 @@ ${sourceUrlComment}
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
             extraInitializers.push(accept(f || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -31207,18 +34073,18 @@ ${sourceUrlComment}
             if (_ = accept(result.init)) initializers.unshift(_);
           } else if (_ = accept(result)) {
             if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
+            else descriptor[key2] = _;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __runInitializers21 = function(thisArg, initializers, value) {
+      __runInitializers21 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
         for (var i = 0; i < initializers.length; i++) {
-          value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
         }
-        return useValue ? value : void 0;
+        return useValue ? value2 : void 0;
       };
       __setFunctionName4 = function(f, name, prefix) {
         if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
@@ -31236,10 +34102,10 @@ ${sourceUrlComment}
             _private_trustedEmitter_decorators = [bubble()];
             __esDecorate21(this, _private_trustedEmitter_descriptor = { get: __setFunctionName4(function() {
               return this.#trustedEmitter_accessor_storage;
-            }, "#trustedEmitter", "get"), set: __setFunctionName4(function(value) {
-              this.#trustedEmitter_accessor_storage = value;
-            }, "#trustedEmitter", "set") }, _private_trustedEmitter_decorators, { kind: "accessor", name: "#trustedEmitter", static: false, private: true, access: { has: (obj) => #trustedEmitter in obj, get: (obj) => obj.#trustedEmitter, set: (obj, value) => {
-              obj.#trustedEmitter = value;
+            }, "#trustedEmitter", "get"), set: __setFunctionName4(function(value2) {
+              this.#trustedEmitter_accessor_storage = value2;
+            }, "#trustedEmitter", "set") }, _private_trustedEmitter_decorators, { kind: "accessor", name: "#trustedEmitter", static: false, private: true, access: { has: (obj2) => #trustedEmitter in obj2, get: (obj2) => obj2.#trustedEmitter, set: (obj2, value2) => {
+              obj2.#trustedEmitter = value2;
             } }, metadata: _metadata }, _private_trustedEmitter_initializers, _private_trustedEmitter_extraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
           }
@@ -31282,9 +34148,9 @@ ${sourceUrlComment}
                 "goog:disableNetworkDurableMessages": true
               }
             });
-            await session.subscribe((opts.cdpConnection ? [...BidiBrowser2.subscribeModules, ...BidiBrowser2.subscribeCdpEvents] : BidiBrowser2.subscribeModules).filter((module) => {
+            await session.subscribe((opts.cdpConnection ? [...BidiBrowser2.subscribeModules, ...BidiBrowser2.subscribeCdpEvents] : BidiBrowser2.subscribeModules).filter((module2) => {
               if (!opts.networkEnabled) {
-                return module !== "network" && module !== "goog:cdp.Network.requestWillBeSent";
+                return module2 !== "network" && module2 !== "goog:cdp.Network.requestWillBeSent";
               }
               return true;
             }));
@@ -31319,8 +34185,8 @@ ${sourceUrlComment}
           get #trustedEmitter() {
             return _private_trustedEmitter_descriptor.get.call(this);
           }
-          set #trustedEmitter(value) {
-            return _private_trustedEmitter_descriptor.set.call(this, value);
+          set #trustedEmitter(value2) {
+            return _private_trustedEmitter_descriptor.set.call(this, value2);
           }
           #process = __runInitializers21(this, _private_trustedEmitter_extraInitializers);
           #closeCallback;
@@ -31550,9 +34416,9 @@ ${sourceUrlComment}
   // js/host-environment.js
   var nextTimer = 0;
   var timers = /* @__PURE__ */ new Map();
-  globalThis.setTimeout = (fn, milliseconds = 0, ...args) => {
+  globalThis.setTimeout = (fn, milliseconds = 0, ...args2) => {
     const id = ++nextTimer;
-    timers.set(id, { fn: () => fn(...args), interval: null });
+    timers.set(id, { fn: () => fn(...args2), interval: null });
     __quickjsEmit("timer", { id, milliseconds: Math.max(0, Number(milliseconds) || 0) });
     return id;
   };
@@ -31560,16 +34426,16 @@ ${sourceUrlComment}
     timers.delete(id);
     __quickjsEmit("clearTimer", String(id));
   };
-  globalThis.setInterval = (fn, milliseconds = 0, ...args) => {
+  globalThis.setInterval = (fn, milliseconds = 0, ...args2) => {
     const id = ++nextTimer;
     const interval = Math.max(1, Number(milliseconds) || 0);
-    timers.set(id, { fn: () => fn(...args), interval });
+    timers.set(id, { fn: () => fn(...args2), interval });
     __quickjsEmit("timer", { id, milliseconds: interval });
     return id;
   };
   globalThis.clearInterval = globalThis.clearTimeout;
   globalThis.performance = { now: () => php.now() };
-  globalThis.console = Object.fromEntries(["log", "warn", "error", "debug", "info"].map((level) => [level, (...args) => __quickjsEmit("log", args.map(String).join(" "))]));
+  globalThis.console = Object.fromEntries(["log", "warn", "error", "debug", "info"].map((level) => [level, (...args2) => __quickjsEmit("log", args2.map(String).join(" "))]));
   function fireTimer(id) {
     const timer2 = timers.get(id);
     if (!timer2) return;
@@ -31582,6 +34448,177 @@ ${sourceUrlComment}
   function clearTimers() {
     timers.clear();
   }
+
+  // js/plugins/registry.js
+  var import_puppeteer_extra_plugin_stealth = __toESM(require_puppeteer_extra_plugin_stealth());
+  var import_chrome = __toESM(require_chrome());
+  var import_chrome2 = __toESM(require_chrome2());
+  var import_chrome3 = __toESM(require_chrome3());
+  var import_chrome4 = __toESM(require_chrome4());
+  var import_defaultArgs = __toESM(require_defaultArgs());
+  var import_iframe = __toESM(require_iframe());
+  var import_media = __toESM(require_media());
+  var import_navigator = __toESM(require_navigator());
+  var import_navigator2 = __toESM(require_navigator2());
+  var import_navigator3 = __toESM(require_navigator3());
+  var import_navigator4 = __toESM(require_navigator4());
+  var import_navigator5 = __toESM(require_navigator5());
+  var import_sourceurl = __toESM(require_sourceurl());
+  var import_user_agent_override = __toESM(require_user_agent_override());
+  var import_webgl = __toESM(require_webgl());
+  var import_window = __toESM(require_window());
+  var import_navigator6 = __toESM(require_navigator6());
+  var registry = {
+    stealth: import_puppeteer_extra_plugin_stealth.default,
+    "stealth/evasions/chrome.app": import_chrome.default,
+    "stealth/evasions/chrome.csi": import_chrome2.default,
+    "stealth/evasions/chrome.loadTimes": import_chrome3.default,
+    "stealth/evasions/chrome.runtime": import_chrome4.default,
+    "stealth/evasions/defaultArgs": import_defaultArgs.default,
+    "stealth/evasions/iframe.contentWindow": import_iframe.default,
+    "stealth/evasions/media.codecs": import_media.default,
+    "stealth/evasions/navigator.hardwareConcurrency": import_navigator.default,
+    "stealth/evasions/navigator.languages": import_navigator2.default,
+    "stealth/evasions/navigator.permissions": import_navigator3.default,
+    "stealth/evasions/navigator.plugins": import_navigator4.default,
+    "stealth/evasions/navigator.webdriver": import_navigator5.default,
+    "stealth/evasions/sourceurl": import_sourceurl.default,
+    "stealth/evasions/user-agent-override": import_user_agent_override.default,
+    "stealth/evasions/webgl.vendor": import_webgl.default,
+    "stealth/evasions/window.outerdimensions": import_window.default,
+    "stealth/evasions/navigator.vendor": import_navigator6.default
+  };
+
+  // custom-plugins:empty
+  var empty_default = {};
+
+  // js/plugins/adapter.js
+  var PluginAdapter = class {
+    constructor(factories = null) {
+      if (factories === null) {
+        for (const name of Object.keys(empty_default)) {
+          if (Object.hasOwn(registry, name)) throw new Error(`Reserved bundled plugin name: ${name}`);
+        }
+        factories = { ...registry, ...empty_default };
+      }
+      this.factories = factories;
+      this.plugins = [];
+      this.pages = /* @__PURE__ */ new WeakMap();
+      this.targets = /* @__PURE__ */ new WeakSet();
+      this.failure = null;
+    }
+    async prepare(definitions, options, mode) {
+      if (this.prepared) throw new Error("Plugins have already been prepared");
+      if (!["launch", "connect"].includes(mode)) throw new Error("Invalid plugin lifecycle mode");
+      this.prepared = true;
+      this.mode = mode;
+      this.options = { ...options };
+      const visiting = /* @__PURE__ */ new Set();
+      const configurations = /* @__PURE__ */ new Map();
+      for (const definition of definitions) {
+        const name = definition.name.replace(/^puppeteer-extra-plugin-/, "");
+        if (configurations.has(name)) throw new Error(`Duplicate plugin registration: ${name}`);
+        configurations.set(name, definition.options || {});
+      }
+      const add = (name) => {
+        name = name.replace(/^puppeteer-extra-plugin-/, "");
+        let opts = configurations.get(name) || {};
+        if (this.plugins.some((plugin2) => plugin2.name === name)) return;
+        if (visiting.has(name)) throw new Error(`Circular plugin dependency: ${name}`);
+        const factory = Object.hasOwn(this.factories, name) ? this.factories[name] : void 0;
+        if (typeof factory !== "function") throw new Error(`Plugin is not bundled: ${name}`);
+        if (name === "stealth" && opts.enabledEvasions) opts = { ...opts, enabledEvasions: new Set(opts.enabledEvasions) };
+        const plugin = factory(opts);
+        if (!plugin || plugin._isPuppeteerExtraPlugin !== true) throw new Error(`Not a PuppeteerExtraPlugin: ${name}`);
+        for (const requirement of plugin.requirements) {
+          if (!["runLast", "dataFromPlugins", "launch", "headful"].includes(requirement)) throw new Error(`Unsupported plugin requirement: ${requirement}`);
+          if (requirement === "launch" && mode !== "launch") throw new Error(`${name} requires launch()`);
+          if (requirement === "headful" && (mode !== "launch" || options.headless !== false)) throw new Error(`${name} requires headless: false`);
+        }
+        if (plugin.dependencyOptions !== void 0) throw new Error(`Plugin dependencyOptions are not supported: ${name}`);
+        visiting.add(name);
+        for (const dependency of plugin.dependencies) {
+          if (name === "stealth/evasions/user-agent-override" && dependency === "user-preferences") continue;
+          add(dependency);
+        }
+        visiting.delete(name);
+        plugin.getDataFromPlugins = (dataName) => this.plugins.flatMap((item) => item.data || []).filter((item) => !dataName || item.name === dataName);
+        this.plugins.push(plugin);
+      };
+      for (const name of configurations.keys()) add(name);
+      this.plugins.sort((a, b) => Number(a.requirements.has("runLast")) - Number(b.requirements.has("runLast")));
+      for (const plugin of this.plugins) await plugin.onPluginRegistered?.();
+      if (mode === "launch") this.options = { args: [], headless: true, ...this.options };
+      for (const plugin of this.plugins) {
+        this.options = await plugin[mode === "launch" ? "beforeLaunch" : "beforeConnect"]?.(this.options) || this.options;
+        if (plugin.name === "stealth/evasions/user-agent-override") plugin._headless = true;
+      }
+      return this.options;
+    }
+    async hook(name, ...args2) {
+      for (const plugin of this.plugins) {
+        try {
+          await plugin[name]?.(...args2);
+        } catch (cause) {
+          throw new Error(`Plugin ${plugin.name}.${name}: ${cause.message}`, { cause });
+        }
+      }
+    }
+    check() {
+      if (this.failure) throw this.failure;
+    }
+    async page(page2, target = page2?.target()) {
+      if (!page2 || !this.plugins.length) return page2;
+      let ready = this.pages.get(page2);
+      if (!ready) {
+        ready = this.hook("onPageCreated", page2, target).catch((error) => {
+          if (!page2.isClosed() || !/Target closed|Session closed/.test(error.message)) throw error;
+        });
+        this.pages.set(page2, ready);
+        page2.once("close", () => {
+          this.hook("onPageClose", page2).catch((error) => {
+            this.failure = error;
+          });
+        });
+      }
+      await ready;
+      return page2;
+    }
+    async target(target) {
+      if (this.targets.has(target)) return;
+      this.targets.add(target);
+      await this.hook("onTargetCreated", target);
+      if (target.type() === "page") await this.page(await target.page(), target);
+    }
+    async connect(puppeteer2, options, transport2) {
+      this.check();
+      const browser = await puppeteer2.connect({ ...options, transport: transport2 });
+      if (!this.plugins.length) return browser;
+      const background = (work) => work.catch((error) => {
+        this.failure = error;
+      });
+      browser.on("targetcreated", (target) => background(this.target(target)));
+      browser.on("targetchanged", (target) => background(this.hook("onTargetChanged", target)));
+      browser.on("targetdestroyed", (target) => background(this.hook("onTargetDestroyed", target)));
+      browser.once("disconnected", () => background(this.hook("onDisconnected", browser)));
+      const close = browser.close;
+      browser.close = async (...args2) => {
+        try {
+          await this.hook("onClose");
+        } finally {
+          await close.apply(browser, args2);
+        }
+      };
+      const createPage = browser._createPageInContext;
+      if (typeof createPage !== "function") throw new Error("Plugin adapter requires CDP Browser._createPageInContext");
+      browser._createPageInContext = async (...args2) => this.page(await createPage.apply(browser, args2));
+      await this.hook(this.mode === "launch" ? "afterLaunch" : "afterConnect", browser, this.options);
+      await this.hook("onBrowser", browser, { context: this.mode, options: this.options });
+      for (const target of browser.targets()) await this.target(target);
+      this.check();
+      return browser;
+    }
+  };
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/api/api.js
   init_Browser();
@@ -31609,17 +34646,17 @@ ${sourceUrlComment}
   init_util();
   init_disposable();
   init_ErrorLike();
-  var __addDisposableResource10 = function(env, value, async2) {
-    if (value !== null && value !== void 0) {
-      if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+  var __addDisposableResource10 = function(env, value2, async2) {
+    if (value2 !== null && value2 !== void 0) {
+      if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
       var dispose, inner;
       if (async2) {
         if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-        dispose = value[Symbol.asyncDispose];
+        dispose = value2[Symbol.asyncDispose];
       }
       if (dispose === void 0) {
         if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-        dispose = value[Symbol.dispose];
+        dispose = value2[Symbol.dispose];
         if (async2) inner = dispose;
       }
       if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -31630,11 +34667,11 @@ ${sourceUrlComment}
           return Promise.reject(e);
         }
       };
-      env.stack.push({ value, dispose, async: async2 });
+      env.stack.push({ value: value2, dispose, async: async2 });
     } else if (async2) {
       env.stack.push({ async: true });
     }
-    return value;
+    return value2;
   };
   var __disposeResources10 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
@@ -31689,7 +34726,7 @@ ${sourceUrlComment}
      * `onBindingCalled` response.
      * @param args - Plain arguments from CDP.
      */
-    async run(context2, id, args, isTrivial) {
+    async run(context2, id, args2, isTrivial) {
       const stack = new DisposableStack();
       try {
         if (!isTrivial) {
@@ -31700,10 +34737,10 @@ ${sourceUrlComment}
             }, this.#name, id), false);
             const properties = await handles.getProperties();
             for (const [index, handle] of properties) {
-              if (index in args) {
+              if (index in args2) {
                 switch (handle.remoteObject().subtype) {
                   case "node":
-                    args[+index] = handle;
+                    args2[+index] = handle;
                     break;
                   default:
                     stack.use(handle);
@@ -31723,8 +34760,8 @@ ${sourceUrlComment}
           const callbacks2 = globalThis[name].callbacks;
           callbacks2.get(seq).resolve(result);
           callbacks2.delete(seq);
-        }, this.#name, id, await this.#fn(...args));
-        for (const arg of args) {
+        }, this.#name, id, await this.#fn(...args2));
+        for (const arg of args2) {
           if (arg instanceof JSHandle) {
             stack.use(arg);
           }
@@ -32479,31 +35516,31 @@ ${sourceUrlComment}
       return;
     }
     Object.assign(globalThis, {
-      [name](...args) {
+      [name](...args2) {
         const callPuppeteer = globalThis[name];
         callPuppeteer.args ??= /* @__PURE__ */ new Map();
         callPuppeteer.callbacks ??= /* @__PURE__ */ new Map();
         const seq = (callPuppeteer.lastSeq ?? 0) + 1;
         callPuppeteer.lastSeq = seq;
-        callPuppeteer.args.set(seq, args);
+        callPuppeteer.args.set(seq, args2);
         globalThis[prefix + name](JSON.stringify({
           type,
           name,
           seq,
-          args,
-          isTrivial: !args.some((value) => {
-            return value instanceof Node;
+          args: args2,
+          isTrivial: !args2.some((value2) => {
+            return value2 instanceof Node;
           })
         }));
         return new Promise((resolve, reject) => {
           callPuppeteer.callbacks.set(seq, {
-            resolve(value) {
+            resolve(value2) {
               callPuppeteer.args.delete(seq);
-              resolve(value);
+              resolve(value2);
             },
-            reject(value) {
+            reject(value2) {
               callPuppeteer.args.delete(seq);
-              reject(value);
+              reject(value2);
             }
           });
         });
@@ -32538,13 +35575,13 @@ ${sourceUrlComment}
       if (!this.#remoteObject.objectId) {
         return valueFromRemoteObject(this.#remoteObject);
       }
-      const value = await this.evaluate((object) => {
+      const value2 = await this.evaluate((object) => {
         return object;
       });
-      if (value === void 0) {
+      if (value2 === void 0) {
         throw new Error("Could not serialize referenced object");
       }
-      return value;
+      return value2;
     }
     /**
      * Either `null` or the handle itself if the handle is an
@@ -32598,19 +35635,19 @@ ${sourceUrlComment}
   }
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/cdp/ElementHandle.js
-  var __runInitializers6 = function(thisArg, initializers, value) {
+  var __runInitializers6 = function(thisArg, initializers, value2) {
     var useValue = arguments.length > 2;
     for (var i = 0; i < initializers.length; i++) {
-      value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+      value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
     }
-    return useValue ? value : void 0;
+    return useValue ? value2 : void 0;
   };
   var __esDecorate6 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
     function accept(f) {
       if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
       return f;
     }
-    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+    var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
     var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
     var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
     var _, done = false;
@@ -32622,7 +35659,7 @@ ${sourceUrlComment}
         if (done) throw new TypeError("Cannot add initializers after decoration has completed");
         extraInitializers.push(accept(f || null));
       };
-      var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+      var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
       if (kind === "accessor") {
         if (result === void 0) continue;
         if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -32631,7 +35668,7 @@ ${sourceUrlComment}
         if (_ = accept(result.init)) initializers.unshift(_);
       } else if (_ = accept(result)) {
         if (kind === "field") initializers.unshift(_);
-        else descriptor[key] = _;
+        else descriptor[key2] = _;
       }
     }
     if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -32652,10 +35689,10 @@ ${sourceUrlComment}
         _scrollIntoView_decorators = [throwIfDisposed(), bindIsolatedHandle];
         _uploadFile_decorators = [throwIfDisposed(), bindIsolatedHandle];
         _autofill_decorators = [throwIfDisposed()];
-        __esDecorate6(this, null, _contentFrame_decorators, { kind: "method", name: "contentFrame", static: false, private: false, access: { has: (obj) => "contentFrame" in obj, get: (obj) => obj.contentFrame }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate6(this, null, _scrollIntoView_decorators, { kind: "method", name: "scrollIntoView", static: false, private: false, access: { has: (obj) => "scrollIntoView" in obj, get: (obj) => obj.scrollIntoView }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate6(this, null, _uploadFile_decorators, { kind: "method", name: "uploadFile", static: false, private: false, access: { has: (obj) => "uploadFile" in obj, get: (obj) => obj.uploadFile }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate6(this, null, _autofill_decorators, { kind: "method", name: "autofill", static: false, private: false, access: { has: (obj) => "autofill" in obj, get: (obj) => obj.autofill }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate6(this, null, _contentFrame_decorators, { kind: "method", name: "contentFrame", static: false, private: false, access: { has: (obj2) => "contentFrame" in obj2, get: (obj2) => obj2.contentFrame }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate6(this, null, _scrollIntoView_decorators, { kind: "method", name: "scrollIntoView", static: false, private: false, access: { has: (obj2) => "scrollIntoView" in obj2, get: (obj2) => obj2.scrollIntoView }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate6(this, null, _uploadFile_decorators, { kind: "method", name: "uploadFile", static: false, private: false, access: { has: (obj2) => "uploadFile" in obj2, get: (obj2) => obj2.uploadFile }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate6(this, null, _autofill_decorators, { kind: "method", name: "autofill", static: false, private: false, access: { has: (obj2) => "autofill" in obj2, get: (obj2) => obj2.autofill }, metadata: _metadata }, null, _instanceExtraInitializers);
         if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
       }
       #backendNodeId = __runInitializers6(this, _instanceExtraInitializers);
@@ -32777,17 +35814,17 @@ ${sourceUrlComment}
   })();
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/cdp/ExecutionContext.js
-  var __addDisposableResource11 = function(env, value, async2) {
-    if (value !== null && value !== void 0) {
-      if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+  var __addDisposableResource11 = function(env, value2, async2) {
+    if (value2 !== null && value2 !== void 0) {
+      if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
       var dispose, inner;
       if (async2) {
         if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-        dispose = value[Symbol.asyncDispose];
+        dispose = value2[Symbol.asyncDispose];
       }
       if (dispose === void 0) {
         if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-        dispose = value[Symbol.dispose];
+        dispose = value2[Symbol.dispose];
         if (async2) inner = dispose;
       }
       if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -32798,11 +35835,11 @@ ${sourceUrlComment}
           return Promise.reject(e);
         }
       };
-      env.stack.push({ value, dispose, async: async2 });
+      env.stack.push({ value: value2, dispose, async: async2 });
     } else if (async2) {
       env.stack.push({ async: true });
     }
-    return value;
+    return value2;
   };
   var __disposeResources11 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
@@ -32921,7 +35958,7 @@ ${sourceUrlComment}
       } catch {
         return;
       }
-      const { type, name, seq, args, isTrivial } = payload;
+      const { type, name, seq, args: args2, isTrivial } = payload;
       if (type !== "internal") {
         this.emit("bindingcalled", event);
         return;
@@ -32932,7 +35969,7 @@ ${sourceUrlComment}
       }
       try {
         const binding = this.#bindings.get(name);
-        await binding?.run(this, seq, args, isTrivial);
+        await binding?.run(this, seq, args2, isTrivial);
       } catch (err) {
         debugError(err);
       }
@@ -33016,8 +36053,8 @@ ${sourceUrlComment}
      * a vanilla object containing the serializable properties of the result is
      * returned.
      */
-    async evaluate(pageFunction, ...args) {
-      return await this.#evaluate(true, pageFunction, ...args);
+    async evaluate(pageFunction, ...args2) {
+      return await this.#evaluate(true, pageFunction, ...args2);
     }
     /**
      * Evaluates the given function.
@@ -33068,10 +36105,10 @@ ${sourceUrlComment}
      * function. If the result is a `Node`, then this will return an
      * {@link ElementHandle | element handle}.
      */
-    async evaluateHandle(pageFunction, ...args) {
-      return await this.#evaluate(false, pageFunction, ...args);
+    async evaluateHandle(pageFunction, ...args2) {
+      return await this.#evaluate(false, pageFunction, ...args2);
     }
-    async #evaluate(returnByValue, pageFunction, ...args) {
+    async #evaluate(returnByValue, pageFunction, ...args2) {
       const sourceUrlComment = getSourceUrlComment(getSourcePuppeteerURLIfAvailable(pageFunction)?.toString() ?? PuppeteerURL.INTERNAL_URL);
       if (isString(pageFunction)) {
         const contextId = this.#id;
@@ -33105,11 +36142,11 @@ ${sourceUrlComment}
           executionContextId: this.#id,
           // LazyArgs are used only internally and should not affect the order
           // evaluate calls for the public APIs.
-          arguments: args.some((arg) => {
+          arguments: args2.some((arg) => {
             return arg instanceof LazyArg;
-          }) ? await Promise.all(args.map((arg) => {
+          }) ? await Promise.all(args2.map((arg) => {
             return convertArgumentAsync(this, arg);
-          })) : args.map((arg) => {
+          })) : args2.map((arg) => {
             return convertArgument(this, arg);
           }),
           returnByValue,
@@ -33279,21 +36316,21 @@ ${sourceUrlComment}
       })), timeout(this.timeoutSettings.timeout()))));
       return result;
     }
-    async evaluateHandle(pageFunction, ...args) {
+    async evaluateHandle(pageFunction, ...args2) {
       pageFunction = withSourcePuppeteerURLIfNone(this.evaluateHandle.name, pageFunction);
       let context2 = this.#executionContext();
       if (!context2) {
         context2 = await this.#waitForExecutionContext();
       }
-      return await context2.evaluateHandle(pageFunction, ...args);
+      return await context2.evaluateHandle(pageFunction, ...args2);
     }
-    async evaluate(pageFunction, ...args) {
+    async evaluate(pageFunction, ...args2) {
       pageFunction = withSourcePuppeteerURLIfNone(this.evaluate.name, pageFunction);
       let context2 = this.#executionContext();
       if (!context2) {
         context2 = await this.#waitForExecutionContext();
       }
-      return await context2.evaluate(pageFunction, ...args);
+      return await context2.evaluate(pageFunction, ...args2);
     }
     async adoptBackendNode(backendNodeId) {
       let context2 = this.#executionContext();
@@ -33308,8 +36345,8 @@ ${sourceUrlComment}
     }
     async adoptHandle(handle) {
       if (handle.realm === this) {
-        return await handle.evaluateHandle((value) => {
-          return value;
+        return await handle.evaluateHandle((value2) => {
+          return value2;
         });
       }
       const nodeInfo = await this.client.send("DOM.describeNode", {
@@ -33386,9 +36423,9 @@ ${sourceUrlComment}
         waitUntil = [waitUntil];
       }
       this.#initialLoaderId = frame._loaderId;
-      this.#expectedLifecycle = waitUntil.map((value) => {
-        const protocolEvent = puppeteerToProtocolLifecycle.get(value);
-        assert(protocolEvent, "Unknown value for options.waitUntil: " + value);
+      this.#expectedLifecycle = waitUntil.map((value2) => {
+        const protocolEvent = puppeteerToProtocolLifecycle.get(value2);
+        assert(protocolEvent, "Unknown value for options.waitUntil: " + value2);
         return protocolEvent;
       });
       signal?.addEventListener("abort", () => {
@@ -33511,19 +36548,19 @@ ${sourceUrlComment}
   };
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/cdp/Frame.js
-  var __runInitializers7 = function(thisArg, initializers, value) {
+  var __runInitializers7 = function(thisArg, initializers, value2) {
     var useValue = arguments.length > 2;
     for (var i = 0; i < initializers.length; i++) {
-      value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+      value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
     }
-    return useValue ? value : void 0;
+    return useValue ? value2 : void 0;
   };
   var __esDecorate7 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
     function accept(f) {
       if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
       return f;
     }
-    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+    var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
     var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
     var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
     var _, done = false;
@@ -33535,7 +36572,7 @@ ${sourceUrlComment}
         if (done) throw new TypeError("Cannot add initializers after decoration has completed");
         extraInitializers.push(accept(f || null));
       };
-      var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context2);
+      var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
       if (kind === "accessor") {
         if (result === void 0) continue;
         if (result === null || typeof result !== "object") throw new TypeError("Object expected");
@@ -33544,7 +36581,7 @@ ${sourceUrlComment}
         if (_ = accept(result.init)) initializers.unshift(_);
       } else if (_ = accept(result)) {
         if (kind === "field") initializers.unshift(_);
-        else descriptor[key] = _;
+        else descriptor[key2] = _;
       }
     }
     if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -33563,13 +36600,13 @@ ${sourceUrlComment}
     return class CdpFrame extends _classSuper {
       static {
         const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
-        __esDecorate7(this, null, _goto_decorators, { kind: "method", name: "goto", static: false, private: false, access: { has: (obj) => "goto" in obj, get: (obj) => obj.goto }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate7(this, null, _waitForNavigation_decorators, { kind: "method", name: "waitForNavigation", static: false, private: false, access: { has: (obj) => "waitForNavigation" in obj, get: (obj) => obj.waitForNavigation }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate7(this, null, _setContent_decorators, { kind: "method", name: "setContent", static: false, private: false, access: { has: (obj) => "setContent" in obj, get: (obj) => obj.setContent }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate7(this, null, _addPreloadScript_decorators, { kind: "method", name: "addPreloadScript", static: false, private: false, access: { has: (obj) => "addPreloadScript" in obj, get: (obj) => obj.addPreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate7(this, null, _addExposedFunctionBinding_decorators, { kind: "method", name: "addExposedFunctionBinding", static: false, private: false, access: { has: (obj) => "addExposedFunctionBinding" in obj, get: (obj) => obj.addExposedFunctionBinding }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate7(this, null, _removeExposedFunctionBinding_decorators, { kind: "method", name: "removeExposedFunctionBinding", static: false, private: false, access: { has: (obj) => "removeExposedFunctionBinding" in obj, get: (obj) => obj.removeExposedFunctionBinding }, metadata: _metadata }, null, _instanceExtraInitializers);
-        __esDecorate7(this, null, _waitForDevicePrompt_decorators, { kind: "method", name: "waitForDevicePrompt", static: false, private: false, access: { has: (obj) => "waitForDevicePrompt" in obj, get: (obj) => obj.waitForDevicePrompt }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate7(this, null, _goto_decorators, { kind: "method", name: "goto", static: false, private: false, access: { has: (obj2) => "goto" in obj2, get: (obj2) => obj2.goto }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate7(this, null, _waitForNavigation_decorators, { kind: "method", name: "waitForNavigation", static: false, private: false, access: { has: (obj2) => "waitForNavigation" in obj2, get: (obj2) => obj2.waitForNavigation }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate7(this, null, _setContent_decorators, { kind: "method", name: "setContent", static: false, private: false, access: { has: (obj2) => "setContent" in obj2, get: (obj2) => obj2.setContent }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate7(this, null, _addPreloadScript_decorators, { kind: "method", name: "addPreloadScript", static: false, private: false, access: { has: (obj2) => "addPreloadScript" in obj2, get: (obj2) => obj2.addPreloadScript }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate7(this, null, _addExposedFunctionBinding_decorators, { kind: "method", name: "addExposedFunctionBinding", static: false, private: false, access: { has: (obj2) => "addExposedFunctionBinding" in obj2, get: (obj2) => obj2.addExposedFunctionBinding }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate7(this, null, _removeExposedFunctionBinding_decorators, { kind: "method", name: "removeExposedFunctionBinding", static: false, private: false, access: { has: (obj2) => "removeExposedFunctionBinding" in obj2, get: (obj2) => obj2.removeExposedFunctionBinding }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate7(this, null, _waitForDevicePrompt_decorators, { kind: "method", name: "waitForDevicePrompt", static: false, private: false, access: { has: (obj2) => "waitForDevicePrompt" in obj2, get: (obj2) => obj2.waitForDevicePrompt }, metadata: _metadata }, null, _instanceExtraInitializers);
         if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
       }
       #url = (__runInitializers7(this, _instanceExtraInitializers), "");
@@ -33951,8 +36988,8 @@ ${sourceUrlComment}
       this.updateHeaders(data.request.headers);
     }
     updateHeaders(headers) {
-      for (const [key, value] of Object.entries(headers)) {
-        this.#headers[key.toLowerCase()] = value;
+      for (const [key2, value2] of Object.entries(headers)) {
+        this.#headers[key2.toLowerCase()] = value2;
       }
     }
     url() {
@@ -34040,10 +37077,10 @@ ${sourceUrlComment}
       const responseHeaders = {};
       if (response.headers) {
         for (const header of Object.keys(response.headers)) {
-          const value = response.headers[header];
-          responseHeaders[header.toLowerCase()] = Array.isArray(value) ? value.map((item) => {
+          const value2 = response.headers[header];
+          responseHeaders[header.toLowerCase()] = Array.isArray(value2) ? value2.map((item) => {
             return String(item);
-          }) : String(value);
+          }) : String(value2);
         }
       }
       if (response.contentType) {
@@ -34109,8 +37146,8 @@ ${sourceUrlComment}
       this.#fromServiceWorker = !!responsePayload.fromServiceWorker;
       this.#status = extraInfo ? extraInfo.statusCode : responsePayload.status;
       const headers = extraInfo ? extraInfo.headers : responsePayload.headers;
-      for (const [key, value] of Object.entries(headers)) {
-        this.#headers[key.toLowerCase()] = value;
+      for (const [key2, value2] of Object.entries(headers)) {
+        this.#headers[key2.toLowerCase()] = value2;
       }
       this.#securityDetails = responsePayload.securityDetails ? new SecurityDetails(responsePayload.securityDetails) : null;
       this.#timing = responsePayload.timing || null;
@@ -34320,21 +37357,21 @@ ${sourceUrlComment}
       this.#queuedEventGroupMap.delete(networkRequestId);
     }
     printState() {
-      function replacer(_key, value) {
-        if (value instanceof Map) {
+      function replacer(_key, value2) {
+        if (value2 instanceof Map) {
           return {
             dataType: "Map",
-            value: Array.from(value.entries())
+            value: Array.from(value2.entries())
             // or with spread: value: [...value]
           };
-        } else if (value instanceof CdpHTTPRequest) {
+        } else if (value2 instanceof CdpHTTPRequest) {
           return {
             dataType: "CdpHTTPRequest",
-            value: `${value.id}: ${value.url()}`
+            value: `${value2.id}: ${value2.url()}`
           };
         }
         {
-          return value;
+          return value2;
         }
       }
       console.log("httpRequestsMap", JSON.stringify(this.#httpRequestsMap, replacer, 2));
@@ -34387,9 +37424,9 @@ ${sourceUrlComment}
       const subscriptions = new DisposableStack();
       this.#clients.set(client, subscriptions);
       const clientEmitter = subscriptions.use(new EventEmitter(client));
-      for (const [event, handler] of this.#handlers) {
+      for (const [event, handler2] of this.#handlers) {
         clientEmitter.on(event, (arg) => {
-          return handler.bind(this)(client, arg);
+          return handler2.bind(this)(client, arg);
         });
       }
       try {
@@ -34423,9 +37460,9 @@ ${sourceUrlComment}
     }
     async setExtraHTTPHeaders(headers) {
       const extraHTTPHeaders = {};
-      for (const [key, value] of Object.entries(headers)) {
-        assert(isString(value), `Expected value of header "${key}" to be String, but "${typeof value}" is found.`);
-        extraHTTPHeaders[key.toLowerCase()] = value;
+      for (const [key2, value2] of Object.entries(headers)) {
+        assert(isString(value2), `Expected value of header "${key2}" to be String, but "${typeof value2}" is found.`);
+        extraHTTPHeaders[key2.toLowerCase()] = value2;
       }
       this.#extraHTTPHeaders = extraHTTPHeaders;
       await this.#applyToAllClients(this.#applyExtraHTTPHeaders.bind(this));
@@ -34451,7 +37488,7 @@ ${sourceUrlComment}
     inFlightRequestsCount() {
       return this.#networkEventManager.inFlightRequestsCount();
     }
-    async setOfflineMode(value) {
+    async setOfflineMode(value2) {
       if (!this.#emulatedNetworkConditions) {
         this.#emulatedNetworkConditions = {
           offline: false,
@@ -34460,7 +37497,7 @@ ${sourceUrlComment}
           latency: 0
         };
       }
-      this.#emulatedNetworkConditions.offline = value;
+      this.#emulatedNetworkConditions.offline = value2;
       await this.#applyToAllClients(this.#applyNetworkConditions.bind(this));
     }
     async emulateNetworkConditions(networkConditions) {
@@ -34528,8 +37565,8 @@ ${sourceUrlComment}
       this.#userCacheDisabled = !enabled;
       await this.#applyToAllClients(this.#applyProtocolCacheDisabled.bind(this));
     }
-    async setRequestInterception(value) {
-      this.#userRequestInterceptionEnabled = value;
+    async setRequestInterception(value2) {
+      this.#userRequestInterceptionEnabled = value2;
       const enabled = this.#userRequestInterceptionEnabled || !!this.#credentials;
       if (enabled === this.#protocolRequestInterceptionEnabled) {
         return;
@@ -34866,11 +37903,11 @@ ${sourceUrlComment}
     get client() {
       return this.#client;
     }
-    constructor(client, page, timeoutSettings) {
+    constructor(client, page2, timeoutSettings) {
       super();
       this.#client = client;
-      this.#page = page;
-      this.#networkManager = new NetworkManager(this, page.browser().isNetworkEnabled());
+      this.#page = page2;
+      this.#networkManager = new NetworkManager(this, page2.browser().isNetworkEnabled());
       this.#timeoutSettings = timeoutSettings;
       this.setupEventListeners(this.#client);
       client.once(CDPSessionEvent.Disconnected, () => {
@@ -35150,8 +38187,8 @@ ${sourceUrlComment}
       frame.emit(FrameEvent.FrameNavigated, navigationType);
     }
     async #createIsolatedWorld(session, name) {
-      const key = `${session.id()}:${name}`;
-      if (this.#isolatedWorlds.has(key)) {
+      const key2 = `${session.id()}:${name}`;
+      if (this.#isolatedWorlds.has(key2)) {
         return;
       }
       await session.send("Page.addScriptToEvaluateOnNewDocument", {
@@ -35167,7 +38204,7 @@ ${sourceUrlComment}
           grantUniveralAccess: true
         }).catch(debugError);
       }));
-      this.#isolatedWorlds.add(key);
+      this.#isolatedWorlds.add(key2);
     }
     #onFrameNavigatedWithinDocument(frameId, url) {
       const frame = this.frame(frameId);
@@ -35631,11 +38668,11 @@ ${sourceUrlComment}
     updateClient(client) {
       this.#client = client;
     }
-    async down(key, options = {
+    async down(key2, options = {
       text: void 0,
       commands: []
     }) {
-      const description = this.#keyDescriptionForString(key);
+      const description = this.#keyDescriptionForString(key2);
       const autoRepeat = this.#pressedKeys.has(description.code);
       this.#pressedKeys.add(description.code);
       this._modifiers |= this.#modifierBit(description.key);
@@ -35654,17 +38691,17 @@ ${sourceUrlComment}
         commands: options.commands
       });
     }
-    #modifierBit(key) {
-      if (key === "Alt") {
+    #modifierBit(key2) {
+      if (key2 === "Alt") {
         return 1;
       }
-      if (key === "Control") {
+      if (key2 === "Control") {
         return 2;
       }
-      if (key === "Meta") {
+      if (key2 === "Meta") {
         return 4;
       }
-      if (key === "Shift") {
+      if (key2 === "Shift") {
         return 8;
       }
       return 0;
@@ -35712,8 +38749,8 @@ ${sourceUrlComment}
       }
       return description;
     }
-    async up(key) {
-      const description = this.#keyDescriptionForString(key);
+    async up(key2) {
+      const description = this.#keyDescriptionForString(key2);
       this._modifiers &= ~this.#modifierBit(description.key);
       this.#pressedKeys.delete(description.code);
       await this.#client.send("Input.dispatchKeyEvent", {
@@ -35746,15 +38783,15 @@ ${sourceUrlComment}
         }
       }
     }
-    async press(key, options = {}) {
+    async press(key2, options = {}) {
       const { delay = null } = options;
-      await this.down(key, options);
+      await this.down(key2, options);
       if (delay) {
         await new Promise((f) => {
           return setTimeout(f, options.delay);
         });
       }
-      await this.up(key);
+      await this.up(key2);
     }
   };
   var getFlag = (button) => {
@@ -36156,17 +39193,17 @@ ${sourceUrlComment}
   };
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/cdp/Page.js
-  var __addDisposableResource12 = function(env, value, async2) {
-    if (value !== null && value !== void 0) {
-      if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+  var __addDisposableResource12 = function(env, value2, async2) {
+    if (value2 !== null && value2 !== void 0) {
+      if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
       var dispose, inner;
       if (async2) {
         if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-        dispose = value[Symbol.asyncDispose];
+        dispose = value2[Symbol.asyncDispose];
       }
       if (dispose === void 0) {
         if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-        dispose = value[Symbol.dispose];
+        dispose = value2[Symbol.dispose];
         if (async2) inner = dispose;
       }
       if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -36177,11 +39214,11 @@ ${sourceUrlComment}
           return Promise.reject(e);
         }
       };
-      env.stack.push({ value, dispose, async: async2 });
+      env.stack.push({ value: value2, dispose, async: async2 });
     } else if (async2) {
       env.stack.push({ async: true });
     }
-    return value;
+    return value2;
   };
   var __disposeResources12 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
@@ -36224,11 +39261,11 @@ ${sourceUrlComment}
   }
   var CdpPage = class _CdpPage extends Page {
     static async _create(client, target, defaultViewport) {
-      const page = new _CdpPage(client, target);
-      await page.#initialize();
+      const page2 = new _CdpPage(client, target);
+      await page2.#initialize();
       if (defaultViewport) {
         try {
-          await page.setViewport(defaultViewport);
+          await page2.setViewport(defaultViewport);
         } catch (err) {
           if (isErrorLike(err) && isTargetClosedError(err)) {
             debugError(err);
@@ -36237,7 +39274,7 @@ ${sourceUrlComment}
           }
         }
       }
-      return page;
+      return page2;
     }
     #closed = false;
     #targetManager;
@@ -36517,9 +39554,9 @@ ${sourceUrlComment}
       this.emit("error", new Error("Page crashed!"));
     }
     #onLogEntryAdded(event) {
-      const { level, text, args, source: source2, url, lineNumber, stackTrace } = event.entry;
-      if (args) {
-        args.map((arg) => {
+      const { level, text, args: args2, source: source2, url, lineNumber, stackTrace } = event.entry;
+      if (args2) {
+        args2.map((arg) => {
           void releaseObject(this.#primaryTargetClient, arg);
         });
       }
@@ -36548,8 +39585,8 @@ ${sourceUrlComment}
     workers() {
       return Array.from(this.#workers.values());
     }
-    async setRequestInterception(value) {
-      return await this.#frameManager.networkManager.setRequestInterception(value);
+    async setRequestInterception(value2) {
+      return await this.#frameManager.networkManager.setRequestInterception(value2);
     }
     async setBypassServiceWorker(bypass) {
       this.#serviceWorkerBypassed = bypass;
@@ -36775,7 +39812,7 @@ ${sourceUrlComment}
       } catch {
         return;
       }
-      const { type, name, seq, args, isTrivial } = payload;
+      const { type, name, seq, args: args2, isTrivial } = payload;
       if (type !== "exposedFun") {
         return;
       }
@@ -36784,7 +39821,7 @@ ${sourceUrlComment}
         return;
       }
       const binding = this.#bindings.get(name);
-      await binding?.run(context2, seq, args, isTrivial);
+      await binding?.run(context2, seq, args2, isTrivial);
     }
     #onDialog(event) {
       const type = validateDialogType(event.type);
@@ -36863,8 +39900,8 @@ ${sourceUrlComment}
     viewport() {
       return this.#viewport;
     }
-    async evaluateOnNewDocument(pageFunction, ...args) {
-      const source2 = evaluationString(pageFunction, ...args);
+    async evaluateOnNewDocument(pageFunction, ...args2) {
+      const source2 = evaluationString(pageFunction, ...args2);
       return await this.#frameManager.evaluateOnNewDocument(source2);
     }
     async removeScriptToEvaluateOnNewDocument(identifier) {
@@ -37054,17 +40091,17 @@ ${sourceUrlComment}
   }
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/cdp/BrowserContext.js
-  var __addDisposableResource13 = function(env, value, async2) {
-    if (value !== null && value !== void 0) {
-      if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+  var __addDisposableResource13 = function(env, value2, async2) {
+    if (value2 !== null && value2 !== void 0) {
+      if (typeof value2 !== "object" && typeof value2 !== "function") throw new TypeError("Object expected.");
       var dispose, inner;
       if (async2) {
         if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-        dispose = value[Symbol.asyncDispose];
+        dispose = value2[Symbol.asyncDispose];
       }
       if (dispose === void 0) {
         if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-        dispose = value[Symbol.dispose];
+        dispose = value2[Symbol.dispose];
         if (async2) inner = dispose;
       }
       if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
@@ -37075,11 +40112,11 @@ ${sourceUrlComment}
           return Promise.reject(e);
         }
       };
-      env.stack.push({ value, dispose, async: async2 });
+      env.stack.push({ value: value2, dispose, async: async2 });
     } else if (async2) {
       env.stack.push({ async: true });
     }
-    return value;
+    return value2;
   };
   var __disposeResources13 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
@@ -37136,8 +40173,8 @@ ${sourceUrlComment}
       }).map((target) => {
         return target.page();
       }));
-      return pages.filter((page) => {
-        return !!page;
+      return pages.filter((page2) => {
+        return !!page2;
       });
     }
     async overridePermissions(origin, permissions) {
@@ -37903,11 +40940,11 @@ ${sourceUrlComment}
       if (!initialized) {
         throw new Error(`Failed to create target for page (id = ${targetId})`);
       }
-      const page = await target.page();
-      if (!page) {
+      const page2 = await target.page();
+      if (!page2) {
         throw new Error(`Failed to create a page for context (id = ${contextId})`);
       }
-      return page;
+      return page2;
     }
     async _createDevToolsPage(pageTargetId) {
       const openDevToolsResponse = await this.#connection.send("Target.openDevTools", {
@@ -37923,11 +40960,11 @@ ${sourceUrlComment}
       if (!initialized) {
         throw new Error(`Failed to create target for DevTools page (id = ${pageTargetId})`);
       }
-      const page = await target.page();
-      if (!page) {
+      const page2 = await target.page();
+      if (!page2) {
         throw new Error(`Failed to create a DevTools Page for target (id = ${pageTargetId})`);
       }
-      return page;
+      return page2;
     }
     async installExtension(path) {
       const { id } = await this.#connection.send("Extensions.loadUnpacked", { path });
@@ -39979,12 +43016,12 @@ ${sourceUrlComment}
     Tracing,
     WebWorker
   }).map(([name, type]) => [type.prototype, name]));
-  function remoteClass(value) {
-    for (let prototype = Object.getPrototypeOf(value); prototype; prototype = Object.getPrototypeOf(prototype)) {
+  function remoteClass(value2) {
+    for (let prototype = Object.getPrototypeOf(value2); prototype; prototype = Object.getPrototypeOf(prototype)) {
       const name = publicTypes.get(prototype);
       if (name) return name;
     }
-    return value.constructor?.name ?? "Object";
+    return value2.constructor?.name ?? "Object";
   }
   var objects = /* @__PURE__ */ new Map();
   var identities = /* @__PURE__ */ new WeakMap();
@@ -40015,108 +43052,112 @@ ${sourceUrlComment}
       if (event === void 0 || entry.event === event) dropEvent(entry);
     }
   }
-  var emit = (kind, value) => __quickjsEmit(kind, value);
+  var emit = (kind, value2) => __quickjsEmit(kind, value2);
   var errorData = (error) => ({ name: error?.name ?? "Error", message: error?.message ?? String(error), stack: error?.stack ?? "" });
-  function encode(value, ancestors = /* @__PURE__ */ new Set()) {
-    if (value === void 0) return { $quickjs: "undefined" };
-    if (typeof value === "bigint") return { $quickjs: "bigint", value: String(value) };
-    if (typeof value === "number" && !Number.isFinite(value)) return { $quickjs: "number", value: String(value) };
-    if (Object.is(value, -0)) return { $quickjs: "number", value: "-0" };
-    if (value instanceof Uint8Array) return { $quickjs: "bytes", value };
-    if (value && typeof value === "object" && (Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)) {
-      if (ancestors.has(value)) throw new TypeError("Cannot transfer cyclic data");
-      ancestors.add(value);
+  function encode(value2, ancestors = /* @__PURE__ */ new Set()) {
+    if (value2 === void 0) return { $quickjs: "undefined" };
+    if (typeof value2 === "bigint") return { $quickjs: "bigint", value: String(value2) };
+    if (typeof value2 === "number" && !Number.isFinite(value2)) return { $quickjs: "number", value: String(value2) };
+    if (Object.is(value2, -0)) return { $quickjs: "number", value: "-0" };
+    if (value2 instanceof Uint8Array) return { $quickjs: "bytes", value: value2 };
+    if (value2 && typeof value2 === "object" && (Array.isArray(value2) || Object.getPrototypeOf(value2) === Object.prototype || Object.getPrototypeOf(value2) === null)) {
+      if (ancestors.has(value2)) throw new TypeError("Cannot transfer cyclic data");
+      ancestors.add(value2);
       try {
-        if (Array.isArray(value)) return value.map((item) => encode(item, ancestors));
-        const record = Object.fromEntries(Object.entries(value).map(([key, item]) => [key, encode(item, ancestors)]));
+        if (Array.isArray(value2)) return value2.map((item) => encode(item, ancestors));
+        const record = Object.fromEntries(Object.entries(value2).map(([key2, item]) => [key2, encode(item, ancestors)]));
         return Object.hasOwn(record, "$quickjs") ? { $quickjs: "record", value: record } : record;
       } finally {
-        ancestors.delete(value);
+        ancestors.delete(value2);
       }
     }
-    if (value && typeof value === "object") {
-      if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) {
-        let id = identities.get(value);
+    if (value2 && typeof value2 === "object") {
+      if (Object.getPrototypeOf(value2) !== Object.prototype && Object.getPrototypeOf(value2) !== null) {
+        let id = identities.get(value2);
         if (!id) {
           id = ++nextObject;
-          identities.set(value, id);
+          identities.set(value2, id);
         }
-        objects.set(id, value);
-        return { $quickjs: "object", id, class: remoteClass(value) };
+        objects.set(id, value2);
+        return { $quickjs: "object", id, class: remoteClass(value2) };
       }
-      return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, encode(val)]));
+      return Object.fromEntries(Object.entries(value2).map(([key2, val]) => [key2, encode(val)]));
     }
-    return value;
+    return value2;
   }
-  function decode(value, pin = true) {
-    if (Array.isArray(value)) return value.map((item) => decode(item, pin));
-    if (value && typeof value === "object") {
-      if (value.$quickjs === "record") return Object.fromEntries(Object.entries(value.value).map(([key, item]) => [key, decode(item)]));
-      if (value.$quickjs === "object") {
-        if (!objects.has(value.id)) throw new Error(`Unknown remote object ${value.id}`);
-        return objects.get(value.id);
+  function decode(value2, pin = true) {
+    if (Array.isArray(value2)) return value2.map((item) => decode(item, pin));
+    if (value2 && typeof value2 === "object") {
+      if (value2.$quickjs === "record") return Object.fromEntries(Object.entries(value2.value).map(([key2, item]) => [key2, decode(item)]));
+      if (value2.$quickjs === "object") {
+        if (!objects.has(value2.id)) throw new Error(`Unknown remote object ${value2.id}`);
+        return objects.get(value2.id);
       }
-      if (value.$quickjs === "function") {
-        const key = `function:${value.id}`;
-        if (!decodedFunctions.has(key)) decodedFunctions.set(key, (0, eval)(`(${value.source})`));
-        return decodedFunctions.get(key);
+      if (value2.$quickjs === "function") {
+        const key2 = `function:${value2.id}`;
+        if (!decodedFunctions.has(key2)) decodedFunctions.set(key2, (0, eval)(`(${value2.source})`));
+        return decodedFunctions.get(key2);
       }
-      if (value.$quickjs === "callback") {
-        if (pin) pinnedCallbacks.add(value.id);
-        const key = `callback:${value.id}`;
-        if (decodedFunctions.has(key)) return decodedFunctions.get(key);
-        const fn = (...args) => new Promise((resolve, reject) => {
+      if (value2.$quickjs === "callback") {
+        if (pin) pinnedCallbacks.add(value2.id);
+        const key2 = `callback:${value2.id}`;
+        if (decodedFunctions.has(key2)) return decodedFunctions.get(key2);
+        const fn = (...args2) => new Promise((resolve, reject) => {
           const id = ++nextCallback;
           callbacks.set(id, { resolve, reject });
-          emit("callback", { id, callback: value.id, args: args.map((item) => encode(item)) });
+          emit("callback", { id, callback: value2.id, args: args2.map((item) => encode(item)) });
         });
-        decodedFunctions.set(key, fn);
+        decodedFunctions.set(key2, fn);
         return fn;
       }
-      if (value.$quickjs === "undefined") return void 0;
-      if (value.$quickjs === "bigint") return BigInt(value.value);
-      return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, decode(val)]));
+      if (value2.$quickjs === "undefined") return void 0;
+      if (value2.$quickjs === "bigint") return BigInt(value2.value);
+      return Object.fromEntries(Object.entries(value2).map(([key2, val]) => [key2, decode(val)]));
     }
-    return value;
+    return value2;
   }
   var transport = {
     send: (message) => __quickjsEmit("send", message),
     close: () => __quickjsEmit("close", "")
   };
+  var plugins = new PluginAdapter();
   async function call(request) {
+    if (request.method === "preparePlugins" && request.object === 0) return plugins.prepare(...request.args.map((item) => decode(item)));
+    if (!["close", "disconnect"].includes(request.method)) plugins.check();
     if (request.method === "connect" && request.object === 0) {
-      return puppeteer_core_browser_default.connect({ ...decode(request.args[0] || {}), transport });
+      return plugins.connect(puppeteer_core_browser_default, decode(request.args[0] || {}), transport);
     }
     const object = objects.get(request.object);
     if (!object) throw new Error(`Unknown remote object ${request.object}`);
     if (request.operation === "get") return object[request.method];
     const fn = object[request.method];
     if (typeof fn !== "function") throw new Error(`Not a method: ${request.method}`);
-    const [event, handler] = request.args;
-    if ((request.method === "on" || request.method === "once") && handler?.$quickjs === "callback") {
-      const callback = decode(handler, false);
-      const entry = { objectId: request.object, object, event, callbackId: handler.id, wrapper: null };
-      entry.wrapper = (...args) => {
-        const result2 = callback(...args);
+    const [event, handler2] = request.args;
+    if ((request.method === "on" || request.method === "once") && handler2?.$quickjs === "callback") {
+      const callback = decode(handler2, false);
+      const entry = { objectId: request.object, object, event, callbackId: handler2.id, wrapper: null };
+      entry.wrapper = (...args2) => {
+        const result2 = callback(...args2);
         if (request.method === "once") dropEvent(entry);
         result2.catch((error) => emit("log", `PHP event callback failed: ${error.message}`));
       };
       object.on(event, entry.wrapper);
       if (!eventListeners.has(request.object)) eventListeners.set(request.object, /* @__PURE__ */ new Set());
       eventListeners.get(request.object).add(entry);
-      eventCallbacks.set(handler.id, (eventCallbacks.get(handler.id) ?? 0) + 1);
+      eventCallbacks.set(handler2.id, (eventCallbacks.get(handler2.id) ?? 0) + 1);
       return object;
     }
-    if (request.method === "off" && handler?.$quickjs === "callback") {
+    if (request.method === "off" && handler2?.$quickjs === "callback") {
       const entries = [...eventListeners.get(request.object) ?? []];
-      const entry = entries.findLast((entry2) => entry2.event === event && entry2.callbackId === handler.id);
+      const entry = entries.findLast((entry2) => entry2.event === event && entry2.callbackId === handler2.id);
       if (entry) dropEvent(entry);
-      else if (!eventCallbacks.has(handler.id) && !pinnedCallbacks.has(handler.id)) emit("releaseCallback", handler.id);
+      else if (!eventCallbacks.has(handler2.id) && !pinnedCallbacks.has(handler2.id)) emit("releaseCallback", handler2.id);
       return object;
     }
-    if (request.method === "removeAllListeners" || request.method === "off" && handler === void 0) clearEvents(request.object, event);
+    if (request.method === "removeAllListeners" || request.method === "off" && handler2 === void 0) clearEvents(request.object, event);
     const result = await Reflect.apply(fn, object, request.args.map((item) => decode(item)));
     if (request.method === "close") clearEvents(request.object);
+    if (result instanceof Page) await plugins.page(result);
     return result;
   }
   globalThis.__quickjsDispatch = (kind, payload) => {
@@ -40157,9 +43198,9 @@ ${sourceUrlComment}
       return;
     }
     call(request).then(
-      (value) => {
+      (value2) => {
         try {
-          emit("result", { id: request.id, value: encode(value) });
+          emit("result", { id: request.id, value: encode(value2) });
         } catch (error) {
           emit("result", { id: request.id, error: errorData(error) });
         }
@@ -40169,6 +43210,78 @@ ${sourceUrlComment}
   };
 })();
 /*! Bundled license information:
+
+isobject/index.js:
+  (*!
+   * isobject <https://github.com/jonschlinkert/isobject>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
+   *)
+
+is-plain-object/index.js:
+  (*!
+   * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
+   *)
+
+is-extendable/index.js:
+  (*!
+   * is-extendable <https://github.com/jonschlinkert/is-extendable>
+   *
+   * Copyright (c) 2015, Jon Schlinkert.
+   * Licensed under the MIT License.
+   *)
+
+for-in/index.js:
+for-in/index.js:
+  (*!
+   * for-in <https://github.com/jonschlinkert/for-in>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
+   *)
+
+is-buffer/index.js:
+  (*!
+   * Determine if an object is a Buffer
+   *
+   * @author   Feross Aboukhadijeh <https://feross.org>
+   * @license  MIT
+   *)
+
+shallow-clone/index.js:
+  (*!
+   * shallow-clone <https://github.com/jonschlinkert/shallow-clone>
+   *
+   * Copyright (c) 2015, Jon Schlinkert.
+   * Licensed under the MIT License.
+   *)
+
+for-own/index.js:
+  (*!
+   * for-own <https://github.com/jonschlinkert/for-own>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
+   *)
+
+merge-deep/index.js:
+  (*!
+   * merge-deep <https://github.com/jonschlinkert/merge-deep>
+   *
+   * Copyright (c) 2014-2015, Jon Schlinkert.
+   * Licensed under the MIT License.
+   *)
+
+puppeteer-extra-plugin/dist/index.cjs.js:
+  (*!
+   * puppeteer-extra-plugin v3.2.2 by berstend
+   * https://github.com/berstend/puppeteer-extra/tree/master/packages/puppeteer-extra-plugin
+   * @license MIT
+   *)
 
 puppeteer-core/lib/esm/puppeteer/util/disposable.js:
 puppeteer-core/lib/esm/puppeteer/api/ElementHandleSymbol.js:

@@ -1,4 +1,5 @@
 import {fireTimer, clearTimers} from './host-environment.js';
+import {PluginAdapter} from './plugins/adapter.js';
 import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
@@ -112,9 +113,12 @@ const transport = {
   send: message => __quickjsEmit('send', message),
   close: () => __quickjsEmit('close', ''),
 };
+const plugins = new PluginAdapter();
 async function call(request) {
+  if (request.method === 'preparePlugins' && request.object === 0) return plugins.prepare(...request.args.map(item => decode(item)));
+  if (!['close', 'disconnect'].includes(request.method)) plugins.check();
   if (request.method === 'connect' && request.object === 0) {
-    return puppeteer.connect({...decode(request.args[0] || {}), transport});
+    return plugins.connect(puppeteer, decode(request.args[0] || {}), transport);
   }
   const object = objects.get(request.object);
   if (!object) throw new Error(`Unknown remote object ${request.object}`);
@@ -146,6 +150,7 @@ async function call(request) {
   if (request.method === 'removeAllListeners' || (request.method === 'off' && handler === undefined)) clearEvents(request.object, event);
   const result = await Reflect.apply(fn, object, request.args.map(item => decode(item)));
   if (request.method === 'close') clearEvents(request.object);
+  if (result instanceof Page) await plugins.page(result);
   return result;
 }
 globalThis.__quickjsDispatch = (kind, payload) => {

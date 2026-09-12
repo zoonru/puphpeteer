@@ -8,8 +8,12 @@
     "entry": "lib/types.d.ts",
     "declarationSha256": "14e80a1988e66556246539f351025ec5a1f6f15230fa4afb52ba2247771159aa"
   },
-  "npmLockSha256": "feac38478ace0398483bd81d0b34fd2d22965d3be60af0805a85e29d700c610b",
+  "npmLockSha256": "d99c3487f26243485327e0195294953526f6d58b27f6dda1402d98a18d0c7b9b",
   "tools": {
+    "@puppeteer/browsers": {
+      "version": "2.11.2",
+      "integrity": "sha512-GBY0+2lI9fDrjgb5dFL9+enKXqyOPok9PXg/69NVkjW3bikbK9RQrNrI3qccQXmDNN7ln4j/yL89Qgvj/tfqrw=="
+    },
     "esbuild": {
       "version": "0.25.12",
       "integrity": "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg=="
@@ -17,6 +21,14 @@
     "puppeteer-core": {
       "version": "24.36.1",
       "integrity": "sha512-L7ykMWc3lQf3HS7ME3PSjp7wMIjJeW6+bKfH/RSTz5l6VUDGubnrC2BKj3UvM28Y5PMDFW0xniJOZHBZPpW1dQ=="
+    },
+    "puppeteer-extra-plugin": {
+      "version": "3.2.3",
+      "integrity": "sha512-6RNy0e6pH8vaS3akPIKGg28xcryKscczt4wIl0ePciZENGE2yoaQJNd17UiEbdmh5/6WW6dPcfRWT9lxBwCi2Q=="
+    },
+    "puppeteer-extra-plugin-stealth": {
+      "version": "2.11.2",
+      "integrity": "sha512-bUemM5XmTj9i2ZerBzsk2AN5is0wHMNE6K0hXBzBXOzP5m5G3Wl0RHhiqKeHToe/uIH8AoZiGhc1tCkLZQPKTQ=="
     },
     "typescript": {
       "version": "5.9.3",

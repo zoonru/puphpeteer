@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const check = process.argv.includes('--check');
+const pluginArgument = process.argv.find(arg => arg.startsWith('--plugins='));
+const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--plugins='.length)) : null;
 (async () => {
   const result = await esbuild.build({
     absWorkingDir: root,
@@ -12,12 +14,14 @@ const check = process.argv.includes('--check');
     minify: false, sourcemap: false, write: false,
     external: ['crypto', 'node:*', '@puppeteer/browsers', '../node/NodeWebSocketTransport.js'],
     logLevel: 'info',
+    plugins: [require('./plugin-build.cjs')(pluginFile)],
   });
   const outputs = result.outputFiles.map(file => ({path: file.path, contents: Buffer.from(file.contents)}));
   outputs.push({path: path.join(root, 'resources/manifest.json'), contents: Buffer.from(JSON.stringify({
     puppeteer: require('puppeteer-core/package.json').version,
     chrome: require('puppeteer-core').PUPPETEER_REVISIONS.chrome,
     esbuild: esbuild.version,
+    stealth: require('puppeteer-extra-plugin-stealth/package.json').version,
     extension: 'php-quickjs async/native-bridge fork with dispatch',
   }, null, 2) + '\n')});
   const puppeteer = require('puppeteer-core');

@@ -11,12 +11,15 @@
     "build:check": "node tools/build.cjs --check",
     "test-generator": "node --test tools/upstream/*.test.cjs",
     "browser:install": "node tools/install-browser.cjs",
-    "postinstall": "node tools/install-browser.cjs"
+    "postinstall": "node tools/install-browser.cjs",
+    "test-plugins": "node --test tests/Plugins/*.test.cjs"
   },
   "devDependencies": {
     "@puppeteer/browsers": "2.11.2",
     "esbuild": "0.25.12",
     "puppeteer-core": "24.36.1",
+    "puppeteer-extra-plugin": "3.2.3",
+    "puppeteer-extra-plugin-stealth": "2.11.2",
     "typescript": "5.9.3"
   }
 }

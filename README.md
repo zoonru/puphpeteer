@@ -219,7 +219,18 @@ try {
 
 ## Puppeteer plugins
 
-`puppeteer-extra` and `puppeteer-extra-plugin-stealth` are **not supported yet**. The old `js_extra` configuration is rejected. Plugin hooks, Node API requirements and individual stealth evasions need validation in QuickJS before this feature is available.
+Register bundled plugins before launching or connecting:
+
+```php
+$puppeteer = (new Puppeteer())->use('stealth');
+$browser = $puppeteer->launch(['headless' => true]);
+```
+
+The bundle includes upstream stealth modules and an adapter for puppeteer-extra
+hooks. Custom plugins are registered at build time. Node APIs are unavailable
+inside QuickJS; the old `js_extra` configuration remains unsupported.
+See [plugin configuration, custom bundles and compatibility limits](docs/plugins.md),
+including popup first-document timing and the locale adaptation.
 
 ## IDE support and API generation
 
@@ -278,7 +289,7 @@ On macOS the extension may use `.dylib`. `PHP_BIN` overrides the runner's PHP ex
 2. **Generator:** real methods, properties, PHP types, PHPDoc and compatibility aliases. Implemented; API coverage remains partial.
 3. **Extension:** direct bridge, `dispatch`, type contract, queue limits, callback/handle release and Fiber boundaries are implemented and covered by [contract tests](docs/extension-contract.md). Cross-platform release validation remains in step 6.
 4. **Runtime:** transport shutdown, internal cancellation, timeout recovery and object/browser cleanup are implemented with [lifecycle tests and documented boundaries](docs/runtime.md).
-5. **Plugins:** adapt and test puppeteer-extra/stealth hooks, evasions, pages, frames and popups before fixing the architecture.
+5. **Plugins:** bundled stealth modules, custom plugin registries and lifecycle hooks are implemented with isolated and browser tests; [compatibility limits](docs/plugins.md) are documented.
 6. **Release:** compatibility, failure and long-running tests, leak checks, repeatable benchmarks and real workloads.
 
 CI currently checks unit tests, Psalm, API generation and the JS build. Reproducible extension builds and browser integration in CI remain pending. Historical benchmark reports under [docs/benchmarks](docs/benchmarks/) describe earlier snapshots.
