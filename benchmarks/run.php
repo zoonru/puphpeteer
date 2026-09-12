@@ -136,9 +136,17 @@ try {
                 'manifest' => json_decode(file_get_contents(dirname(__DIR__) . '/resources/manifest.json'), true, 512, JSON_THROW_ON_ERROR),
                 'timestamp' => gmdate('Y-m-d\TH:i:s\Z'), 'runs' => $runs,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
-            echo json_encode(['backend' => 'quickjs', 'evaluate_ms' => $run['phases']['evaluate']['wall_ms'],
+            echo json_encode([
+                'backend' => 'quickjs',
+                'trial' => $trial + 1,
+                'setup_ms' => $run['setup_ms'],
+                'phases' => $run['phases'],
+                'resources' => $run['resources'],
+                // Keep the compact fields for scripts consuming older output.
+                'evaluate_ms' => $run['phases']['evaluate']['wall_ms'],
                 'cpu_ms' => $run['resources']['total_process_tree_cpu_ms'],
-                'rss_mb' => $run['resources']['sampled_tree_peak_rss_bytes'] / 1048576], JSON_THROW_ON_ERROR), "\n";
+                'rss_mb' => $run['resources']['sampled_tree_peak_rss_bytes'] / 1048576,
+            ], JSON_THROW_ON_ERROR), "\n";
         }
 } catch (Throwable $error) {
     fwrite(STDERR, $error->getMessage() . "\n");

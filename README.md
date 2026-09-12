@@ -18,6 +18,7 @@ This version is **under development and has not been released**. Generated wrapp
 - [Puppeteer plugins](#puppeteer-plugins)
 - [IDE support and API generation](#ide-support-and-api-generation)
 - [Upgrade from v2](#upgrade-from-v2)
+- [Interactive CLI](#interactive-cli)
 - [Development](#development)
 - [Implementation plan](#implementation-plan)
 - [License](#license)
@@ -258,6 +259,25 @@ Compatibility is **best effort**. Canonical classes now live in `Nesk\Puphpeteer
 - Local launch uses the Chrome in `node_modules`, an explicit `executablePath`, or `PUPPETEER_EXECUTABLE_PATH`. System Chrome is not selected automatically.
 - `undefined` becomes `null`; binary results become PHP strings. `screenshot()` and `pdf()` write `path` output through PHP. Awaiting public calls manually is unnecessary; use `Amp\async()` for concurrency.
 
+## Interactive CLI
+
+The development commands are available through `bin/console` and use Symfony
+Console for animated indicators, progress bars, tables and interactive choices:
+
+```sh
+bin/console                 # show the command list
+bin/console doctor          # inspect PHP, QuickJS, Node.js, npm and bundle
+bin/console build           # build the production bundle
+bin/console generate --check
+bin/console test            # choose a suite interactively
+bin/console benchmark --trials=5 --iterations=1000
+```
+
+Use `--no-interaction` in CI. Add `--json` for agent and CI integrations; it
+disables decorations and prints one machine-readable line. `QUICKJS_EXTENSION` is read automatically for
+integration, browser and benchmark commands; `--extension=/path/to/module`
+overrides it. Existing Composer scripts remain available.
+
 ## Development
 
 For development without the extension loaded:
@@ -282,7 +302,7 @@ QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer benchmark
 
 On macOS the extension may use `.dylib`. `PHP_BIN` overrides the PHP executable used by isolated processes. Smoke runs the browser scenarios and all three examples. The benchmark supports macOS and Linux and measures the PHP workload separately from Chrome and the wrapper process. See [QuickJS internals and test details](docs/quickjs.md).
 
-`npm run build` bundles `js/guest.js`, adapters and Puppeteer into `resources/puppeteer.js`, with version metadata and launch defaults. Commit these resources with source and lock-file changes. `npm run build:check` verifies reproducibility. PHP dependency ranges are resolved by the consuming application; `composer.lock` is local. JS tooling is pinned in `package-lock.json`.
+`npm run build` creates minified CDP-only bundles: `resources/puppeteer-core.js` for the default no-plugin path and `resources/puppeteer.js` with plugin support, plus version metadata and launch defaults. Commit these resources with source and lock-file changes. `npm run build:check` verifies reproducibility; `npm run build -- --debug` creates readable bundles for debugging. PHP dependency ranges are resolved by the consuming application; `composer.lock` is local. JS tooling is pinned in `package-lock.json`.
 
 ## Implementation plan
 

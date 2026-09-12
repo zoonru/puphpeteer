@@ -113,4 +113,4 @@ PHP-обёртки или закрытие клиента; `release()` не вы
 
 [Результаты и методика сравнения](benchmarks/report.md).
 
-Готовые `resources/puppeteer.js` и `resources/manifest.json` включаются в Git. Для использования пакета сборка не нужна; разработчик обновляет их через `npm run build`. CI проверяет результат командой `npm run build:check`.
+Готовые `resources/puppeteer.js`, `resources/puppeteer-core.js` и `resources/manifest.json` включаются в Git. `Puppeteer` выбирает core bundle без плагинов и полный bundle после `use()`. Оба bundle собираются в CDP-only production-режиме; WebDriver BiDi не поддерживается. `--debug` оставляет читаемый JavaScript. Для использования пакета сборка не нужна; разработчик обновляет ресурсы через `npm run build`. CI проверяет результат командой `npm run build:check`.

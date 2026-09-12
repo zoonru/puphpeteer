@@ -18,6 +18,7 @@
 - [Плагины Puppeteer](#плагины-puppeteer)
 - [Поддержка IDE и генерация API](#поддержка-ide-и-генерация-api)
 - [Обновление с v2](#обновление-с-v2)
+- [Интерактивный CLI](#интерактивный-cli)
 - [Разработка](#разработка)
 - [План реализации](#план-реализации)
 - [Лицензия](#лицензия)
@@ -258,6 +259,26 @@ composer verify-php
 - Локальный запуск использует Chrome из `node_modules`, явный `executablePath` или `PUPPETEER_EXECUTABLE_PATH`. Системный Chrome автоматически не выбирается.
 - `undefined` преобразуется в `null`; бинарные результаты — в PHP-строки. `screenshot()` и `pdf()` записывают результат по `path` средствами PHP. Явно ожидать публичные вызовы не нужно; для параллельности используйте `Amp\async()`.
 
+## Интерактивный CLI
+
+Команды разработки доступны через `bin/console` и используют Symfony
+Console: анимированный индикатор, прогресс-бары, таблицы и интерактивный выбор:
+
+```sh
+bin/console                 # список команд
+bin/console doctor          # PHP, QuickJS, Node.js, npm и bundle
+bin/console build           # production-сборка bundle
+bin/console generate --check
+bin/console test            # интерактивный выбор набора тестов
+bin/console benchmark --trials=5 --iterations=1000
+```
+
+Для CI используйте `--no-interaction`. Для агентов добавляйте `--json`: он
+отключает украшения и печатает одну JSON-строку. Для integration, browser и benchmark
+автоматически используется `QUICKJS_EXTENSION`; параметр
+`--extension=/path/to/module` имеет приоритет. Старые Composer-команды также
+остаются доступными.
+
 ## Разработка
 
 Для разработки без подключённого расширения:
@@ -282,7 +303,7 @@ QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer benchmark
 
 На macOS расширение может иметь суффикс `.dylib`. `PHP_BIN` переопределяет исполняемый файл PHP для runner. Smoke запускает браузерные сценарии и все три примера. Бенчмарк поддерживает macOS и Linux и измеряет PHP-нагрузку отдельно от Chrome и процесса-обёртки. Подробнее — [устройство QuickJS и проверки](docs/quickjs.md).
 
-`npm run build` собирает `js/guest.js`, адаптеры и Puppeteer в `resources/puppeteer.js`, добавляя метаданные версий и параметры запуска. Включайте эти ресурсы в коммит вместе с изменениями исходников и lock-файла. `npm run build:check` проверяет воспроизводимость. Диапазоны PHP-зависимостей разрешает приложение-потребитель; `composer.lock` остаётся локальным. JS-инструменты закреплены в `package-lock.json`.
+`npm run build` создаёт минифицированные CDP-only bundle: `resources/puppeteer-core.js` для пути без плагинов и `resources/puppeteer.js` с поддержкой плагинов, а также метаданные версий и параметры запуска. Включайте эти ресурсы в коммит вместе с изменениями исходников и lock-файла. `npm run build:check` проверяет воспроизводимость, `npm run build -- --debug` создаёт читаемые bundle для отладки. Диапазоны PHP-зависимостей разрешает приложение-потребитель; `composer.lock` остаётся локальным. JS-инструменты закреплены в `package-lock.json`.
 
 ## План реализации
 

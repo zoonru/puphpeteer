@@ -55,9 +55,11 @@ npm run build -- --plugins=./app-plugins.js
 ```
 
 Commit/distribute the resulting `resources/puppeteer.js` and manifest with your
-application, and use `new Puppeteer(['bundle' => '/absolute/path/puppeteer.js'])`
-when keeping an application bundle separately. Reproducibility checks need the
-same `--plugins` argument. Register it with `$puppeteer->use('example', $options)`.
+application. The no-plugin path uses the smaller `resources/puppeteer-core.js`
+automatically; an explicitly configured `bundle` always takes precedence. Use
+`new Puppeteer(['bundle' => '/absolute/path/puppeteer.js'])` when keeping an
+application bundle separately. Reproducibility checks need the same
+`--plugins` argument. Register it with `$puppeteer->use('example', $options)`.
 Custom registry names cannot override bundled names. Dependencies must also be
 present in the registry. This is build-time dependency resolution: runtime
 `require()`, Node filesystem, Node process and network modules are unavailable.
