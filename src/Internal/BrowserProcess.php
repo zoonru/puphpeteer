@@ -26,7 +26,12 @@ final class BrowserProcess
         $arguments[] = '--remote-debugging-port=0';
         $arguments[] = '--user-data-dir=' . $profile;
         try {
-            $this->process = Process::start([$executable, ...$arguments], environment: $options['env'] ?? []);
+            $environment = getenv();
+            $environment = is_array($environment) ? $environment : [];
+            foreach ($options['env'] ?? [] as $name => $value) {
+                $environment[(string) $name] = (string) $value;
+            }
+            $this->process = Process::start([$executable, ...$arguments], environment: $environment);
             $this->process->getStdin()->close();
             $stdout = $this->process->getStdout();
             $dump = $options['dumpio'] ?? false;

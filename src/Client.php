@@ -24,6 +24,7 @@ final class Client
     private bool $connecting = false;
     private bool $closed = false;
     private string $endpoint = '';
+    private ?float $protocolTimeout = null;
     private int $sequence = 0;
     /** @var array<int, DeferredFuture<mixed>> */
     private array $pending = [];
@@ -60,6 +61,7 @@ final class Client
         return async(function () use ($endpoint, $options, $cancellation): Browser {
             $this->endpoint = $endpoint;
             $timeout = $options['protocolTimeout'] ?? 180000;
+            $this->protocolTimeout = $timeout > 0 ? (float) $timeout : null;
             $cancellation ??= $timeout > 0 ? new TimeoutCancellation($timeout / 1000) : null;
             try { $socket = connect($endpoint, $cancellation); }
             catch (\Throwable $error) { $this->stop($error); throw $error; }
@@ -73,7 +75,12 @@ final class Client
                     if (!$this->closed) { $this->stop(new \RuntimeException('Browser transport closed')); }
                 } catch (\Throwable $e) { $this->stop($e); }
             })->ignore();
-            $browser = $this->call(0, 'connect', [$options], cancellation: $cancellation)->await();
+            try {
+                $browser = $this->call(0, 'connect', [$options], cancellation: $cancellation)->await();
+            } catch (\Throwable $error) {
+                $this->stop($error);
+                throw $error;
+            }
             if (!$browser instanceof Browser) {
                 throw new \UnexpectedValueException('Puppeteer connect did not return a Browser');
             }
@@ -92,10 +99,14 @@ final class Client
         try {
             $this->deliver('call', ['id' => $id, 'object' => $object, 'method' => $method, 'operation' => $operation, 'args' => $encoded]);
         } catch (\Throwable $e) { $this->stop($e); }
+        $cancellation ??= $this->protocolTimeout === null ? null : new TimeoutCancellation($this->protocolTimeout / 1000.0);
         if ($cancellation === null) { return $deferred->getFuture(); }
-        return async(function () use ($deferred, $cancellation): mixed {
+        return async(function () use ($deferred, $cancellation, $id): mixed {
             try { return $deferred->getFuture()->await($cancellation); }
-            catch (\Amp\CancelledException $error) { $this->stop($error); throw $error; }
+            catch (\Amp\CancelledException $error) {
+                if (($this->pending[$id] ?? null) === $deferred) { unset($this->pending[$id]); }
+                throw $error;
+            }
         });
     }
 

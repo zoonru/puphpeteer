@@ -78,10 +78,10 @@ function encode(value, ancestors = new Set()) {
   }
   return value;
 }
-function decode(value, pin = true) {
-  if (Array.isArray(value)) return value.map(item => decode(item, pin));
+function decode(value, pin = true, temporary = null) {
+  if (Array.isArray(value)) return value.map(item => decode(item, pin, temporary));
   if (value && typeof value === 'object') {
-    if (value.$quickjs === 'record') return Object.fromEntries(Object.entries(value.value).map(([key, item]) => [key, decode(item)]));
+    if (value.$quickjs === 'record') return Object.fromEntries(Object.entries(value.value).map(([key, item]) => [key, decode(item, pin, temporary)]));
     if (value.$quickjs === 'object') {
       if (!objects.has(value.id)) throw new Error(`Unknown remote object ${value.id}`);
       return objects.get(value.id);
@@ -93,6 +93,7 @@ function decode(value, pin = true) {
     }
     if (value.$quickjs === 'callback') {
       if (pin) pinnedCallbacks.add(value.id);
+      else temporary?.add(value.id);
       const key = `callback:${value.id}`;
       if (decodedFunctions.has(key)) return decodedFunctions.get(key);
       const fn = (...args) => new Promise((resolve, reject) => {
@@ -105,7 +106,7 @@ function decode(value, pin = true) {
     }
     if (value.$quickjs === 'undefined') return undefined;
     if (value.$quickjs === 'bigint') return BigInt(value.value);
-    return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, decode(val)]));
+    return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, decode(val, pin, temporary)]));
   }
   return value;
 }
@@ -148,10 +149,21 @@ async function call(request) {
     return object;
   }
   if (request.method === 'removeAllListeners' || (request.method === 'off' && handler === undefined)) clearEvents(request.object, event);
-  const result = await Reflect.apply(fn, object, request.args.map(item => decode(item)));
-  if (request.method === 'close') clearEvents(request.object);
-  if (result instanceof Page) await plugins.page(result);
-  return result;
+  const persistent = ['exposeFunction', 'on', 'once'].includes(request.method);
+  const temporary = new Set();
+  try {
+    const result = await Reflect.apply(fn, object, request.args.map(item => decode(item, persistent, temporary)));
+    if (request.method === 'close') clearEvents(request.object);
+    if (result instanceof Page) await plugins.page(result);
+    return result;
+  } finally {
+    for (const callbackId of temporary) {
+      if (!pinnedCallbacks.has(callbackId) && !eventCallbacks.has(callbackId)) {
+        decodedFunctions.delete(`callback:${callbackId}`);
+        emit('releaseCallback', callbackId);
+      }
+    }
+  }
 }
 globalThis.__quickjsDispatch = (kind, payload) => {
   if (kind === 'message') { transport.onmessage?.(payload); return; }
