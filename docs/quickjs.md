@@ -41,9 +41,7 @@ BENCH_TRIALS=5 BENCH_ITERATIONS=1000 composer benchmark
 Это не проверка браузерной интеграции; её запускают отдельно с расширением.
 
 Бенчмарк поддерживает macOS и Linux (`/usr/bin/time`, `ps`) и измеряет только QuickJS.
-Новые результаты пишутся в игнорируемый каталог `benchmarks/results/current/`.
-Сохранённые файлы в `docs/benchmarks/` — историческое сравнение прототипов;
-старые backend больше не входят в проект. Для сравнений нужны отдельные снимки.
+Старые backend больше не входят в проект; для сравнений нужны отдельные снимки.
 Каждый браузерный сценарий запускает собственный Chrome через публичный `launch()`; тестовые страницы берутся из `examples/pages`.
 
 ```php
@@ -111,6 +109,4 @@ PHP-обёртки или закрытие клиента; `release()` не вы
 [Lifecycle транспорта](runtime.md) описывает таймауты, внутреннюю отмену,
 очистку ресурсов и поведение при ошибках. Публичные `AbortSignal` пока не поддерживаются.
 
-[Результаты и методика сравнения](benchmarks/report.md).
-
-Готовые `resources/puppeteer.js`, `resources/puppeteer-core.js` и `resources/manifest.json` включаются в Git. `Puppeteer` выбирает core bundle без плагинов и полный bundle после `use()`. Оба bundle собираются в CDP-only production-режиме; WebDriver BiDi не поддерживается. `--debug` оставляет читаемый JavaScript. Для использования пакета сборка не нужна; разработчик обновляет ресурсы через `npm run build`. CI проверяет результат командой `npm run build:check`.
+Готовые `resources/puppeteer.js` и `resources/puppeteer-core.js` включаются в Git. `Puppeteer` выбирает core bundle без плагинов и полный bundle после `use()`. Оба bundle собираются в CDP-only production-режиме; WebDriver BiDi не поддерживается. `--debug` оставляет читаемый JavaScript. Для использования пакета сборка не нужна; разработчик обновляет ресурсы через `npm run build`. CI проверяет результат командой `npm run build:check`.

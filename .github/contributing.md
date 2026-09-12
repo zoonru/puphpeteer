@@ -21,7 +21,7 @@ under `node_modules` by `npm ci`; `PUPPETEER_EXECUTABLE_PATH` is an optional
 explicit override. Smoke and benchmark runners use PHP.
 See `docs/quickjs.md` for runner details.
 
-Commit package-lock.json and resources/puppeteer.js + resources/manifest.json when
+Commit package-lock.json and resources/puppeteer.js when
 changing JS sources or build dependencies. Run npm run build to regenerate them;
 CI uses npm run build:check to verify the checked-in files without modifying them.
 composer.lock remains local: CI installs latest supported dependencies on each PHP

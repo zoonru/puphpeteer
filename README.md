@@ -304,6 +304,24 @@ On macOS the extension may use `.dylib`. `PHP_BIN` overrides the PHP executable 
 
 `npm run build` creates minified CDP-only bundles: `resources/puppeteer-core.js` for the default no-plugin path and `resources/puppeteer.js` with plugin support, plus version metadata and launch defaults. Commit these resources with source and lock-file changes. `npm run build:check` verifies reproducibility; `npm run build -- --debug` creates readable bundles for debugging. PHP dependency ranges are resolved by the consuming application; `composer.lock` is local. JS tooling is pinned in `package-lock.json`.
 
+## Benchmark results
+
+The latest optimized QuickJS runs were measured on macOS arm64 with PHP 8.5.7
+and managed Chrome 144.0.7559.96. Values below are means; benchmark execution is
+documented in [QuickJS test details](docs/quickjs.md).
+
+- **Rialto** — PHP controls a separate Node.js process over a socket; Puppeteer runs in Node.js.
+- **Native PHP** — a PHP implementation speaks CDP directly, without Node.js or QuickJS; API coverage is partial.
+- **QuickJS** — the Puppeteer bundle runs inside an embedded QuickJS runtime in PHP; Amp handles CDP WebSocket I/O.
+
+| Measurement | Rialto | Native PHP | QuickJS optimized |
+| --- | ---: | ---: | ---: |
+| 1,000 `evaluate` calls | 413.02 ms | **331.68 ms** | 354.34 ms |
+| 100 returns of 64 KiB | 114.60 ms | 103.78 ms | **76.92 ms** |
+| 20 waits of 25 ms | 545.30 ms | **29.64 ms** | 29.86 ms |
+| Total client CPU | 830 ms | **360 ms** | 428 ms |
+| Peak client RSS | 123.55 MiB | **38.14 MiB** | 56.53 MiB |
+
 ## Implementation plan
 
 1. **Foundation:** remove old backends; configure Composer, PHPUnit, Psalm, reproducible bundle and CI. Completed.
@@ -313,7 +331,7 @@ On macOS the extension may use `.dylib`. `PHP_BIN` overrides the PHP executable 
 5. **Plugins:** bundled stealth modules, custom plugin registries and lifecycle hooks are implemented with isolated and browser tests; [compatibility limits](docs/plugins.md) are documented.
 6. **Release:** a PHP validation runner, repeated browser workloads, retention checks, portable benchmarks and an extension/browser CI matrix are implemented. See [release checks and remaining blockers](docs/release.md).
 
-CI checks unit tests, Psalm, API generation, plugins and the JS build. The extension/browser matrix requires a published fork SHA configured as `PHP_QUICKJS_REF`. Publishing that revision, obtaining green platform runs and updating the vulnerable browser downloader remain release prerequisites. Historical benchmark reports under [docs/benchmarks](docs/benchmarks/) describe earlier snapshots.
+CI checks unit tests, Psalm, API generation, plugins and the JS build. The extension/browser matrix requires a published fork SHA configured as `PHP_QUICKJS_REF`. Publishing that revision, obtaining green platform runs and updating the vulnerable browser downloader remain release prerequisites.
 
 ## License
 

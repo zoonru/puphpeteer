@@ -12,22 +12,14 @@ final class BrowserExecutable
         $configured = getenv('PUPPETEER_EXECUTABLE_PATH') ?: getenv('CHROME_BIN');
         if ($configured !== false && $configured !== '') { return $configured; }
 
-        $source = file_get_contents($packageRoot . '/resources/manifest.json');
-        if ($source === false) { throw new \RuntimeException('Missing Puppeteer bundle manifest'); }
-        /** @var array{puppeteer:string,chrome:string} $expected */
-        $expected = json_decode($source, true, 512, JSON_THROW_ON_ERROR);
         $directory = $packageRoot;
         do {
             $cache = $directory . '/node_modules/.puphpeteer';
-            $manifest = $cache . '/chrome.json';
-            if (is_file($manifest)) {
-                $contents = file_get_contents($manifest);
+            $metadata = $cache . '/chrome.json';
+            if (is_file($metadata)) {
+                $contents = file_get_contents($metadata);
                 $installed = $contents === false ? null : json_decode($contents, true);
-                if (is_array($installed)
-                    && ($installed['puppeteer'] ?? null) === $expected['puppeteer']
-                    && ($installed['buildId'] ?? null) === $expected['chrome']
-                    && is_string($installed['executable'] ?? null)
-                ) {
+                if (is_array($installed) && is_string($installed['executable'] ?? null)) {
                     $executable = realpath($cache . '/' . $installed['executable']);
                     $cachePath = realpath($cache);
                     if ($executable !== false && $cachePath !== false

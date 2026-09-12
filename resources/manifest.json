@@ -1,7 +1,0 @@
-{
-  "puppeteer": "24.36.1",
-  "chrome": "144.0.7559.96",
-  "esbuild": "0.25.12",
-  "stealth": "2.11.2",
-  "extension": "php-quickjs async/native-bridge fork with dispatch"
-}

@@ -47,10 +47,10 @@ the same local fixture. The default is five trials of 1,000 evaluates, 100 strin
 returns of 64 KiB, 20 concurrent waits of 25 ms and 20 navigations. Override
 `BENCH_TRIALS` and `BENCH_ITERATIONS` with positive integers.
 
-Bundle and extension SHA-256 hashes plus the bundle manifest are recorded with
-each trial and JSON report; changing the extension or bundle during a trial fails
-the benchmark. Raw process output and JSON measurements go to `benchmarks/results/current/`.
-Archive that directory before another run. Compare medians from several trials
+Bundle and extension SHA-256 hashes are checked for each trial; changing the
+extension or bundle during a trial fails
+the benchmark. The runner prints JSON measurements to the process output. Compare
+medians from several trials
 on the same hardware, Chrome, PHP, extension revision and dependency set. CPU
 and sampled RSS exclude Chrome; the 25 ms sampler can miss short peaks. Sampler
 errors, no steady-state samples or unparseable time output fail the benchmark.

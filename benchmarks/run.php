@@ -43,7 +43,7 @@ function sample(int $rootPid): array
     return array_values(array_filter($rows, static fn(array $row): bool => $row['pid'] !== $rootPid && isset($selected[$row['pid']])));
 }
 
-function runTrial(int $trial, string $output, string $extension): array
+function runTrial(int $trial, string $extension): array
 {
     $extensionHash = hash_file('sha256', $extension);
     $bundleHash = hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js');
@@ -91,7 +91,6 @@ function runTrial(int $trial, string $output, string $extension): array
             });
         } finally { $stopSampler = true; $sampler->await(); }
         $stderr = $result['stderr'] . $samplingErrors;
-        file_put_contents("$output/raw/quickjs-$trial.log", $result['stdout'] . "\n" . $stderr);
         if ($result['code'] !== 0 || $measurement === null) {
             throw new RuntimeException("QuickJS trial $trial failed ({$result['code']}): " . substr($stderr, 0, 1500) . substr($result['stdout'], -1000));
         }
@@ -121,21 +120,11 @@ try {
     }
     $trials = filter_var(getenv('BENCH_TRIALS') === false ? '5' : getenv('BENCH_TRIALS'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if ($trials === false) { throw new InvalidArgumentException('BENCH_TRIALS must be a positive integer.'); }
-    $output = __DIR__ . '/results/current';
-    if (!is_dir("$output/raw") && !mkdir("$output/raw", 0777, true)) { throw new RuntimeException('Cannot create benchmark output directory'); }
-    $cpu = PHP_OS_FAMILY === 'Darwin' ? trim(ProcessRunner::collect(Process::start(['/usr/sbin/sysctl', '-n', 'machdep.cpu.brand_string']), 5)['stdout']) : php_uname('m');
     $runs = [];
         for ($trial = 0; $trial < $trials; $trial++) {
             echo 'Running quickjs ', $trial + 1, '/', $trials, "\n";
-            $run = runTrial($trial, $output, $extension);
+            $run = runTrial($trial, $extension);
             $runs[] = $run;
-            file_put_contents("$output/benchmark.json", json_encode([
-                'platform' => strtolower(PHP_OS_FAMILY), 'arch' => php_uname('m') === 'x86_64' ? 'x64' : php_uname('m'),
-                'cpus' => $cpu, 'bundle_sha256' => $run['bundle_sha256'],
-                'extension_sha256' => $run['extension_sha256'],
-                'manifest' => json_decode(file_get_contents(dirname(__DIR__) . '/resources/manifest.json'), true, 512, JSON_THROW_ON_ERROR),
-                'timestamp' => gmdate('Y-m-d\TH:i:s\Z'), 'runs' => $runs,
-            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
             echo json_encode([
                 'backend' => 'quickjs',
                 'trial' => $trial + 1,

@@ -2,6 +2,5 @@
 /node_modules/
 /.build/
 .*
-/benchmarks/results/
 composer.lock
 yarn.lock

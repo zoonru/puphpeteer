@@ -23,7 +23,6 @@ final class BrowserExecutableTest extends TestCase
         putenv('CHROME_BIN');
         $this->root = sys_get_temp_dir() . '/puphpeteer-browser-' . bin2hex(random_bytes(8));
         mkdir($this->root . '/vendor/zoon/puphpeteer/resources', 0777, true);
-        file_put_contents($this->root . '/vendor/zoon/puphpeteer/resources/manifest.json', '{"puppeteer":"24.36.1","chrome":"144.0.7559.96"}');
     }
 
     #[\Override]
@@ -48,15 +47,17 @@ final class BrowserExecutableTest extends TestCase
         self::assertSame(realpath($executable), BrowserExecutable::resolve($this->root . '/vendor/zoon/puphpeteer'));
     }
 
-    public function testWrongRevisionDoesNotFallBackToSystemChrome(): void
+    public function testMissingRevisionMetadataDoesNotFallBackToSystemChrome(): void
     {
-        $this->install('999.0.0.0');
+        $cache = $this->root . '/node_modules/.puphpeteer';
+        mkdir($cache, 0777, true);
+        file_put_contents($cache . '/chrome.json', json_encode(['puppeteer'=>'24.36.1', 'executable'=>'missing'], JSON_THROW_ON_ERROR));
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Compatible Chrome not found in node_modules');
         BrowserExecutable::resolve($this->root . '/vendor/zoon/puphpeteer');
     }
 
-    public function testManifestCannotResolveOutsideNodeModulesCache(): void
+    public function testMetadataCannotResolveOutsideNodeModulesCache(): void
     {
         $this->install('144.0.7559.96');
         $path = $this->root . '/node_modules/.puphpeteer/chrome.json';

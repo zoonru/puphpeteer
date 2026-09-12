@@ -54,7 +54,7 @@ export default {example: options => plugin(options)};
 npm run build -- --plugins=./app-plugins.js
 ```
 
-Commit/distribute the resulting `resources/puppeteer.js` and manifest with your
+Commit/distribute the resulting `resources/puppeteer.js` with your
 application. The no-plugin path uses the smaller `resources/puppeteer-core.js`
 automatically; an explicitly configured `bundle` always takes precedence. Use
 `new Puppeteer(['bundle' => '/absolute/path/puppeteer.js'])` when keeping an

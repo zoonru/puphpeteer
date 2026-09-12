@@ -32,13 +32,6 @@ const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--p
     ...(await buildBundle('resources/puppeteer.js', false)),
     ...(await buildBundle('resources/puppeteer-core.js', true)),
   ];
-  outputs.push({path: path.join(root, 'resources/manifest.json'), contents: Buffer.from(JSON.stringify({
-    puppeteer: require('puppeteer-core/package.json').version,
-    chrome: require('puppeteer-core').PUPPETEER_REVISIONS.chrome,
-    esbuild: esbuild.version,
-    stealth: require('puppeteer-extra-plugin-stealth/package.json').version,
-    extension: 'php-quickjs async/native-bridge fork with dispatch',
-  }, null, 2) + '\n')});
   const puppeteer = require('puppeteer-core');
   const launchDefaults = Object.fromEntries([true, false, 'shell'].flatMap(headless => [false, true].map(devtools => [
     `${headless}:${devtools}`, puppeteer.defaultArgs({headless, devtools}).filter(arg => arg !== 'about:blank'),
@@ -54,5 +47,5 @@ const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--p
       fs.writeFileSync(file.path, file.contents);
     }
   }
-  console.log(check ? 'Bundle and manifest are up to date.' : `Bundle and manifest written to resources/ (${debug ? 'debug' : 'production'} build).`);
+  console.log(check ? 'Bundles are up to date.' : `Bundles written to resources/ (${debug ? 'debug' : 'production'} build).`);
 })().catch(error => { console.error(error); process.exitCode = 1; });
