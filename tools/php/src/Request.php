@@ -64,8 +64,8 @@ final class Request
     /**
      * @param array<array-key,mixed> $value
      * @param list<string> $keys
-    
-     * @psalm-pure 
+
+     * @psalm-pure
      */
     private static function strings(array $value, array $keys): void
     {
@@ -79,8 +79,8 @@ final class Request
     /**
      * @param array<array-key,mixed> $value
      * @param list<string> $keys
-    
-     * @psalm-pure 
+
+     * @psalm-pure
      */
     private static function optionalStrings(array $value, array $keys): void
     {
@@ -94,8 +94,8 @@ final class Request
     /**
      * @param array<array-key,mixed> $value
      * @param list<string> $keys
-    
-     * @psalm-pure 
+
+     * @psalm-pure
      */
     private static function booleans(array $value, array $keys): void
     {
@@ -107,7 +107,7 @@ final class Request
     }
 
     /** @param array<array-key,mixed> $value
-     * @psalm-pure 
+     * @psalm-pure
      */
     private static function templates(array $value): void
     {
@@ -125,7 +125,7 @@ final class Request
     }
 
     /** @param array<array-key,mixed> $value
-     * @psalm-pure 
+     * @psalm-pure
      */
     private static function lines(array $value): void
     {

@@ -31,7 +31,7 @@ final class SynchronizerTest extends TestCase
     }
 
     /** @return ClassSpec
-     * @psalm-pure 
+     * @psalm-pure
      */
     private function fixture(): array
     {

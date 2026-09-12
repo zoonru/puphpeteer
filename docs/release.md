@@ -63,8 +63,8 @@ The extension/browser job builds the fork for Linux/macOS and both PHP versions,
 runs the release gate and stores three-trial benchmark artifacts.
 
 **The compatible extension branch has not been published.** At the time of this
-change, `git ls-remote` returns no `async-jobs-fibers` branch. Therefore the job is
-explicitly skipped until the repository variable `PHP_QUICKJS_REF` contains a
+change, `git ls-remote` returns no `async-jobs-fibers` branch. The runtime job now
+fails closed until the repository variable `PHP_QUICKJS_REF` contains a
 published, compatible full commit SHA. Alternatively, trigger the workflow
 manually with the `extension-ref` input pointing at such a SHA. The job always
 runs the contract tests; merely loading an older extension is insufficient.

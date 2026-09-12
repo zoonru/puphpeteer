@@ -6,7 +6,7 @@
 
 A [Puppeteer](https://github.com/puppeteer/puppeteer) bridge for PHP. Original Puppeteer runs inside the PHP process through **php-quickjs**; Amp handles WebSocket transport, timers and PHP callbacks. Browser operations do not require a Node.js process.
 
-This version is **under development and has not been released**. Generated wrappers cover part of Puppeteer's API; `puppeteer-extra` and stealth support are planned.
+This version is **under development and has not been released**. Generated wrappers cover part of Puppeteer's API; bundled stealth and custom plugin support are available within the documented compatibility limits.
 
 ## Contents
 

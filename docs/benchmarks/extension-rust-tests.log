@@ -211,4 +211,3 @@ test transpile::tests::keeps_private_fields_native ... ok
 test transpile::tests::cache_hits_return_same_output ... ok
 
 test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
-

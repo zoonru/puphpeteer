@@ -216,4 +216,3 @@ tests/php/12_fibers.php
   ok   - engine recovers after callback timeout
 
 13 assertions, 0 failures
-

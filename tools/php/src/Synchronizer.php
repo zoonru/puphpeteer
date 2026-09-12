@@ -235,8 +235,8 @@ final class Synchronizer
     /**
      * @param list<Template> $templates
      * @return list<string>
-    
-     * @psalm-mutation-free 
+
+     * @psalm-mutation-free
      */
     private function templateLines(array $templates): array
     {
