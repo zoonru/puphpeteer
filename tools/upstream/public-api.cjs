@@ -184,9 +184,17 @@ function extractPublicApi(entry, options = {}) {
             let inheritedConstructors = constructors;
             let base = checker.getDeclaredTypeOfSymbol(symbol);
             while (!inheritedConstructors.length && base) {
+                // `getBaseTypes()` only accepts class/interface types. Some
+                // platform classes (for example ReadableStream subclasses)
+                // eventually resolve to a structural `{}` type in the
+                // declaration graph, which is a valid end of the chain but
+                // not a valid argument for this API.
+                const baseDeclaration = base.symbol?.declarations?.find(node =>
+                    ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node));
+                if (!baseDeclaration) break;
                 base = checker.getBaseTypes(base)?.[0];
-                const baseDeclaration = base?.symbol?.declarations?.find(ts.isClassDeclaration);
-                inheritedConstructors = baseDeclaration?.members.filter(ts.isConstructorDeclaration) || [];
+                const constructorDeclaration = base?.symbol?.declarations?.find(ts.isClassDeclaration);
+                inheritedConstructors = constructorDeclaration?.members.filter(ts.isConstructorDeclaration) || [];
             }
             const callable = inheritedConstructors.every(isPublic) && (!isAbstract || constructors.length);
             const signatures = callable ? checker.getSignaturesOfType(checker.getTypeOfSymbolAtLocation(symbol, declaration), ts.SignatureKind.Construct) : [];

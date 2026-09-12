@@ -62,3 +62,15 @@ test('upstream removal deletes PHP methods and classes; check leaves files intac
         fs.rmSync(root, {recursive: true, force: true});
     }
 });
+
+test('public API extraction tolerates structural terminal base types', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'quickjs-structural-base-'));
+    const entry = path.join(root, 'api.d.ts');
+    try {
+        fs.writeFileSync(entry, 'export declare class ScreenRecording extends ReadableStream<Uint8Array> {}\n');
+        const api = extractPublicApi(entry, {root});
+        assert.deepEqual(api.classes.map(item => item.name), ['ScreenRecording']);
+    } finally {
+        fs.rmSync(root, {recursive: true, force: true});
+    }
+});
