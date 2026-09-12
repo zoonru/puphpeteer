@@ -33,7 +33,6 @@
     "amphp/byte-stream": "^2.1"
   },
   "require-dev": {
-    "amphp/socket": "^2.4",
     "phpunit/phpunit": "^11",
     "vimeo/psalm": "^7.0.0-beta19",
     "nikic/php-parser": "^5.6"

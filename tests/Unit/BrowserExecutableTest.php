@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Tests\Unit;
 
 use Nesk\Puphpeteer\Internal\BrowserExecutable;
-use Nesk\Puphpeteer\Tests\Browser\BrowserRunner;
+use Nesk\Puphpeteer\Tests\Support\ProcessRunner;
 use PHPUnit\Framework\TestCase;
 
 final class BrowserExecutableTest extends TestCase
@@ -31,7 +31,7 @@ final class BrowserExecutableTest extends TestCase
     {
         putenv($this->configured === false ? 'PUPPETEER_EXECUTABLE_PATH' : 'PUPPETEER_EXECUTABLE_PATH=' . $this->configured);
         putenv($this->legacy === false ? 'CHROME_BIN' : 'CHROME_BIN=' . $this->legacy);
-        BrowserRunner::removeDirectory($this->root);
+        ProcessRunner::removeDirectory($this->root);
     }
 
     public function testExplicitEnvironmentWins(): void

@@ -5,7 +5,7 @@
         <directory name="src" />
         <directory name="tests/Unit" />
         <directory name="tests/Integration" />
-        <file name="tests/Browser/BrowserRunner.php" />
+        <directory name="tests/Support" />
         <directory name="tests/Generator" />
         <directory name="tools/php" />
         <ignoreFiles><directory name="vendor" /></ignoreFiles>
