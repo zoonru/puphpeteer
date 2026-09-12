@@ -2,25 +2,30 @@
   "schemaVersion": 1,
   "package": {
     "name": "puppeteer-core",
-    "version": "24.36.1",
-    "resolved": "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-24.36.1.tgz",
-    "integrity": "sha512-L7ykMWc3lQf3HS7ME3PSjp7wMIjJeW6+bKfH/RSTz5l6VUDGubnrC2BKj3UvM28Y5PMDFW0xniJOZHBZPpW1dQ==",
+    "version": "25.10.0",
+    "resolved": "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-25.10.0.tgz",
+    "integrity": "sha512-Hy5eMQshOEMil4JUUx03h5pw1HYkYCso1RG/gcpPlFSd4cYPOcopxcXEAxpLPOkOPJb9LIJtwxuj66bSdvknFg==",
+    "chromeBuildId": "152.0.7977.75",
     "entry": "lib/types.d.ts",
-    "declarationSha256": "14e80a1988e66556246539f351025ec5a1f6f15230fa4afb52ba2247771159aa"
+    "declarationSha256": "d4ebd2e125a257990a0a52d976a200de602c394ee4b27ba0fea0479e1b6932eb"
   },
-  "npmLockSha256": "3dea681ecb04ef90b30831acecf30bf2831a1164d0ebca08757173186b81e687",
+  "npmLockSha256": "10b1310d78ce8ff33a1ef0c84233499f639a358b77418a6f5bd11837fdfc1ff2",
   "tools": {
     "@puppeteer/browsers": {
-      "version": "2.11.2",
-      "integrity": "sha512-GBY0+2lI9fDrjgb5dFL9+enKXqyOPok9PXg/69NVkjW3bikbK9RQrNrI3qccQXmDNN7ln4j/yL89Qgvj/tfqrw=="
+      "version": "3.2.2",
+      "integrity": "sha512-q2BU4YfO9h/Wt7IcWPcggpOOqLk2Tbs1hDwolvKZrweRjy751OJBKMN9zO5bfD0pzU7X/tvKw/exQds4pM/LOg=="
+    },
+    "@types/node": {
+      "version": "25.6.0",
+      "integrity": "sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ=="
     },
     "esbuild": {
       "version": "0.25.12",
       "integrity": "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg=="
     },
     "puppeteer-core": {
-      "version": "24.36.1",
-      "integrity": "sha512-L7ykMWc3lQf3HS7ME3PSjp7wMIjJeW6+bKfH/RSTz5l6VUDGubnrC2BKj3UvM28Y5PMDFW0xniJOZHBZPpW1dQ=="
+      "version": "25.10.0",
+      "integrity": "sha512-Hy5eMQshOEMil4JUUx03h5pw1HYkYCso1RG/gcpPlFSd4cYPOcopxcXEAxpLPOkOPJb9LIJtwxuj66bSdvknFg=="
     },
     "puppeteer-extra-plugin": {
       "version": "3.2.3",
@@ -41,10 +46,10 @@
   },
   "tests": {
     "repository": "https://github.com/puppeteer/puppeteer.git",
-    "tag": "puppeteer-v24.36.1",
-    "revision": "5d820f2872cdec366fbf6069d03ebc094d8b97f2",
+    "tag": "puppeteer-v25.10.0",
+    "revision": "88b517ab3beb4a237b541cd18ada98ba43de71a7",
     "packageManifest": "packages/puppeteer-core/package.json",
-    "verifiedPackageVersion": "24.36.1",
+    "verifiedPackageVersion": "25.10.0",
     "testsPath": "test/src",
     "evidence": "Version-specific repository tag resolved to a commit; package manifest at that commit matches the npm package name and version."
   }

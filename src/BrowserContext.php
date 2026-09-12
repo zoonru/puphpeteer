@@ -38,14 +38,14 @@ class BrowserContext extends \Nesk\Puphpeteer\RemoteObject
         }
     }
     /**
-     * @return list<array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string}>
+     * @return list<array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string}>
      */
     public function cookies(): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
+     * @param array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
      * @return void
      */
     public function deleteCookie(mixed ...$cookies): void
@@ -137,12 +137,21 @@ class BrowserContext extends \Nesk\Puphpeteer\RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param array{domain: string, expires?: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure?: bool, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
+     * @param array{domain: string, expires?: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure?: bool, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
      * @return void
      */
     public function setCookie(mixed ...$cookies): void
     {
         $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $cookies));
+    }
+    /**
+     * @param string $origin
+     * @param array{permission: array{allowWithoutSanitization?: bool, name: string, panTiltZoom?: bool, sysex?: bool, userVisibleOnly?: bool}, state: "granted"|"denied"|"prompt"} ...$permissions
+     * @return void
+     */
+    public function setPermission(string $origin, mixed ...$permissions): void
+    {
+        $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $permissions));
     }
     /**
      * @return list<\Nesk\Puphpeteer\Target>

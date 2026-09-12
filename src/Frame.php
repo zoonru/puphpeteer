@@ -62,7 +62,7 @@ class Frame extends \Nesk\Puphpeteer\RemoteObject
     }
     /**
      * @param string $selector
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward", clickCount?: int|float})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
      * @return void
      */
     public function click(string $selector, array|null $options = NULL): void
@@ -216,7 +216,7 @@ class Frame extends \Nesk\Puphpeteer\RemoteObject
     }
     /**
      * @param string $html
-     * @param (array{signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|"networkidle0"|"networkidle2"|list<"load"|"domcontentloaded"|"networkidle0"|"networkidle2">})|null $options
+     * @param (array{signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|list<"load" | "domcontentloaded">})|null $options
      * @return void
      */
     public function setContent(string $html, array|null $options = NULL): void

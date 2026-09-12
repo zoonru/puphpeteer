@@ -79,7 +79,13 @@ npm ci
 
 Load the compatible extension in your PHP configuration before running the client. Composer checks the extension's presence; the client checks the required bridge methods. The JS bundle is committed in `resources/`, so normal use does not require rebuilding it. If you use this checkout as a Composer dependency of another application, run the npm setup in the package directory; PHP also finds the managed browser there.
 
-`npm ci` downloads the matching Chrome for Testing into `node_modules/.puphpeteer/` through its postinstall script. Run `npm run browser:install` to repeat the installation.
+`npm ci` downloads the locked Chrome for Testing build with `@puppeteer/browsers` through its postinstall script into `node_modules/.puphpeteer/`. Run `npm run browser:install` to repeat the installation.
+
+To skip the local browser download (for example, when using browserless), set
+`PUPPETEER_SKIP_DOWNLOAD=true` or the Chrome-specific
+`PUPPETEER_CHROME_SKIP_DOWNLOAD=true` (`PUPPETEER_SKIP_CHROME_DOWNLOAD=true` is
+also accepted for compatibility). These variables affect the install script;
+set `PUPPETEER_EXECUTABLE_PATH` or a remote connection option for runtime use.
 
 By default, `launch()` finds that managed browser in the package or an ancestor application directory; it does not search system browsers. Override it with Puppeteer's standard environment variable:
 

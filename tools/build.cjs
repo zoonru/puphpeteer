@@ -33,9 +33,9 @@ const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--p
     ...(await buildBundle('resources/puppeteer-core.js', true)),
   ];
   const puppeteer = require('puppeteer-core');
-  const launchDefaults = Object.fromEntries([true, false, 'shell'].flatMap(headless => [false, true].map(devtools => [
-    `${headless}:${devtools}`, puppeteer.defaultArgs({headless, devtools}).filter(arg => arg !== 'about:blank'),
-  ])));
+  const launchDefaults = Object.fromEntries(await Promise.all([true, false, 'shell'].flatMap(headless => [false, true].map(async devtools => [
+    `${headless}:${devtools}`, (await puppeteer.defaultArgs({headless, devtools})).filter(arg => arg !== 'about:blank'),
+  ]))));
   outputs.push({path: path.join(root, 'resources/launch-defaults.json'), contents: Buffer.from(JSON.stringify(launchDefaults, null, 2) + '\n')});
   for (const file of outputs) {
     if (check) {

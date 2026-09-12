@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const {execFile} = require('node:child_process');
+const {createRequire} = require('node:module');
 const {promisify} = require('node:util');
 const execute = promisify(execFile);
 const readJson = filename => JSON.parse(fs.readFileSync(filename, 'utf8'));
@@ -58,6 +59,16 @@ async function resolveSources(options = {}) {
     const installed = readJson(path.join(packageRoot, 'package.json'));
     const entry = inside(packageRoot, installed.types || installed.typings || 'index.d.ts');
     if (!fs.existsSync(entry)) throw new Error(`Missing public declaration entry: ${entry}`);
+    let chromeBuildId;
+    try {
+        const requireFromRoot = createRequire(path.join(root, 'package.json'));
+        chromeBuildId = requireFromRoot(name).PUPPETEER_REVISIONS?.chrome;
+    } catch (error) {
+        throw new Error(`Cannot read the Chrome build pinned by ${name}@${version}: ${error.message}`, {cause: error});
+    }
+    if (!/^\d+\.\d+\.\d+\.\d+$/.test(chromeBuildId || '')) {
+        throw new Error(`${name}@${version} does not expose a valid Chrome build ID`);
+    }
     const lockFile = path.join(root, 'upstream/lock.json');
     const previous = fs.existsSync(lockFile) ? readJson(lockFile) : null;
     if (previous && previous.schemaVersion !== 1) throw new Error(`Unsupported upstream lock schema: ${previous.schemaVersion}`);
@@ -100,7 +111,7 @@ async function resolveSources(options = {}) {
         tools[dependency] = {version: item.version, integrity: item.integrity};
     }
     const lock = {schemaVersion: 1,
-        package: {name, version, resolved: locked.resolved, integrity: locked.integrity, entry: path.relative(packageRoot, entry).split(path.sep).join('/'), declarationSha256: sha256(fs.readFileSync(entry))},
+        package: {name, version, resolved: locked.resolved, integrity: locked.integrity, chromeBuildId, entry: path.relative(packageRoot, entry).split(path.sep).join('/'), declarationSha256: sha256(fs.readFileSync(entry))},
         npmLockSha256: sha256(npmLockBytes), tools,
         tests: {repository, tag, revision, packageManifest: `${packageSubdirectory}/package.json`, verifiedPackageVersion: upstreamManifest.version, testsPath,
             evidence: 'Version-specific repository tag resolved to a commit; package manifest at that commit matches the npm package name and version.'},

@@ -39,7 +39,7 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
         }
     }
     /**
-     * @return list<array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string}>
+     * @return list<array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string}>
      */
     public function cookies(): array
     {
@@ -61,7 +61,7 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
+     * @param array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
      * @return void
      */
     public function deleteCookie(mixed ...$cookies): void
@@ -84,6 +84,14 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
+     * @param array{manifestId: string} $options
+     * @return array{badgeCount: int|float, fileHandlers: list<array{accepts: list<array{fileExtensions: list<string>, mediaType: string}>, action: string, displayName: string}>}
+     */
+    public function getPWAState(array $options): array
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+    /**
      * @param string $windowId
      * @return array{height?: int|float, left?: int|float, top?: int|float, width?: int|float, windowState?: "normal"|"minimized"|"maximized"|"fullscreen"}
      */
@@ -93,16 +101,26 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
     }
     /**
      * @param string $path
+     * @param (array{enabledInIncognito: bool})|null $options
      * @return string
      */
-    public function installExtension(string $path): string
+    public function installExtension(string $path, array|null $options = NULL): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @return bool
+     * @param array{displayMode?: "standalone"|"browser", installUrlOrBundleUrl: string, manifestId: string} $options
+     * @return string
      */
-    public function isConnected(): bool
+    public function installPWA(array $options): string
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+    /**
+     * @param array{manifestId: string, timeout?: int|float, url?: string} $options
+     * @return \Nesk\Puphpeteer\Page
+     */
+    public function launchPWA(array $options): \Nesk\Puphpeteer\Page
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
@@ -181,12 +199,21 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param array{domain: string, expires?: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure?: bool, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
+     * @param array{domain: string, expires?: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure?: bool, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
      * @return void
      */
     public function setCookie(mixed ...$cookies): void
     {
         $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $cookies));
+    }
+    /**
+     * @param string $origin
+     * @param array{permission: array{allowWithoutSanitization?: bool, name: string, panTiltZoom?: bool, sysex?: bool, userVisibleOnly?: bool}, state: "granted"|"denied"|"prompt"} ...$permissions
+     * @return void
+     */
+    public function setPermission(string $origin, mixed ...$permissions): void
+    {
+        $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $permissions));
     }
     /**
      * @param string $windowId
@@ -216,6 +243,14 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
      * @return void
      */
     public function uninstallExtension(string $id): void
+    {
+        $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+    /**
+     * @param array{manifestId: string} $options
+     * @return void
+     */
+    public function uninstallPWA(array $options): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }

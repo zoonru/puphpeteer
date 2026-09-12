@@ -9,7 +9,7 @@ namespace Nesk\Puphpeteer;
 class Tracing extends \Nesk\Puphpeteer\RemoteObject
 {
     /**
-     * @param (array{categories?: list<string>, path?: string, screenshots?: bool})|null $options
+     * @param (array{bufferSize?: int|float, categories?: list<string>, path?: string, screenshots?: bool})|null $options
      * @return void
      */
     public function start(array|null $options = NULL): void

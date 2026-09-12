@@ -91,8 +91,16 @@ class Page extends \Nesk\Puphpeteer\RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
+     * @param array{path: string} $options
+     * @return void
+     */
+    public function captureHeapSnapshot(array $options): void
+    {
+        $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+    /**
      * @param string $selector
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward", clickCount?: int|float})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
      * @return void
      */
     public function click(string $selector, array|null $options = NULL): void
@@ -116,7 +124,7 @@ class Page extends \Nesk\Puphpeteer\RemoteObject
     }
     /**
      * @param string ...$urls
-     * @return list<array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string}>
+     * @return list<array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string}>
      */
     public function cookies(mixed ...$urls): array
     {
@@ -174,6 +182,14 @@ class Page extends \Nesk\Puphpeteer\RemoteObject
      * @return void
      */
     public function emulateIdleState(array|null $overrides = NULL): void
+    {
+        $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+    /**
+     * @param (string)|null $locale
+     * @return void
+     */
+    public function emulateLocale(string|null $locale = NULL): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
@@ -304,6 +320,13 @@ class Page extends \Nesk\Puphpeteer\RemoteObject
      * @return null|\Nesk\Puphpeteer\HTTPResponse
      */
     public function goto(string $url, array|null $options = NULL): null|\Nesk\Puphpeteer\HTTPResponse
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+    /**
+     * @return bool
+     */
+    public function hasDevTools(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
@@ -514,7 +537,7 @@ class Page extends \Nesk\Puphpeteer\RemoteObject
     }
     /**
      * @param string $html
-     * @param (array{signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|"networkidle0"|"networkidle2"|list<"load"|"domcontentloaded"|"networkidle0"|"networkidle2">})|null $options
+     * @param (array{signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|list<"load" | "domcontentloaded">})|null $options
      * @return void
      */
     public function setContent(string $html, array|null $options = NULL): void
@@ -522,7 +545,7 @@ class Page extends \Nesk\Puphpeteer\RemoteObject
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param array{domain?: string, expires?: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, priority?: "Low"|"Medium"|"High", sameParty?: bool, sameSite?: "Strict"|"Lax"|"None", secure?: bool, sourceScheme?: "Unset"|"NonSecure"|"Secure", url?: string, value: string} ...$cookies
+     * @param array{domain?: string, expires?: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure?: bool, sourceScheme?: "Unset"|"NonSecure"|"Secure", url?: string, value: string} ...$cookies
      * @return void
      */
     public function setCookie(mixed ...$cookies): void

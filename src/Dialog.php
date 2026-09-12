@@ -31,6 +31,14 @@ class Dialog extends \Nesk\Puphpeteer\RemoteObject
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
+     * @var bool
+     */
+    public bool $handled {
+        get {
+            return $this->getRemote('handled');
+        }
+    }
+    /**
      * @return string
      */
     public function message(): string
@@ -38,7 +46,7 @@ class Dialog extends \Nesk\Puphpeteer\RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @return "alert"|"confirm"|"prompt"|"beforeunload"
+     * @return "prompt"|"alert"|"confirm"|"beforeunload"
      */
     public function type(): string
     {

@@ -4,7 +4,7 @@ import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
   Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
-} from 'puppeteer-core/lib/esm/puppeteer/puppeteer-core-browser.js';
+} from 'puppeteer-core/lib/puppeteer/puppeteer-core-browser.js';
 
 // Public prototype identity survives bundler renaming and implementation subclasses.
 // Walk nearest-first so ElementHandle retains its more specific type than JSHandle.

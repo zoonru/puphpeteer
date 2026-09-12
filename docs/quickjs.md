@@ -32,7 +32,10 @@ BENCH_TRIALS=5 BENCH_ITERATIONS=1000 composer benchmark
 На macOS расширение может иметь суффикс `.dylib`. `PHP_BIN` задаёт PHP CLI;
 по умолчанию используется PHP текущего runner. Runner запускает тестовый PHP с `-n` и загружает
 только указанную сборку расширения. `QUICKJS_EXTENSION` обязательна. `npm ci` устанавливает совместимый Chrome в
-`node_modules/.puphpeteer/`; `npm run browser:install` повторяет установку.
+`npm ci` устанавливает зафиксированную версию Chrome через `@puppeteer/browsers` в `node_modules/.puphpeteer/`; `npm run browser:install` повторяет установку.
+Скачивание можно пропустить стандартными переменными Puppeteer
+`PUPPETEER_SKIP_DOWNLOAD=true` или `PUPPETEER_CHROME_SKIP_DOWNLOAD=true`
+(`PUPPETEER_SKIP_CHROME_DOWNLOAD=true` также поддерживается).
 Для другого браузера задайте `PUPPETEER_EXECUTABLE_PATH` (либо прежнюю `CHROME_BIN`).
 Системные браузеры автоматически не выбираются.
 

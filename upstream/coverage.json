@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "note": "Declaration coverage only; does not imply runtime or test coverage.",
-  "total": 593,
-  "generated": 325,
+  "total": 688,
+  "generated": 333,
   "members": [
     {
       "id": "Accessibility.constructor",
@@ -27,6 +27,32 @@
           "symbolId": "Accessibility.snapshot",
           "expected": "Explicit native/Psalm representation",
           "actual": "SerializedAXNode"
+        }
+      ]
+    },
+    {
+      "id": "Browser.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Browser.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "Browser.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Browser.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
         }
       ]
     },
@@ -121,6 +147,24 @@
       ]
     },
     {
+      "id": "Browser.extensions",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "type.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Browser.extensions",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "Map<string, Extension>"
+        }
+      ]
+    },
+    {
+      "id": "Browser.getPWAState",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
       "id": "Browser.getWindowBounds",
       "status": "generated",
       "diagnostics": []
@@ -131,7 +175,12 @@
       "diagnostics": []
     },
     {
-      "id": "Browser.isConnected",
+      "id": "Browser.installPWA",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
+      "id": "Browser.launchPWA",
       "status": "generated",
       "diagnostics": []
     },
@@ -199,6 +248,11 @@
       "diagnostics": []
     },
     {
+      "id": "Browser.setPermission",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
       "id": "Browser.setWindowBounds",
       "status": "generated",
       "diagnostics": []
@@ -215,6 +269,11 @@
     },
     {
       "id": "Browser.uninstallExtension",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
+      "id": "Browser.uninstallPWA",
       "status": "generated",
       "diagnostics": []
     },
@@ -237,6 +296,32 @@
       "id": "Browser.wsEndpoint",
       "status": "generated",
       "diagnostics": []
+    },
+    {
+      "id": "BrowserContext.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "BrowserContext.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "BrowserContext.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "BrowserContext.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
     },
     {
       "id": "BrowserContext.browser",
@@ -351,6 +436,11 @@
       "diagnostics": []
     },
     {
+      "id": "BrowserContext.setPermission",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
       "id": "BrowserContext.targets",
       "status": "generated",
       "diagnostics": []
@@ -409,6 +499,32 @@
           "symbolId": "BrowserLauncher.launch",
           "expected": "Supported async bridge contract",
           "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "CDPSession.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "CDPSession.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "CDPSession.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "CDPSession.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
         }
       ]
     },
@@ -546,6 +662,32 @@
           "code": "member.unsupported",
           "componentId": "QuickJsModel",
           "symbolId": "CSSCoverage.stop",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Connection.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Connection.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Connection.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Connection.[disposeSymbol]",
           "expected": "Supported async bridge contract",
           "actual": "Class is not yet supported by typed hydration"
         }
@@ -1015,6 +1157,11 @@
       "diagnostics": []
     },
     {
+      "id": "Dialog.handled",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
       "id": "Dialog.message",
       "status": "generated",
       "diagnostics": []
@@ -1043,6 +1190,32 @@
       "id": "ElementHandle.$eval",
       "status": "generated",
       "diagnostics": []
+    },
+    {
+      "id": "ElementHandle.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ElementHandle.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "ElementHandle.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ElementHandle.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
     },
     {
       "id": "ElementHandle._",
@@ -1077,8 +1250,16 @@
     },
     {
       "id": "ElementHandle.autofill",
-      "status": "generated",
-      "diagnostics": []
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "type.intersection",
+          "componentId": "QuickJsModel",
+          "symbolId": "ElementHandle.autofill",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "string & Record<never, never>"
+        }
+      ]
     },
     {
       "id": "ElementHandle.backendNodeId",
@@ -1349,6 +1530,32 @@
       "diagnostics": []
     },
     {
+      "id": "EventEmitter.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "EventEmitter.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "EventEmitter.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "EventEmitter.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
       "id": "EventEmitter.constructor",
       "status": "unsupported",
       "diagnostics": [
@@ -1434,6 +1641,110 @@
           "code": "member.unsupported",
           "componentId": "QuickJsModel",
           "symbolId": "EventEmitter.removeAllListeners",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.enabled",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.enabled",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.id",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.id",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.name",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.name",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.pages",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.pages",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.path",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.path",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.triggerAction",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.triggerAction",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.version",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.version",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Extension.workers",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Extension.workers",
           "expected": "Supported async bridge contract",
           "actual": "Class is not yet supported by typed hydration"
         }
@@ -1566,6 +1877,32 @@
       "diagnostics": []
     },
     {
+      "id": "Frame.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Frame.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "Frame.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Frame.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
       "id": "Frame.addScriptTag",
       "status": "generated",
       "diagnostics": []
@@ -1639,6 +1976,19 @@
       "id": "Frame.evaluateHandle",
       "status": "generated",
       "diagnostics": []
+    },
+    {
+      "id": "Frame.extensionRealms",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "type.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Frame.extensionRealms",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "Realm"
+        }
+      ]
     },
     {
       "id": "Frame.focus",
@@ -2034,6 +2384,32 @@
       ]
     },
     {
+      "id": "JSHandle.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "JSHandle.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "JSHandle.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "JSHandle.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
       "id": "JSHandle._",
       "status": "unsupported",
       "diagnostics": [
@@ -2158,6 +2534,32 @@
       "id": "Keyboard.up",
       "status": "generated",
       "diagnostics": []
+    },
+    {
+      "id": "Locator.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Locator.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Locator.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Locator.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
     },
     {
       "id": "Locator._",
@@ -2534,6 +2936,32 @@
       "diagnostics": []
     },
     {
+      "id": "Page.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Page.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "Page.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Page.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
       "id": "Page.accessibility",
       "status": "generated",
       "diagnostics": []
@@ -2586,6 +3014,11 @@
     },
     {
       "id": "Page.browserContext",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
+      "id": "Page.captureHeapSnapshot",
       "status": "generated",
       "diagnostics": []
     },
@@ -2685,6 +3118,11 @@
       "diagnostics": []
     },
     {
+      "id": "Page.emulateLocale",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
       "id": "Page.emulateMediaFeatures",
       "status": "generated",
       "diagnostics": []
@@ -2730,6 +3168,19 @@
       "diagnostics": []
     },
     {
+      "id": "Page.extensionRealms",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "type.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Page.extensionRealms",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "Realm"
+        }
+      ]
+    },
+    {
       "id": "Page.focus",
       "status": "generated",
       "diagnostics": []
@@ -2761,6 +3212,11 @@
     },
     {
       "id": "Page.goto",
+      "status": "generated",
+      "diagnostics": []
+    },
+    {
+      "id": "Page.hasDevTools",
       "status": "generated",
       "diagnostics": []
     },
@@ -2856,6 +3312,19 @@
       "id": "Page.queryObjects",
       "status": "generated",
       "diagnostics": []
+    },
+    {
+      "id": "Page.record",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "type.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Page.record",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "ScreenRecording"
+        }
+      ]
     },
     {
       "id": "Page.reload",
@@ -3035,6 +3504,19 @@
       "diagnostics": []
     },
     {
+      "id": "Page.triggerExtensionAction",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "type.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Page.triggerExtensionAction",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "Extension"
+        }
+      ]
+    },
+    {
       "id": "Page.type",
       "status": "generated",
       "diagnostics": []
@@ -3116,6 +3598,19 @@
       "id": "Page.waitForSelector",
       "status": "generated",
       "diagnostics": []
+    },
+    {
+      "id": "Page.webmcp",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "type.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Page.webmcp",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "WebMCP"
+        }
+      ]
     },
     {
       "id": "Page.windowId",
@@ -3466,6 +3961,19 @@
       ]
     },
     {
+      "id": "PuppeteerNode.configuration",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "PuppeteerNode.configuration",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
       "id": "PuppeteerNode.connect",
       "status": "unsupported",
       "diagnostics": [
@@ -3557,13 +4065,13 @@
       ]
     },
     {
-      "id": "PuppeteerNode.product",
+      "id": "PuppeteerNode.setFollowSymlinks",
       "status": "unsupported",
       "diagnostics": [
         {
           "code": "member.unsupported",
           "componentId": "QuickJsModel",
-          "symbolId": "PuppeteerNode.product",
+          "symbolId": "PuppeteerNode.setFollowSymlinks",
           "expected": "Supported async bridge contract",
           "actual": "Class is not yet supported by typed hydration"
         }
@@ -3635,6 +4143,84 @@
       ]
     },
     {
+      "id": "Realm.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Realm.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Realm.evaluate",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Realm.evaluate",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Realm.evaluateHandle",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Realm.evaluateHandle",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Realm.extension",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Realm.extension",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Realm.origin",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Realm.origin",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "Realm.waitForFunction",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "Realm.waitForFunction",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
       "id": "ScreenRecorder.[EventEmitter.captureRejectionSymbol]",
       "status": "unsupported",
       "diagnostics": [
@@ -3648,19 +4234,6 @@
       ]
     },
     {
-      "id": "ScreenRecorder.[Symbol.asyncDispose]",
-      "status": "unsupported",
-      "diagnostics": [
-        {
-          "code": "member.unsupported",
-          "componentId": "QuickJsModel",
-          "symbolId": "ScreenRecorder.[Symbol.asyncDispose]",
-          "expected": "Supported async bridge contract",
-          "actual": "Class is not yet supported by typed hydration"
-        }
-      ]
-    },
-    {
       "id": "ScreenRecorder.[Symbol.asyncIterator]",
       "status": "unsupported",
       "diagnostics": [
@@ -3668,6 +4241,19 @@
           "code": "member.unsupported",
           "componentId": "QuickJsModel",
           "symbolId": "ScreenRecorder.[Symbol.asyncIterator]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecorder.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecorder.[asyncDisposeSymbol]",
           "expected": "Supported async bridge contract",
           "actual": "Class is not yet supported by typed hydration"
         }
@@ -4701,6 +5287,149 @@
       ]
     },
     {
+      "id": "ScreenRecording.[Symbol.asyncIterator]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.[Symbol.asyncIterator]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.cancel",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.cancel",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.getReader",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.getReader",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.locked",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.locked",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.pipe",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.pipe",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.pipeThrough",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.pipeThrough",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.pipeTo",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.pipeTo",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.stop",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.stop",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.tee",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.tee",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "ScreenRecording.values",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "ScreenRecording.values",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
       "id": "SecurityDetails.constructor",
       "status": "unsupported",
       "diagnostics": [
@@ -5191,6 +5920,435 @@
       ]
     },
     {
+      "id": "WebMCP.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.constructor",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.constructor",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.emit",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.emit",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.listenerCount",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.listenerCount",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.off",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.off",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.on",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.on",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.once",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.once",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.removeAllListeners",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.removeAllListeners",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCP.tools",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCP.tools",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.annotations",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.annotations",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.constructor",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.constructor",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.description",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.description",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.emit",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.emit",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.execute",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.execute",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.formElement",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.formElement",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.frame",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.frame",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.inputSchema",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.inputSchema",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.listenerCount",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.listenerCount",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.location",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.location",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.name",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.name",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.off",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.off",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.on",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.on",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.once",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.once",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPTool.removeAllListeners",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPTool.removeAllListeners",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPToolCall.constructor",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPToolCall.constructor",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPToolCall.id",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPToolCall.id",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPToolCall.input",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPToolCall.input",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebMCPToolCall.tool",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebMCPToolCall.tool",
+          "expected": "Supported async bridge contract",
+          "actual": "Class is not yet supported by typed hydration"
+        }
+      ]
+    },
+    {
+      "id": "WebWorker.[asyncDisposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebWorker.[asyncDisposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
+      "id": "WebWorker.[disposeSymbol]",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebWorker.[disposeSymbol]",
+          "expected": "Supported async bridge contract",
+          "actual": "PHP name requires an explicit safe mapping"
+        }
+      ]
+    },
+    {
       "id": "WebWorker.client",
       "status": "generated",
       "diagnostics": []
@@ -5266,9 +6424,43 @@
       "id": "WebWorker.url",
       "status": "generated",
       "diagnostics": []
+    },
+    {
+      "id": "WebWorker.waitForFunction",
+      "status": "unsupported",
+      "diagnostics": [
+        {
+          "code": "member.unsupported",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebWorker.waitForFunction",
+          "expected": "Supported async bridge contract",
+          "actual": "Variadic tuple cannot be represented safely"
+        },
+        {
+          "code": "type.recursive",
+          "componentId": "QuickJsModel",
+          "symbolId": "WebWorker.waitForFunction",
+          "expected": "Explicit native/Psalm representation",
+          "actual": "HandleFor<T>"
+        }
+      ]
     }
   ],
   "diagnostics": [
+    {
+      "code": "export.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "asyncDisposeSymbol",
+      "expected": "Explicit PHP root mapping",
+      "actual": "Root exports are not remote-object methods"
+    },
+    {
+      "code": "export.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "AutofillAddressField",
+      "expected": "Explicit PHP root mapping",
+      "actual": "Root exports are not remote-object methods"
+    },
     {
       "code": "export.unsupported",
       "componentId": "QuickJsModel",
@@ -5300,6 +6492,13 @@
     {
       "code": "export.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "DEBUG_PREFIXES",
+      "expected": "Explicit PHP root mapping",
+      "actual": "Root exports are not remote-object methods"
+    },
+    {
+      "code": "export.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "DEFAULT_INTERCEPT_RESOLUTION_PRIORITY",
       "expected": "Explicit PHP root mapping",
       "actual": "Root exports are not remote-object methods"
@@ -5315,6 +6514,13 @@
       "code": "export.unsupported",
       "componentId": "QuickJsModel",
       "symbolId": "defaultArgs",
+      "expected": "Explicit PHP root mapping",
+      "actual": "Root exports are not remote-object methods"
+    },
+    {
+      "code": "export.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "disposeSymbol",
       "expected": "Explicit PHP root mapping",
       "actual": "Root exports are not remote-object methods"
     },
@@ -5396,11 +6602,46 @@
       "actual": "Root exports are not remote-object methods"
     },
     {
+      "code": "export.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebWorkerEvent",
+      "expected": "Explicit PHP root mapping",
+      "actual": "Root exports are not remote-object methods"
+    },
+    {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
       "symbolId": "Accessibility.constructor",
       "expected": "Supported async bridge contract",
       "actual": "Constructors, static methods and writable properties need separate support"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Browser.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Browser.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "BrowserContext.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "BrowserContext.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
     },
     {
       "code": "member.unsupported",
@@ -5433,7 +6674,35 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "CDPSession.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "CDPSession.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "Connection::fromSession",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Connection.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Connection.[disposeSymbol]",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
     },
@@ -5678,6 +6947,20 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "ElementHandle.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ElementHandle.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "ElementHandle.contentFrame",
       "expected": "Supported async bridge contract",
       "actual": "Overloads require explicit representation"
@@ -5695,6 +6978,20 @@
       "symbolId": "ElementHandle.move",
       "expected": "Supported async bridge contract",
       "actual": "Constructors, static methods and writable properties need separate support"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "EventEmitter.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "EventEmitter.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
     },
     {
       "code": "member.unsupported",
@@ -5742,6 +7039,62 @@
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
       "symbolId": "EventEmitter.removeAllListeners",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.enabled",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.id",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.name",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.pages",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.path",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.triggerAction",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.version",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Extension.workers",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
     },
@@ -5797,6 +7150,20 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "Frame.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Frame.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "Frame.addStyleTag",
       "expected": "Supported async bridge contract",
       "actual": "Overloads require explicit representation"
@@ -5846,6 +7213,20 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "JSHandle.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "JSHandle.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "JSHandle.move",
       "expected": "Supported async bridge contract",
       "actual": "Constructors, static methods and writable properties need separate support"
@@ -5861,6 +7242,20 @@
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
       "symbolId": "Locator._",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Locator.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Locator.[disposeSymbol]",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
     },
@@ -6010,6 +7405,20 @@
       "symbolId": "Locator.waitHandle",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Page.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Page.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
     },
     {
       "code": "member.unsupported",
@@ -6252,6 +7661,13 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "PuppeteerNode.configuration",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "PuppeteerNode.connect",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
@@ -6301,7 +7717,7 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
-      "symbolId": "PuppeteerNode.product",
+      "symbolId": "PuppeteerNode.setFollowSymlinks",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
     },
@@ -6309,6 +7725,48 @@
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
       "symbolId": "PuppeteerNode.trimCache",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Realm.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Realm.evaluate",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Realm.evaluateHandle",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Realm.extension",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Realm.origin",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Realm.waitForFunction",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
     },
@@ -6392,14 +7850,14 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
-      "symbolId": "ScreenRecorder.[EventEmitter.captureRejectionSymbol]",
+      "symbolId": "ScreenRecorder.[asyncDisposeSymbol]",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
     },
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
-      "symbolId": "ScreenRecorder.[Symbol.asyncDispose]",
+      "symbolId": "ScreenRecorder.[EventEmitter.captureRejectionSymbol]",
       "expected": "Supported async bridge contract",
       "actual": "Class is not yet supported by typed hydration"
     },
@@ -6889,6 +8347,83 @@
     {
       "code": "member.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.[Symbol.asyncIterator]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.cancel",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.getReader",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.locked",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.pipe",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.pipeThrough",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.pipeTo",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.stop",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.tee",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "ScreenRecording.values",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "SecurityDetails.constructor",
       "expected": "Supported async bridge contract",
       "actual": "Constructors, static methods and writable properties need separate support"
@@ -7090,6 +8625,244 @@
       "actual": "Class is not yet supported by typed hydration"
     },
     {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.constructor",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.emit",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.listenerCount",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.off",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.on",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.once",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.removeAllListeners",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCP.tools",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.annotations",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.constructor",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.description",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.emit",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.execute",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.formElement",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.frame",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.inputSchema",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.listenerCount",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.location",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.name",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.off",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.on",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.once",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPTool.removeAllListeners",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPToolCall.constructor",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPToolCall.id",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPToolCall.input",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebMCPToolCall.tool",
+      "expected": "Supported async bridge contract",
+      "actual": "Class is not yet supported by typed hydration"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebWorker.[asyncDisposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebWorker.[disposeSymbol]",
+      "expected": "Supported async bridge contract",
+      "actual": "PHP name requires an explicit safe mapping"
+    },
+    {
+      "code": "member.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebWorker.waitForFunction",
+      "expected": "Supported async bridge contract",
+      "actual": "Variadic tuple cannot be represented safely"
+    },
+    {
       "code": "type.intersection",
       "componentId": "QuickJsModel",
       "symbolId": "Browser.emit",
@@ -7109,6 +8882,13 @@
       "symbolId": "CDPSession.emit",
       "expected": "Explicit native/Psalm representation",
       "actual": "EventsWithWildcard<Events>"
+    },
+    {
+      "code": "type.intersection",
+      "componentId": "QuickJsModel",
+      "symbolId": "ElementHandle.autofill",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "string & Record<never, never>"
     },
     {
       "code": "type.intersection",
@@ -7202,6 +8982,13 @@
       "actual": "HandleFor<T>"
     },
     {
+      "code": "type.recursive",
+      "componentId": "QuickJsModel",
+      "symbolId": "WebWorker.waitForFunction",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "HandleFor<T>"
+    },
+    {
       "code": "type.unsupported",
       "componentId": "QuickJsModel",
       "symbolId": "Accessibility.snapshot",
@@ -7228,6 +9015,13 @@
       "symbolId": "Browser.emit",
       "expected": "Explicit native/Psalm representation",
       "actual": "symbol"
+    },
+    {
+      "code": "type.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Browser.extensions",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "Map<string, Extension>"
     },
     {
       "code": "type.unsupported",
@@ -7330,6 +9124,13 @@
     {
       "code": "type.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "Frame.extensionRealms",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "Realm"
+    },
+    {
+      "code": "type.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "HTTPResponse.buffer",
       "expected": "Explicit native/Psalm representation",
       "actual": "Buffer<ArrayBufferLike>"
@@ -7372,6 +9173,20 @@
     {
       "code": "type.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "Page.extensionRealms",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "Realm"
+    },
+    {
+      "code": "type.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Page.record",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "ScreenRecording"
+    },
+    {
+      "code": "type.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "Page.screencast",
       "expected": "Explicit native/Psalm representation",
       "actual": "`${string}.gif`"
@@ -7400,9 +9215,23 @@
     {
       "code": "type.unsupported",
       "componentId": "QuickJsModel",
+      "symbolId": "Page.triggerExtensionAction",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "Extension"
+    },
+    {
+      "code": "type.unsupported",
+      "componentId": "QuickJsModel",
       "symbolId": "Page.waitForDevicePrompt",
       "expected": "Explicit native/Psalm representation",
       "actual": "DeviceRequestPrompt"
+    },
+    {
+      "code": "type.unsupported",
+      "componentId": "QuickJsModel",
+      "symbolId": "Page.webmcp",
+      "expected": "Explicit native/Psalm representation",
+      "actual": "WebMCP"
     },
     {
       "code": "type.unsupported",

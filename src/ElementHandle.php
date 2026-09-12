@@ -54,14 +54,6 @@ class ElementHandle extends \Nesk\Puphpeteer\JSHandle
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param array{creditCard: array{number: string, name: string, expiryMonth: string, expiryYear: string, cvc: string}} $data
-     * @return void
-     */
-    public function autofill(array $data): void
-    {
-        $this->invokeRemote(__FUNCTION__, func_get_args());
-    }
-    /**
      * @return int|float
      */
     public function backendNodeId(): int|float
@@ -83,7 +75,7 @@ class ElementHandle extends \Nesk\Puphpeteer\JSHandle
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward", clickCount?: int|float})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
      * @return void
      */
     public function click(array|null $options = NULL): void

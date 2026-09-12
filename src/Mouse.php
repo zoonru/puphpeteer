@@ -11,7 +11,7 @@ class Mouse extends \Nesk\Puphpeteer\RemoteObject
     /**
      * @param int|float $x
      * @param int|float $y
-     * @param (array{delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward", clickCount?: int|float})|null $options
+     * @param (array{delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
      * @return void
      */
     public function click(int|float $x, int|float $y, array|null $options = NULL): void
@@ -19,7 +19,7 @@ class Mouse extends \Nesk\Puphpeteer\RemoteObject
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param (array{button?: "left"|"right"|"middle"|"back"|"forward", clickCount?: int|float})|null $options
+     * @param (array{button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
      * @return void
      */
     public function down(array|null $options = NULL): void
@@ -90,7 +90,7 @@ class Mouse extends \Nesk\Puphpeteer\RemoteObject
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
-     * @param (array{button?: "left"|"right"|"middle"|"back"|"forward", clickCount?: int|float})|null $options
+     * @param (array{button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
      * @return void
      */
     public function up(array|null $options = NULL): void

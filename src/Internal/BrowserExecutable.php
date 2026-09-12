@@ -12,27 +12,49 @@ final class BrowserExecutable
         $configured = getenv('PUPPETEER_EXECUTABLE_PATH') ?: getenv('CHROME_BIN');
         if ($configured !== false && $configured !== '') { return $configured; }
 
+        $cacheDirectories = [];
         $directory = $packageRoot;
         do {
-            $cache = $directory . '/node_modules/.puphpeteer';
-            $metadata = $cache . '/chrome.json';
-            if (is_file($metadata)) {
-                $contents = file_get_contents($metadata);
-                $installed = $contents === false ? null : json_decode($contents, true);
-                if (is_array($installed) && is_string($installed['executable'] ?? null)) {
-                    $executable = realpath($cache . '/' . $installed['executable']);
-                    $cachePath = realpath($cache);
-                    if ($executable !== false && $cachePath !== false
-                        && str_starts_with($executable, $cachePath . DIRECTORY_SEPARATOR)
-                        && is_file($executable) && is_executable($executable)
-                    ) { return $executable; }
-                }
-            }
+            $cacheDirectories[] = $directory . '/node_modules/.puphpeteer';
             $parent = dirname($directory);
             if ($parent === $directory) { break; }
             $directory = $parent;
         } while (true);
 
+        foreach (array_unique($cacheDirectories) as $cache) {
+            if (($executable = self::findInstalledChrome($cache)) !== null) { return $executable; }
+        }
+
         throw new \RuntimeException('Compatible Chrome not found in node_modules; run npm run browser:install in the package directory, or set PUPPETEER_EXECUTABLE_PATH');
     }
+
+    private static function findInstalledChrome(string $cache): ?string
+    {
+        $chromeRoot = realpath($cache . DIRECTORY_SEPARATOR . 'chrome');
+        if ($chromeRoot === false || !is_dir($chromeRoot)) { return null; }
+
+        return self::findChromeInDirectory($chromeRoot);
+    }
+
+    private static function findChromeInDirectory(string $root): ?string
+    {
+        $paths = [];
+        try {
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
+            );
+            foreach ($files as $file) {
+                if (!$file->isFile() || !$file->isExecutable()) { continue; }
+                if (!in_array($file->getFilename(), ['chrome', 'chrome.exe', 'Google Chrome for Testing'], true)) { continue; }
+                $path = $file->getRealPath();
+                if ($path !== false && str_starts_with($path, $root . DIRECTORY_SEPARATOR)) { $paths[] = $path; }
+            }
+        } catch (\UnexpectedValueException) {
+            return null;
+        }
+
+        usort($paths, static fn (string $left, string $right): int => filemtime($right) <=> filemtime($left));
+        return $paths[0] ?? null;
+    }
+
 }

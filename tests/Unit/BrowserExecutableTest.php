@@ -47,34 +47,39 @@ final class BrowserExecutableTest extends TestCase
         self::assertSame(realpath($executable), BrowserExecutable::resolve($this->root . '/vendor/zoon/puphpeteer'));
     }
 
-    public function testMissingRevisionMetadataDoesNotFallBackToSystemChrome(): void
+    public function testFindsPuppeteerBrowsersCacheLayout(): void
     {
-        $cache = $this->root . '/node_modules/.puphpeteer';
-        mkdir($cache, 0777, true);
-        file_put_contents($cache . '/chrome.json', json_encode(['puppeteer'=>'24.36.1', 'executable'=>'missing'], JSON_THROW_ON_ERROR));
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Compatible Chrome not found in node_modules');
-        BrowserExecutable::resolve($this->root . '/vendor/zoon/puphpeteer');
+        $executable = $this->root . '/node_modules/.puphpeteer/chrome/mac_arm-144.0.7559.96/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+        mkdir(dirname($executable), 0777, true);
+        file_put_contents($executable, '#!/bin/sh');
+        chmod($executable, 0755);
+        self::assertSame(realpath($executable), BrowserExecutable::resolve($this->root . '/vendor/zoon/puphpeteer'));
     }
 
-    public function testMetadataCannotResolveOutsideNodeModulesCache(): void
+    public function testDoesNotResolveExecutableOutsideCache(): void
     {
-        $this->install('144.0.7559.96');
-        $path = $this->root . '/node_modules/.puphpeteer/chrome.json';
-        file_put_contents($path, json_encode(['puppeteer'=>'24.36.1', 'buildId'=>'144.0.7559.96', 'executable'=> '../../../' . basename($this->root) . '/external'], JSON_THROW_ON_ERROR));
+        $cache = $this->root . '/node_modules/.puphpeteer';
+        $installation = $cache . '/chrome/mac_arm-144.0.7559.96';
+        mkdir($installation . '/chrome-mac-arm64', 0777, true);
         file_put_contents($this->root . '/external', '#!/bin/sh');
         chmod($this->root . '/external', 0755);
+        symlink($this->root . '/external', $installation . '/chrome-mac-arm64/chrome');
         $this->expectException(\RuntimeException::class);
         BrowserExecutable::resolve($this->root . '/vendor/zoon/puphpeteer');
     }
 
     private function install(string $revision): string
     {
-        $cache = $this->root . '/node_modules/.puphpeteer';
-        mkdir($cache, 0777, true);
-        file_put_contents($cache . '/chrome', '#!/bin/sh');
-        chmod($cache . '/chrome', 0755);
-        file_put_contents($cache . '/chrome.json', json_encode(['puppeteer'=>'24.36.1', 'buildId'=>$revision, 'executable'=>'chrome'], JSON_THROW_ON_ERROR));
-        return $cache . '/chrome';
+        return $this->installAt($this->root . '/node_modules/.puphpeteer', $revision);
+    }
+
+    private function installAt(string $cache, string $revision): string
+    {
+        $executable = $cache . '/chrome/mac_arm-' . $revision . '/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+        mkdir(dirname($executable), 0777, true);
+        file_put_contents($executable, '#!/bin/sh');
+        file_put_contents($cache . '/chrome/.metadata', json_encode(['aliases' => ['pinned' => $revision]], JSON_THROW_ON_ERROR));
+        chmod($executable, 0755);
+        return $executable;
     }
 }

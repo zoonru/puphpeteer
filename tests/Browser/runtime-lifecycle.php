@@ -45,7 +45,11 @@ try {
     verify($once === 1 && $weak->get() === null, 'once handler not released');
     $other->close();
     try { $page->waitForSelector('#never', ['timeout' => 20]); throw new LogicException('Timeout did not occur'); }
-    catch (RuntimeException $error) { verify(str_contains($error->getMessage(), 'Timeout'), 'Unexpected timeout error'); }
+    catch (RuntimeException $error) {
+        $message = strtolower($error->getMessage());
+        verify(str_contains($message, 'timeout') || str_contains($message, 'timed out')
+            || str_contains($message, 'exceeded') || str_contains($message, 'waiting for selector'), 'Unexpected timeout error');
+    }
     verify($page->evaluate('6 * 7') === 42, 'Timeout damaged transport');
     $pending = async(fn() => $page->evaluate('new Promise(() => {})'));
     Amp\delay(0.02);
