@@ -5,9 +5,10 @@ declare(strict_types=1);
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 use Amp\Process\Process;
+use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Tests\Support\ProcessRunner;
 use function Amp\async;
 use function Amp\delay;
-use Nesk\Puphpeteer\Tests\Browser\BrowserRunner;
 use function Amp\ByteStream\buffer;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
@@ -16,16 +17,17 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 function sample(int $rootPid): array
 {
     $process = Process::start(['/bin/ps', '-axo', 'pid=,ppid=,rss=,time=']);
-    $result = BrowserRunner::collect($process, 5);
+    $result = ProcessRunner::collect($process, 5);
     if ($result['code'] !== 0) { throw new RuntimeException('ps failed: ' . $result['stderr']); }
     $rows = [];
     foreach (explode("\n", trim($result['stdout'])) as $line) {
         $fields = preg_split('/\s+/', trim($line));
         if (count($fields) !== 4) { continue; }
         [$pid, $parent, $rss, $cpu] = $fields;
-        $seconds = 0.0;
+        $seconds = $daySeconds = 0.0;
+        if (str_contains($cpu, '-')) { [$days, $cpu] = explode('-', $cpu, 2); $daySeconds = (float) $days * 86400; }
         foreach (explode(':', $cpu) as $part) { $seconds = $seconds * 60 + (float) $part; }
-        $rows[] = ['pid' => (int) $pid, 'parent' => (int) $parent, 'rss' => (int) $rss * 1024, 'cpu' => $seconds];
+        $rows[] = ['pid' => (int) $pid, 'parent' => (int) $parent, 'rss' => (int) $rss * 1024, 'cpu' => $daySeconds + $seconds];
     }
     $selected = [$rootPid => true];
     do {
@@ -41,14 +43,20 @@ function sample(int $rootPid): array
     return array_values(array_filter($rows, static fn(array $row): bool => $row['pid'] !== $rootPid && isset($selected[$row['pid']])));
 }
 
-function runTrial(BrowserRunner $runner, int $trial, string $output): array
+function runTrial(int $trial, string $output): array
 {
-    $browser = $runner->launch();
+    $extensionHash = hash_file('sha256', (string) getenv('QUICKJS_EXTENSION'));
+    $bundleHash = hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js');
+    $browser = (new Puppeteer())->launch(['headless' => true, 'args' => ['--no-proxy-server']]);
     try {
-        $endpoint = parse_url($browser->endpoint);
+        $endpoint = parse_url($browser->wsEndpoint());
         $response = HttpClientBuilder::buildDefault()->request(new Request('http://' . $endpoint['host'] . ':' . $endpoint['port'] . '/json/version'));
         $version = json_decode(buffer($response->getBody()), true, 512, JSON_THROW_ON_ERROR)['Browser'];
-        $child = Process::start(['/usr/bin/time', '-l', ...$runner->command(__DIR__ . '/benchmark.php')], environment: $runner->environment($browser));
+        $extension = getenv('QUICKJS_EXTENSION');
+        if (!$extension) { throw new RuntimeException('Set QUICKJS_EXTENSION. See docs/quickjs.md.'); }
+        $php = getenv('PHP_BIN') ?: PHP_BINARY;
+        $command = [$php, '-n', '-d', 'extension=' . $extension, __DIR__ . '/benchmark.php'];
+        $child = Process::start(['/usr/bin/time', ...(PHP_OS_FAMILY === 'Darwin' ? ['-l'] : ['-f', 'PUPHPETEER_TIME %e %U %S']), ...$command], environment: [...getenv(), 'BROWSER_WS' => $browser->wsEndpoint(), 'LC_ALL' => 'C']);
         $active = $started = false;
         $measurement = null;
         $seen = $startCpu = [];
@@ -69,7 +77,7 @@ function runTrial(BrowserRunner $runner, int $trial, string $output): array
             }
         });
         try {
-            $result = BrowserRunner::collect($child, 120, static function (string $chunk) use (&$pending, &$active, &$started, &$startCpu, &$seen, &$measurement): void {
+            $result = ProcessRunner::collect($child, 120, static function (string $chunk) use (&$pending, &$active, &$started, &$startCpu, &$seen, &$measurement): void {
                 $pending .= $chunk;
                 while (($end = strpos($pending, "\n")) !== false) {
                     $line = substr($pending, 0, $end);
@@ -89,10 +97,15 @@ function runTrial(BrowserRunner $runner, int $trial, string $output): array
         if ($result['code'] !== 0 || $measurement === null) {
             throw new RuntimeException("QuickJS trial $trial failed ({$result['code']}): " . substr($stderr, 0, 1500) . substr($result['stdout'], -1000));
         }
+        if ($extensionHash !== hash_file('sha256', (string) getenv('QUICKJS_EXTENSION')) || $bundleHash !== hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js')) {
+            throw new RuntimeException('Extension or bundle changed during trial; freeze build artifacts before benchmarking.');
+        }
+        if ($samplingErrors !== '' || $samples === 0) { throw new RuntimeException('Resource sampler failed or collected no steady-state samples; inspect raw benchmark logs.'); }
         $steadyCpu = 0.0;
         foreach ($seen as $pid => $row) { $steadyCpu += max(0, $row['cpu'] - ($startCpu[$pid] ?? 0)) * 1000; }
-        $hasTime = preg_match('/([\d.]+) real\s+([\d.]+) user\s+([\d.]+) sys/', $stderr, $time);
-        return [...$measurement, 'trial' => $trial, 'chrome' => $version, 'resources' => [
+        $hasTime = preg_match(PHP_OS_FAMILY === 'Darwin' ? '/([\d.]+) real\s+([\d.]+) user\s+([\d.]+) sys/' : '/PUPHPETEER_TIME ([\d.]+) ([\d.]+) ([\d.]+)/', $stderr, $time);
+        if (!$hasTime) { throw new RuntimeException('Cannot parse /usr/bin/time output; inspect raw benchmark logs.'); }
+        return [...$measurement, 'extension_sha256' => $extensionHash, 'bundle_sha256' => $bundleHash, 'trial' => $trial, 'chrome' => $version, 'resources' => [
             'sampled_tree_peak_rss_bytes' => $peakRss,
             'sampled_steady_tree_peak_rss_bytes' => $steadyPeakRss,
             'sampled_steady_tree_cpu_ms' => $steadyCpu,
@@ -103,28 +116,28 @@ function runTrial(BrowserRunner $runner, int $trial, string $output): array
 }
 
 try {
-    if (PHP_OS_FAMILY !== 'Darwin') { throw new RuntimeException('Resource benchmark requires macOS /usr/bin/time -l.'); }
-    $trials = filter_var(getenv('BENCH_TRIALS') ?: '5', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if (!in_array(PHP_OS_FAMILY, ['Darwin', 'Linux'], true)) { throw new RuntimeException('Resource benchmark requires macOS or Linux with /usr/bin/time and ps.'); }
+    $trials = filter_var(getenv('BENCH_TRIALS') === false ? '5' : getenv('BENCH_TRIALS'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if ($trials === false) { throw new InvalidArgumentException('BENCH_TRIALS must be a positive integer.'); }
     $output = __DIR__ . '/results/current';
     if (!is_dir("$output/raw") && !mkdir("$output/raw", 0777, true)) { throw new RuntimeException('Cannot create benchmark output directory'); }
-    $cpu = BrowserRunner::collect(Process::start(['/usr/sbin/sysctl', '-n', 'machdep.cpu.brand_string']), 5);
-    $runner = new BrowserRunner();
+    $cpu = PHP_OS_FAMILY === 'Darwin' ? trim(ProcessRunner::collect(Process::start(['/usr/sbin/sysctl', '-n', 'machdep.cpu.brand_string']), 5)['stdout']) : php_uname('m');
     $runs = [];
-    try {
         for ($trial = 0; $trial < $trials; $trial++) {
             echo 'Running quickjs ', $trial + 1, '/', $trials, "\n";
-            $run = runTrial($runner, $trial, $output);
+            $run = runTrial($trial, $output);
             $runs[] = $run;
             file_put_contents("$output/benchmark.json", json_encode([
-                'platform' => 'darwin', 'arch' => php_uname('m') === 'x86_64' ? 'x64' : php_uname('m'),
-                'cpus' => trim($cpu['stdout']), 'timestamp' => gmdate('Y-m-d\TH:i:s\Z'), 'runs' => $runs,
+                'platform' => strtolower(PHP_OS_FAMILY), 'arch' => php_uname('m') === 'x86_64' ? 'x64' : php_uname('m'),
+                'cpus' => $cpu, 'bundle_sha256' => $run['bundle_sha256'],
+                'extension_sha256' => $run['extension_sha256'],
+                'manifest' => json_decode(file_get_contents(dirname(__DIR__) . '/resources/manifest.json'), true, 512, JSON_THROW_ON_ERROR),
+                'timestamp' => gmdate('Y-m-d\TH:i:s\Z'), 'runs' => $runs,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
             echo json_encode(['backend' => 'quickjs', 'evaluate_ms' => $run['phases']['evaluate']['wall_ms'],
                 'cpu_ms' => $run['resources']['total_process_tree_cpu_ms'],
                 'rss_mb' => $run['resources']['sampled_tree_peak_rss_bytes'] / 1048576], JSON_THROW_ON_ERROR), "\n";
         }
-    } finally { $runner->close(); }
 } catch (Throwable $error) {
     fwrite(STDERR, $error->getMessage() . "\n");
     exit(1);

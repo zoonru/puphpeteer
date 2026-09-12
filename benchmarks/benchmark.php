@@ -4,16 +4,18 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use function Amp\async;
 use function Amp\Future\await;
 $backend = 'quickjs';
-$count = (int) (getenv('BENCH_ITERATIONS') ?: 1000);
+$count = filter_var(getenv('BENCH_ITERATIONS') === false ? '1000' : getenv('BENCH_ITERATIONS'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if ($count === false) { throw new InvalidArgumentException('BENCH_ITERATIONS must be a positive integer'); }
 $cpu = static function (): float { $r = getrusage(); return $r['ru_utime.tv_sec'] + $r['ru_utime.tv_usec'] / 1e6 + $r['ru_stime.tv_sec'] + $r['ru_stime.tv_usec'] / 1e6; };
 $started = hrtime(true);
 $puppeteer = new Nesk\Puphpeteer\Puppeteer();
 $browser = $puppeteer->connect(['browserWSEndpoint' => getenv('BROWSER_WS')]);
+$fixture = 'file://' . dirname(__DIR__) . '/examples/pages/index.html';
 $context = $browser->createBrowserContext();
 $page = $context->newPage();
-$page->goto(getenv('FIXTURE_URL'));
+$page->goto($fixture);
 $page->bringToFront();
-if ($page->title() !== 'QuickJS fixture') { throw new RuntimeException('Wrong fixture'); }
+if ($page->title() !== 'PuPHPeteer example') { throw new RuntimeException('Wrong fixture'); }
 $setupMs = (hrtime(true) - $started) / 1e6;
 $phases = [];
 $measure = function (string $name, int $operations, callable $fn) use (&$phases, $cpu): void {
@@ -48,10 +50,10 @@ try {
         }
         foreach (await($tasks) as $value) { if ($value !== 42) { throw new RuntimeException('Concurrent mismatch'); } }
     });
-    $measure('navigate_title', 20, function () use ($page): void {
+    $measure('navigate_title', 20, function () use ($page, $fixture): void {
         for ($i = 0; $i < 20; $i++) {
-            $page->goto(getenv('FIXTURE_URL') . '?i=' . $i);
-            if ($page->title() !== 'QuickJS fixture') { throw new RuntimeException('Navigation mismatch'); }
+            $page->goto($fixture . '?i=' . $i);
+            if ($page->title() !== 'PuPHPeteer example') { throw new RuntimeException('Navigation mismatch'); }
         }
     });
     echo 'BENCH_RESULT ', json_encode(['backend' => $backend, 'php' => PHP_VERSION, 'setup_ms' => $setupMs, 'phases' => $phases, 'php_peak_allocated_bytes' => memory_get_peak_usage(true)], JSON_THROW_ON_ERROR), "\n";

@@ -8,7 +8,7 @@ use Nesk\Puphpeteer\JsFunction;
 use function Amp\async;
 
 function verify(bool $condition, string $message): void { if (!$condition) { throw new RuntimeException($message); } }
-$browser = (new Puppeteer())->connect(['browserWSEndpoint' => getenv('BROWSER_WS'), 'protocolTimeout' => 1000]);
+$browser = (new Puppeteer())->launch(['headless' => true, 'args' => ['--no-proxy-server'], 'protocolTimeout' => 1000]);
 $context = $browser->createBrowserContext();
 try {
     $page = $context->newPage();
@@ -54,4 +54,4 @@ try {
     catch (RuntimeException $error) { verify(str_contains(strtolower($error->getMessage()), 'closed'), 'Unexpected page close error'); }
     verify($context->newPage()->evaluate('42') === 42, 'Page close damaged browser');
     echo "runtime lifecycle PASS\n";
-} finally { $context->close(); $browser->disconnect(); }
+} finally { $context->close(); $browser->close(); }

@@ -9,18 +9,23 @@ use function Amp\async;
 use function Amp\Future\await;
 function check(bool $condition, string $message): void { if (!$condition) { throw new RuntimeException($message); } }
 $puppeteer = new Puppeteer();
-$browser = $puppeteer->connect(['browserWSEndpoint' => getenv('BROWSER_WS'), 'defaultViewport' => null]);
-$context = $browser->createBrowserContext();
+$fixture = 'file://' . dirname(__DIR__, 2) . '/examples/pages/index.html';
+$launched = $puppeteer->launch(['headless' => true, 'args' => ['--no-proxy-server']]);
 try {
+    $browser = $puppeteer->connect(['browserWSEndpoint' => $launched->wsEndpoint(), 'defaultViewport' => null]);
+    $context = $browser->createBrowserContext();
+    try {
     check($browser instanceof Nesk\Puphpeteer\Browser && $browser->connected, 'Typed connected Browser');
     $pages = await([async(fn() => $context->newPage()), async(fn() => $context->newPage())]);
     check($pages[0] instanceof Page && $pages[1] instanceof Page, 'Typed pages and aliases');
     check($pages[0]->browser() === $browser && $pages[0]->browserContext() === $context, 'Object identity');
-    await(array_map(fn($page) => async(fn() => $page->goto(getenv('FIXTURE_URL'))), $pages));
+    await(array_map(static function ($page) use ($fixture) {
+        return async(static function () use ($page, $fixture): void { $page->goto($fixture); });
+    }, $pages));
     $page = $pages[0];
-    check($page->title() === 'QuickJS fixture', 'Navigation/title');
+    check($page->title() === 'PuPHPeteer example', 'Navigation/title');
     check($page->evaluate(new JS('(a,b) => a+b'), 20, 22) === 42, 'Raw JsFunction');
-    check($page->evaluate(JS::createWithBody('return document.title;')) === 'QuickJS fixture', 'Old JsFunction factory');
+    check($page->evaluate(JS::createWithBody('return document.title;')) === 'PuPHPeteer example', 'Old JsFunction factory');
     check($page->evaluate(JS::createWithParameters(['a', 'b' => 2])->scope(['offset' => 3])->body('return a+b+offset;')->async(), 37) === 42, 'Factory defaults/scope/async');
     $order = [];
     $start = hrtime(true);
@@ -42,7 +47,7 @@ try {
     $handle->dispose(); $handle->release();
     $element = $page->querySelector('body');
     check($element instanceof Nesk\Puphpeteer\ElementHandle && $element instanceof Nesk\Puphpeteer\JSHandle, 'Selection and inheritance');
-    check($page->querySelectorEval('title', new JS('element => element.textContent')) === 'QuickJS fixture', 'JS alias');
+    check($page->querySelectorEval('title', new JS('element => element.textContent')) === 'PuPHPeteer example', 'JS alias');
     $element->dispose(); $element->release();
     check($page->mainFrame() instanceof Nesk\Puphpeteer\Frame, 'Frame');
     check($page->keyboard instanceof Nesk\Puphpeteer\Keyboard && $page->keyboard === $page->keyboard, 'Keyboard property identity');
@@ -50,7 +55,7 @@ try {
     $page->keyboard->press('Escape');
     try { $page->evaluate(new JS('()=>{throw new Error("expected failure")}')); throw new LogicException('Missing error'); }
     catch (RuntimeException $error) { check(str_contains($error->getMessage(), 'expected failure'), 'Direct exception'); }
-    check($page->title() === 'QuickJS fixture', 'Recovery');
+    check($page->title() === 'PuPHPeteer example', 'Recovery');
     $page->bringToFront();
     $page->click('#button');
     check($page->evaluate('document.querySelector("#result").textContent') === 'clicked', 'Click');
@@ -62,7 +67,7 @@ try {
     };
     check($page->on('console', $listener) === $page, 'on returns receiver');
     $page->evaluate('console.log("event works")');
-    check($received->getFuture()->await(new Amp\TimeoutCancellation(2)) === 'QuickJS fixture', 'Callback reentry');
+    check($received->getFuture()->await(new Amp\TimeoutCancellation(2)) === 'PuPHPeteer example', 'Callback reentry');
     $page->off('console', $listener);
     check($page->listenerCount('console') === 0, 'PHP handler identity');
     $jsListener = new JS('message => undefined');
@@ -80,16 +85,14 @@ try {
         check(str_starts_with($png, "\x89PNG\r\n\x1a\n") && file_get_contents($path) === $png, 'Screenshot file');
     } finally { if (is_file($path)) unlink($path); }
     echo "connect, properties, functions, events, concurrency and screenshot PASS\n";
-} finally {
-    $context->close();
-    $browser->disconnect();
-}
-// Exercise PHP-only launch with the same public API as old examples.
-$launched = $puppeteer->launch(['headless'=>true, 'args'=>['--no-proxy-server']]);
-try {
+    } finally {
+        $context->close();
+        $browser->disconnect();
+    }
+    // Exercise PHP-only launch with the same public API as old examples.
     $page = $launched->newPage();
-    $page->goto(getenv('FIXTURE_URL'));
-    check($page->title() === 'QuickJS fixture', 'PHP launch');
+    $page->goto($fixture);
+    check($page->title() === 'PuPHPeteer example', 'PHP launch');
     $endpoint = $launched->wsEndpoint();
     $parts = parse_url($endpoint);
     $second = (new Puppeteer())->connect(['browserURL'=>'http://' . $parts['host'] . ':' . $parts['port']]);
