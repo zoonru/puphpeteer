@@ -1,5 +1,13 @@
-name: QuickJS foundation
-on: [push, pull_request]
+name: QuickJS validation
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      extension-ref:
+        description: Published full commit SHA of the compatible php-quickjs fork
+        required: true
+        type: string
 permissions:
   contents: read
 jobs:
@@ -24,6 +32,73 @@ jobs:
       - run: npm ci
       - run: npm run build:check
       - run: npm run test-generator
+      - run: npm run test-plugins
       - run: composer verify-php
       - run: composer test-unit
       - run: composer psalm
+  extension-and-browser:
+    # The compatible fork commit is not published yet. Configure this variable
+    # to a published full SHA; a missing value explicitly skips this job.
+    if: ${{ vars.PHP_QUICKJS_REF != '' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        php-version: ['8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require immutable extension revision
+        env:
+          EXTENSION_REF: ${{ inputs.extension-ref || vars.PHP_QUICKJS_REF }}
+        shell: bash
+        run: '[[ "$EXTENSION_REF" =~ ^[0-9a-fA-F]{40}$ ]]'
+      - uses: actions/checkout@v4
+        with:
+          repository: xtrime-ru/php-quickjs
+          ref: ${{ inputs.extension-ref || vars.PHP_QUICKJS_REF }}
+          path: .extension
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+      - name: Prepare Linux native build and Chrome sandbox
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libclang-dev time
+          # Chrome for Testing uses user namespaces rather than a system install.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Build extension against selected PHP
+        working-directory: .extension
+        shell: bash
+        run: |
+          rustup toolchain install 1.96 --profile minimal
+          PHP="$(command -v php)" PHP_CONFIG="$(command -v php-config)" cargo build --release --locked
+          if [[ "$RUNNER_OS" == macOS ]]; then suffix=dylib; else suffix=so; fi
+          echo "QUICKJS_EXTENSION=$PWD/target/release/libphp_quickjs.$suffix" >> "$GITHUB_ENV"
+          git rev-parse HEAD
+      - name: Test native extension
+        working-directory: .extension
+        shell: bash
+        run: |
+          cargo test --lib --locked
+          for test in tests/php/[0-9]*.php; do
+            php -n -d "extension=$QUICKJS_EXTENSION" "$test"
+          done
+      - run: composer update --prefer-stable --ignore-platform-req=ext-php_quickjs --no-interaction --no-progress --prefer-dist
+      - run: npm ci
+      - run: composer test-release
+      - name: Record benchmark
+        run: composer benchmark
+        env:
+          BENCH_TRIALS: '3'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-${{ matrix.os }}-php${{ matrix.php-version }}
+          path: benchmarks/results/current
