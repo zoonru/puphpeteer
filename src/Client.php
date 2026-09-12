@@ -2,7 +2,9 @@
 declare(strict_types=1);
 namespace Nesk\Puphpeteer;
 
+use Amp\Cancellation;
 use Amp\DeferredFuture;
+use Amp\TimeoutCancellation;
 use Amp\Future;
 use Nesk\Puphpeteer\Internal\RemoteObjectFactory;
 use Amp\Websocket\Client\WebsocketConnection;
@@ -18,7 +20,8 @@ final class Client
     private ?WebsocketConnection $socket = null;
     private array $writes = [];
     private bool $writing = false;
-    private bool $pumpQueued = false;
+    private ?string $pumpWatcher = null;
+    private bool $connecting = false;
     private bool $closed = false;
     private string $endpoint = '';
     private int $sequence = 0;
@@ -46,11 +49,20 @@ final class Client
     }
 
     /** @return Future<Browser> */
-    public function connect(string $endpoint, array $options = []): Future
+    public function connect(string $endpoint, array $options = [], ?Cancellation $cancellation = null): Future
     {
-        return async(function () use ($endpoint, $options): Browser {
+        if ($this->closed || $this->connecting || $this->socket !== null) {
+            return Future::error(new \LogicException('Client can only connect once'));
+        }
+        $this->connecting = true;
+        return async(function () use ($endpoint, $options, $cancellation): Browser {
             $this->endpoint = $endpoint;
-            $socket = $this->socket = connect($endpoint);
+            $timeout = $options['protocolTimeout'] ?? 180000;
+            $cancellation ??= $timeout > 0 ? new TimeoutCancellation($timeout / 1000) : null;
+            try { $socket = connect($endpoint, $cancellation); }
+            catch (\Throwable $error) { $this->stop($error); throw $error; }
+            if ($this->closed) { $socket->close(); throw new \RuntimeException('QuickJS client closed while connecting'); }
+            $this->socket = $socket;
             async(function () use ($socket): void {
                 try {
                     while (!$this->closed && ($message = $socket->receive())) {
@@ -59,7 +71,7 @@ final class Client
                     if (!$this->closed) { $this->stop(new \RuntimeException('Browser transport closed')); }
                 } catch (\Throwable $e) { $this->stop($e); }
             })->ignore();
-            $browser = $this->call(0, 'connect', [$options])->await();
+            $browser = $this->call(0, 'connect', [$options], cancellation: $cancellation)->await();
             if (!$browser instanceof Browser) {
                 throw new \UnexpectedValueException('Puppeteer connect did not return a Browser');
             }
@@ -68,15 +80,21 @@ final class Client
     }
 
     /** @return Future<mixed> */
-    public function call(int $object, string $method, array $arguments, string $operation = 'call'): Future
+    public function call(int $object, string $method, array $arguments, string $operation = 'call', ?Cancellation $cancellation = null): Future
     {
         if ($this->closed) { return Future::error(new \RuntimeException('QuickJS client is closed')); }
+        try { $cancellation?->throwIfRequested(); $encoded = $this->encode($arguments); }
+        catch (\Throwable $error) { return Future::error($error); }
         $id = ++$this->sequence;
         $deferred = $this->pending[$id] = new DeferredFuture();
         try {
-            $this->deliver('call', ['id' => $id, 'object' => $object, 'method' => $method, 'operation' => $operation, 'args' => $this->encode($arguments)]);
+            $this->deliver('call', ['id' => $id, 'object' => $object, 'method' => $method, 'operation' => $operation, 'args' => $encoded]);
         } catch (\Throwable $e) { $this->stop($e); }
-        return $deferred->getFuture();
+        if ($cancellation === null) { return $deferred->getFuture(); }
+        return async(function () use ($deferred, $cancellation): mixed {
+            try { return $deferred->getFuture()->await($cancellation); }
+            catch (\Amp\CancelledException $error) { $this->stop($error); throw $error; }
+        });
     }
 
     private function deliver(string $kind, mixed $payload): void
@@ -96,6 +114,7 @@ final class Client
         $transportClosed = false;
         foreach ($messages as [$kind, $payload]) {
             if ($kind === 'send') { $this->writes[] = $payload; continue; }
+            if ($kind === 'releaseCallback') { unset($this->callbacks[(int) $payload]); continue; }
             if ($kind === 'log') { fwrite(STDERR, "[QuickJS] $payload\n"); continue; }
             if ($kind === 'clearTimer') {
                 $id = (int) $payload;
@@ -115,11 +134,15 @@ final class Client
                 unset($this->pending[$data['id']]);
                 if (!$future) { continue; }
                 if (isset($data['error'])) { $future->error($this->guestError($data['error'])); }
-                else { $future->complete($this->decode($data['value'])); }
+                else {
+                    try { $future->complete($this->decode($data['value'])); }
+                    catch (\Throwable $error) { $future->error($error); }
+                }
             } elseif ($kind === 'callback') {
-                async(function () use ($data): void {
+                $fn = $this->callbacks[$data['callback']] ?? null;
+                async(function () use ($data, $fn): void {
                     try {
-                        $fn = $this->callbacks[$data['callback']] ?? throw new \RuntimeException('Unknown PHP callback');
+                        if ($fn === null) { throw new \RuntimeException('Unknown PHP callback'); }
                         $value = $fn(...$this->decode($data['args']));
                         if ($value instanceof Future) { $value = $value->await(); }
                         $result = ['id' => $data['id'], 'value' => $this->encode($value)];
@@ -132,10 +155,9 @@ final class Client
         }
         if ($transportClosed) { $this->stop(); return; }
         $this->write();
-        if ($batch['pending'] && !$this->pumpQueued) {
-            $this->pumpQueued = true;
-            EventLoop::defer(function (): void {
-                $this->pumpQueued = false;
+        if ($batch['pending'] && $this->pumpWatcher === null) {
+            $this->pumpWatcher = EventLoop::defer(function (): void {
+                $this->pumpWatcher = null;
                 try { $this->pump(); } catch (\Throwable $e) { $this->stop($e); }
             });
         }
@@ -159,9 +181,13 @@ final class Client
         })->ignore();
     }
 
-    private function encode(mixed $value): mixed
+    private function encode(mixed $value, int $depth = 0): mixed
     {
-        if ($value instanceof RemoteObject) { return ['$quickjs' => 'object', 'id' => $value->remoteId()]; }
+        if ($depth > 64) { throw new \InvalidArgumentException('Bridge arguments exceed maximum depth 64'); }
+        if ($value instanceof RemoteObject) {
+            if (!$value->belongsTo($this)) { throw new \InvalidArgumentException('Remote object belongs to another client or has been released'); }
+            return ['$quickjs' => 'object', 'id' => $value->remoteId()];
+        }
         if ($value instanceof JsFunction || $value instanceof \Closure) {
             if ($this->functionIds === null) {
                 /** @var \WeakMap<\Closure|JsFunction, int> $ids */
@@ -174,13 +200,17 @@ final class Client
             $this->callbacks[$id] = $value;
             return ['$quickjs' => 'callback', 'id' => $id];
         }
-        if (is_array($value)) { return array_map($this->encode(...), $value); }
+        if (is_array($value)) {
+            $record = array_map(fn(mixed $item): mixed => $this->encode($item, $depth + 1), $value);
+            return array_key_exists('$quickjs', $record) ? ['$quickjs' => 'record', 'value' => $record] : $record;
+        }
         return $value;
     }
 
     private function decode(mixed $value): mixed
     {
         if (!is_array($value)) { return $value; }
+        if (($value['$quickjs'] ?? null) === 'record') { return array_map($this->decode(...), $value['value']); }
         if (($value['$quickjs'] ?? null) === 'object') {
             $id = $value['id'];
             $object = ($this->objects[$id] ?? null)?->get();
@@ -196,10 +226,20 @@ final class Client
         return array_map($this->decode(...), $value);
     }
 
+    /** @internal Schedule finalizer work outside native callbacks. */
+    public function releaseLater(int $id): void
+    {
+        if ($this->closed) { return; }
+        EventLoop::queue(function () use ($id): void {
+            if (($this->objects[$id] ?? null)?->get() === null) { $this->release($id); }
+        });
+    }
     public function release(int $id): void
     {
         unset($this->objects[$id]);
-        if (!$this->closed) { $this->deliver('release', ['id' => $id]); }
+        if (!$this->closed) {
+            try { $this->deliver('release', ['id' => $id]); } catch (\Throwable $error) { $this->stop($error); }
+        }
     }
     /** @internal
      * @psalm-mutation-free
@@ -212,19 +252,27 @@ final class Client
     /** @internal */
     public function browserClosed(): void
     {
-        $this->browserProcess?->close();
-        $this->browserProcess = null;
-        $this->stop();
+        try { $this->browserProcess?->close(); }
+        finally { $this->browserProcess = null; $this->stop(); }
     }
+    /** @internal
+     * @psalm-mutation-free
+     */
+    public function isClosed(): bool { return $this->closed; }
     public function close(): void { $this->stop(); }
     private function stop(?\Throwable $error = null): void
     {
         if ($this->closed) { return; }
         $this->closed = true;
+        if ($this->pumpWatcher !== null) { EventLoop::cancel($this->pumpWatcher); $this->pumpWatcher = null; }
+        // Drop JS transport callbacks, timers and object roots as well as PHP bookkeeping.
+        try { $this->dispatch->dispatch(['closed', null], 100); } catch (\Throwable) {}
         foreach ($this->timers as $watcher) { EventLoop::cancel($watcher); }
         $this->timers = [];
         $this->writes = [];
         $this->callbacks = [];
+        $this->functionIds = null;
+        $this->objects = [];
         foreach ($this->pending as $future) { $future->error($error ?? new \RuntimeException('QuickJS client closed')); }
         $this->pending = [];
         $this->socket?->close();

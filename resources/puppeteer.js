@@ -31579,6 +31579,9 @@ ${sourceUrlComment}
       __quickjsEmit("timer", { id, milliseconds: timer2.interval });
     }
   }
+  function clearTimers() {
+    timers.clear();
+  }
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/api/api.js
   init_Browser();
@@ -39989,15 +39992,48 @@ ${sourceUrlComment}
   var nextCallback = 0;
   var callbacks = /* @__PURE__ */ new Map();
   var decodedFunctions = /* @__PURE__ */ new Map();
+  var pinnedCallbacks = /* @__PURE__ */ new Set();
+  var eventCallbacks = /* @__PURE__ */ new Map();
+  var eventListeners = /* @__PURE__ */ new Map();
+  function dropEvent(entry) {
+    const listeners = eventListeners.get(entry.objectId);
+    if (!listeners?.delete(entry)) return;
+    entry.object.off(entry.event, entry.wrapper);
+    if (!listeners.size) eventListeners.delete(entry.objectId);
+    const remaining = (eventCallbacks.get(entry.callbackId) ?? 1) - 1;
+    if (remaining) eventCallbacks.set(entry.callbackId, remaining);
+    else {
+      eventCallbacks.delete(entry.callbackId);
+      if (!pinnedCallbacks.has(entry.callbackId)) {
+        decodedFunctions.delete(`callback:${entry.callbackId}`);
+        emit("releaseCallback", entry.callbackId);
+      }
+    }
+  }
+  function clearEvents(objectId, event) {
+    for (const entry of [...eventListeners.get(objectId) ?? []]) {
+      if (event === void 0 || entry.event === event) dropEvent(entry);
+    }
+  }
   var emit = (kind, value) => __quickjsEmit(kind, value);
   var errorData = (error) => ({ name: error?.name ?? "Error", message: error?.message ?? String(error), stack: error?.stack ?? "" });
-  function encode(value) {
+  function encode(value, ancestors = /* @__PURE__ */ new Set()) {
     if (value === void 0) return { $quickjs: "undefined" };
     if (typeof value === "bigint") return { $quickjs: "bigint", value: String(value) };
     if (typeof value === "number" && !Number.isFinite(value)) return { $quickjs: "number", value: String(value) };
     if (Object.is(value, -0)) return { $quickjs: "number", value: "-0" };
     if (value instanceof Uint8Array) return { $quickjs: "bytes", value };
-    if (Array.isArray(value)) return value.map(encode);
+    if (value && typeof value === "object" && (Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)) {
+      if (ancestors.has(value)) throw new TypeError("Cannot transfer cyclic data");
+      ancestors.add(value);
+      try {
+        if (Array.isArray(value)) return value.map((item) => encode(item, ancestors));
+        const record = Object.fromEntries(Object.entries(value).map(([key, item]) => [key, encode(item, ancestors)]));
+        return Object.hasOwn(record, "$quickjs") ? { $quickjs: "record", value: record } : record;
+      } finally {
+        ancestors.delete(value);
+      }
+    }
     if (value && typeof value === "object") {
       if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) {
         let id = identities.get(value);
@@ -40012,9 +40048,10 @@ ${sourceUrlComment}
     }
     return value;
   }
-  function decode(value) {
-    if (Array.isArray(value)) return value.map(decode);
+  function decode(value, pin = true) {
+    if (Array.isArray(value)) return value.map((item) => decode(item, pin));
     if (value && typeof value === "object") {
+      if (value.$quickjs === "record") return Object.fromEntries(Object.entries(value.value).map(([key, item]) => [key, decode(item)]));
       if (value.$quickjs === "object") {
         if (!objects.has(value.id)) throw new Error(`Unknown remote object ${value.id}`);
         return objects.get(value.id);
@@ -40025,12 +40062,13 @@ ${sourceUrlComment}
         return decodedFunctions.get(key);
       }
       if (value.$quickjs === "callback") {
+        if (pin) pinnedCallbacks.add(value.id);
         const key = `callback:${value.id}`;
         if (decodedFunctions.has(key)) return decodedFunctions.get(key);
         const fn = (...args) => new Promise((resolve, reject) => {
           const id = ++nextCallback;
           callbacks.set(id, { resolve, reject });
-          emit("callback", { id, callback: value.id, args: args.map(encode) });
+          emit("callback", { id, callback: value.id, args: args.map((item) => encode(item)) });
         });
         decodedFunctions.set(key, fn);
         return fn;
@@ -40054,7 +40092,32 @@ ${sourceUrlComment}
     if (request.operation === "get") return object[request.method];
     const fn = object[request.method];
     if (typeof fn !== "function") throw new Error(`Not a method: ${request.method}`);
-    return Reflect.apply(fn, object, request.args.map(decode));
+    const [event, handler] = request.args;
+    if ((request.method === "on" || request.method === "once") && handler?.$quickjs === "callback") {
+      const callback = decode(handler, false);
+      const entry = { objectId: request.object, object, event, callbackId: handler.id, wrapper: null };
+      entry.wrapper = (...args) => {
+        const result2 = callback(...args);
+        if (request.method === "once") dropEvent(entry);
+        result2.catch((error) => emit("log", `PHP event callback failed: ${error.message}`));
+      };
+      object.on(event, entry.wrapper);
+      if (!eventListeners.has(request.object)) eventListeners.set(request.object, /* @__PURE__ */ new Set());
+      eventListeners.get(request.object).add(entry);
+      eventCallbacks.set(handler.id, (eventCallbacks.get(handler.id) ?? 0) + 1);
+      return object;
+    }
+    if (request.method === "off" && handler?.$quickjs === "callback") {
+      const entries = [...eventListeners.get(request.object) ?? []];
+      const entry = entries.findLast((entry2) => entry2.event === event && entry2.callbackId === handler.id);
+      if (entry) dropEvent(entry);
+      else if (!eventCallbacks.has(handler.id) && !pinnedCallbacks.has(handler.id)) emit("releaseCallback", handler.id);
+      return object;
+    }
+    if (request.method === "removeAllListeners" || request.method === "off" && handler === void 0) clearEvents(request.object, event);
+    const result = await Reflect.apply(fn, object, request.args.map((item) => decode(item)));
+    if (request.method === "close") clearEvents(request.object);
+    return result;
   }
   globalThis.__quickjsDispatch = (kind, payload) => {
     if (kind === "message") {
@@ -40063,6 +40126,16 @@ ${sourceUrlComment}
     }
     if (kind === "closed") {
       transport.onclose?.();
+      for (const pending of callbacks.values()) pending.reject(new Error("PHP transport closed"));
+      clearTimers();
+      callbacks.clear();
+      decodedFunctions.clear();
+      pinnedCallbacks.clear();
+      eventCallbacks.clear();
+      eventListeners.clear();
+      objects.clear();
+      transport.onmessage = void 0;
+      transport.onclose = void 0;
       return;
     }
     if (kind === "timer") {
@@ -40071,6 +40144,7 @@ ${sourceUrlComment}
     }
     const request = payload;
     if (kind === "release") {
+      clearEvents(request.id);
       objects.delete(request.id);
       return;
     }
@@ -40083,7 +40157,13 @@ ${sourceUrlComment}
       return;
     }
     call(request).then(
-      (value) => emit("result", { id: request.id, value: encode(value) }),
+      (value) => {
+        try {
+          emit("result", { id: request.id, value: encode(value) });
+        } catch (error) {
+          emit("result", { id: request.id, error: errorData(error) });
+        }
+      },
       (error) => emit("result", { id: request.id, error: errorData(error) })
     ).catch((error) => emit("fatal", errorData(error)));
   };

@@ -84,19 +84,24 @@ final class BrowserProcess
 
     public function close(): void
     {
-        if ($this->process !== null) {
-            $this->process->kill();
-            $this->process->join(new TimeoutCancellation(5));
+        try {
+            if ($this->process !== null) {
+                if ($this->process->isRunning()) { $this->process->kill(); }
+                $this->process->join(new TimeoutCancellation(5));
+            }
+        } finally {
             $this->process = null;
-        }
-        if ($this->temporaryProfile !== null) {
-            $this->removeProfile($this->temporaryProfile);
-            $this->temporaryProfile = null;
+            if ($this->temporaryProfile !== null) {
+                $profile = $this->temporaryProfile;
+                $this->temporaryProfile = null;
+                $this->removeProfile($profile);
+            }
         }
     }
 
     private function removeProfile(string $path): void
     {
+        if (!is_dir($path)) { return; }
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($iterator as $file) {
             if ($file->isDir() && !$file->isLink()) { rmdir($file->getPathname()); }

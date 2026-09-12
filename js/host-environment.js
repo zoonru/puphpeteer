@@ -30,3 +30,5 @@ export function fireTimer(id) {
     __quickjsEmit('timer', {id, milliseconds: timer.interval});
   }
 }
+
+export function clearTimers() { timers.clear(); }

@@ -15,7 +15,7 @@ against the release build from the fork, not a separately patched prototype:
 ```sh
 php -n -d "extension=$QUICKJS_EXTENSION" vendor/bin/phpunit tests/Integration
 ```
-`composer test-browser` runs the PHP smoke runner and the three examples. It
+`composer test-browser` runs the PHP smoke and runtime lifecycle suites and the three examples. It
 requires the optimized extension (`QUICKJS_EXTENSION`), the built JavaScript bundle
 and the project Chrome installed under `node_modules`. The runner starts Chrome
 and a local HTTP fixture itself. `PUPPETEER_EXECUTABLE_PATH` can explicitly override

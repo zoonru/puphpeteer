@@ -46,7 +46,6 @@ final class ClientTest extends TestCase
         $client = $this->client();
         $page = new RemoteObject($client, 7, 'Page');
         $client->close();
-        $page->release();
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('QuickJS client is closed');
         $page->__call('title', []);
