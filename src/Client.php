@@ -99,12 +99,14 @@ final class Client
         try {
             $this->deliver('call', ['id' => $id, 'object' => $object, 'method' => $method, 'operation' => $operation, 'args' => $encoded]);
         } catch (\Throwable $e) { $this->stop($e); }
-        $cancellation ??= $this->protocolTimeout === null ? null : new TimeoutCancellation($this->protocolTimeout / 1000.0);
+        $automaticTimeout = $cancellation === null && $this->protocolTimeout !== null;
+        $cancellation ??= $automaticTimeout ? new TimeoutCancellation($this->protocolTimeout / 1000.0) : null;
         if ($cancellation === null) { return $deferred->getFuture(); }
-        return async(function () use ($deferred, $cancellation, $id): mixed {
+        return async(function () use ($deferred, $cancellation, $id, $automaticTimeout): mixed {
             try { return $deferred->getFuture()->await($cancellation); }
             catch (\Amp\CancelledException $error) {
                 if (($this->pending[$id] ?? null) === $deferred) { unset($this->pending[$id]); }
+                if (!$automaticTimeout) { $this->stop($error); }
                 throw $error;
             }
         });
