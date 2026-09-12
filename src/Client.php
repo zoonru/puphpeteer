@@ -30,6 +30,8 @@ final class Client
     private array $callbacks = [];
     /** @var null|\WeakMap<\Closure|JsFunction, int> */
     private ?\WeakMap $functionIds = null;
+    /** @var null|\WeakMap<JsFunction, Internal\FunctionReference> */
+    private ?\WeakMap $functionReferences = null;
     private int $functionSequence = 0;
     private ?Internal\BrowserProcess $browserProcess = null;
     private array $timers = [];
@@ -196,7 +198,15 @@ final class Client
             }
             $id = $this->functionIds[$value] ?? null;
             if ($id === null) { $id = ++$this->functionSequence; $this->functionIds[$value] = $id; }
-            if ($value instanceof JsFunction) { return ['$quickjs' => 'function', 'id' => $id, 'source' => $value->source]; }
+            if ($value instanceof JsFunction) {
+                if ($this->functionReferences === null) {
+                    /** @var \WeakMap<JsFunction, Internal\FunctionReference> $references */
+                    $references = new \WeakMap();
+                    $this->functionReferences = $references;
+                }
+                if (!isset($this->functionReferences[$value])) { $this->functionReferences[$value] = new Internal\FunctionReference($this, $id); }
+                return ['$quickjs' => 'function', 'id' => $id, 'source' => $value->source];
+            }
             $this->callbacks[$id] = $value;
             return ['$quickjs' => 'callback', 'id' => $id];
         }
@@ -226,6 +236,15 @@ final class Client
         return array_map($this->decode(...), $value);
     }
 
+    /** @internal Schedule finalizer work outside native callbacks. */
+    public function releaseFunctionLater(int $id): void
+    {
+        if ($this->closed) { return; }
+        EventLoop::queue(function () use ($id): void {
+            try { $this->deliver('releaseFunction', ['id' => $id]); }
+            catch (\Throwable $error) { $this->stop($error); }
+        });
+    }
     /** @internal Schedule finalizer work outside native callbacks. */
     public function releaseLater(int $id): void
     {
@@ -272,6 +291,7 @@ final class Client
         $this->writes = [];
         $this->callbacks = [];
         $this->functionIds = null;
+        $this->functionReferences = null;
         $this->objects = [];
         foreach ($this->pending as $future) { $future->error($error ?? new \RuntimeException('QuickJS client closed')); }
         $this->pending = [];

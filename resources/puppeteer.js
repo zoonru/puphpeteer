@@ -5,11 +5,11 @@
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-    get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-  }) : x)(function(x) {
+  var __require = /* @__PURE__ */ ((x2) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x2, {
+    get: (a2, b2) => (typeof require !== "undefined" ? require : a2)[b2]
+  }) : x2)(function(x2) {
     if (typeof require !== "undefined") return require.apply(this, arguments);
-    throw Error('Dynamic require of "' + x + '" is not supported');
+    throw Error('Dynamic require of "' + x2 + '" is not supported');
   });
   var __esm = (fn, res) => function __init() {
     return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
@@ -21,13 +21,13 @@
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
   };
-  var __copyProps = (to, from2, except, desc) => {
+  var __copyProps = (to2, from2, except, desc) => {
     if (from2 && typeof from2 === "object" || typeof from2 === "function") {
       for (let key2 of __getOwnPropNames(from2))
-        if (!__hasOwnProp.call(to, key2) && key2 !== except)
-          __defProp(to, key2, { get: () => from2[key2], enumerable: !(desc = __getOwnPropDesc(from2, key2)) || desc.enumerable });
+        if (!__hasOwnProp.call(to2, key2) && key2 !== except)
+          __defProp(to2, key2, { get: () => from2[key2], enumerable: !(desc = __getOwnPropDesc(from2, key2)) || desc.enumerable });
     }
-    return to;
+    return to2;
   };
   var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
     // If the importer is in node compatibility mode or this is not an ESM
@@ -42,12 +42,12 @@
   // node_modules/ms/index.js
   var require_ms = __commonJS({
     "node_modules/ms/index.js"(exports2, module2) {
-      var s = 1e3;
-      var m = s * 60;
-      var h = m * 60;
-      var d = h * 24;
-      var w = d * 7;
-      var y = d * 365.25;
+      var s2 = 1e3;
+      var m2 = s2 * 60;
+      var h2 = m2 * 60;
+      var d2 = h2 * 24;
+      var w2 = d2 * 7;
+      var y2 = d2 * 365.25;
       module2.exports = function(val, options) {
         options = options || {};
         var type = typeof val;
@@ -71,7 +71,7 @@
         if (!match) {
           return;
         }
-        var n = parseFloat(match[1]);
+        var n2 = parseFloat(match[1]);
         var type = (match[2] || "ms").toLowerCase();
         switch (type) {
           case "years":
@@ -79,78 +79,78 @@
           case "yrs":
           case "yr":
           case "y":
-            return n * y;
+            return n2 * y2;
           case "weeks":
           case "week":
           case "w":
-            return n * w;
+            return n2 * w2;
           case "days":
           case "day":
           case "d":
-            return n * d;
+            return n2 * d2;
           case "hours":
           case "hour":
           case "hrs":
           case "hr":
           case "h":
-            return n * h;
+            return n2 * h2;
           case "minutes":
           case "minute":
           case "mins":
           case "min":
           case "m":
-            return n * m;
+            return n2 * m2;
           case "seconds":
           case "second":
           case "secs":
           case "sec":
           case "s":
-            return n * s;
+            return n2 * s2;
           case "milliseconds":
           case "millisecond":
           case "msecs":
           case "msec":
           case "ms":
-            return n;
+            return n2;
           default:
             return void 0;
         }
       }
       function fmtShort(ms) {
         var msAbs = Math.abs(ms);
-        if (msAbs >= d) {
-          return Math.round(ms / d) + "d";
+        if (msAbs >= d2) {
+          return Math.round(ms / d2) + "d";
         }
-        if (msAbs >= h) {
-          return Math.round(ms / h) + "h";
+        if (msAbs >= h2) {
+          return Math.round(ms / h2) + "h";
         }
-        if (msAbs >= m) {
-          return Math.round(ms / m) + "m";
+        if (msAbs >= m2) {
+          return Math.round(ms / m2) + "m";
         }
-        if (msAbs >= s) {
-          return Math.round(ms / s) + "s";
+        if (msAbs >= s2) {
+          return Math.round(ms / s2) + "s";
         }
         return ms + "ms";
       }
       function fmtLong(ms) {
         var msAbs = Math.abs(ms);
-        if (msAbs >= d) {
-          return plural(ms, msAbs, d, "day");
+        if (msAbs >= d2) {
+          return plural(ms, msAbs, d2, "day");
         }
-        if (msAbs >= h) {
-          return plural(ms, msAbs, h, "hour");
+        if (msAbs >= h2) {
+          return plural(ms, msAbs, h2, "hour");
         }
-        if (msAbs >= m) {
-          return plural(ms, msAbs, m, "minute");
+        if (msAbs >= m2) {
+          return plural(ms, msAbs, m2, "minute");
         }
-        if (msAbs >= s) {
-          return plural(ms, msAbs, s, "second");
+        if (msAbs >= s2) {
+          return plural(ms, msAbs, s2, "second");
         }
         return ms + " ms";
       }
-      function plural(ms, msAbs, n, name) {
-        var isPlural = msAbs >= n * 1.5;
-        return Math.round(ms / n) + " " + name + (isPlural ? "s" : "");
+      function plural(ms, msAbs, n2, name) {
+        var isPlural = msAbs >= n2 * 1.5;
+        return Math.round(ms / n2) + " " + name + (isPlural ? "s" : "");
       }
     }
   });
@@ -175,8 +175,8 @@
         createDebug.formatters = {};
         function selectColor(namespace) {
           let hash = 0;
-          for (let i = 0; i < namespace.length; i++) {
-            hash = (hash << 5) - hash + namespace.charCodeAt(i);
+          for (let i2 = 0; i2 < namespace.length; i2++) {
+            hash = (hash << 5) - hash + namespace.charCodeAt(i2);
             hash |= 0;
           }
           return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
@@ -239,8 +239,8 @@
               }
               return enabledCache;
             },
-            set: (v) => {
-              enableOverride = v;
+            set: (v2) => {
+              enableOverride = v2;
             }
           });
           if (typeof createDebug.init === "function") {
@@ -434,11 +434,11 @@
         if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
           return false;
         }
-        let m;
+        let m2;
         return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
         typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
         // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-        typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+        typeof navigator !== "undefined" && navigator.userAgent && (m2 = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m2[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
         typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
       }
       function formatArgs(args2) {
@@ -446,8 +446,8 @@
         if (!this.useColors) {
           return;
         }
-        const c = "color: " + this.color;
-        args2.splice(1, 0, c, "color: inherit");
+        const c2 = "color: " + this.color;
+        args2.splice(1, 0, c2, "color: inherit");
         let index = 0;
         let lastC = 0;
         args2[0].replace(/%[a-zA-Z%]/g, (match) => {
@@ -459,7 +459,7 @@
             lastC = index;
           }
         });
-        args2.splice(lastC, 0, c);
+        args2.splice(lastC, 0, c2);
       }
       exports2.log = console.debug || console.log || (() => {
       });
@@ -474,15 +474,15 @@
         }
       }
       function load() {
-        let r;
+        let r2;
         try {
-          r = exports2.storage.getItem("debug") || exports2.storage.getItem("DEBUG");
+          r2 = exports2.storage.getItem("debug") || exports2.storage.getItem("DEBUG");
         } catch (error) {
         }
-        if (!r && typeof process !== "undefined" && "env" in process) {
-          r = process.env.DEBUG;
+        if (!r2 && typeof process !== "undefined" && "env" in process) {
+          r2 = process.env.DEBUG;
         }
-        return r;
+        return r2;
       }
       function localstorage() {
         try {
@@ -492,9 +492,9 @@
       }
       module2.exports = require_common()(exports2);
       var { formatters } = module2.exports;
-      formatters.j = function(v) {
+      formatters.j = function(v2) {
         try {
-          return JSON.stringify(v);
+          return JSON.stringify(v2);
         } catch (error) {
           return "[UnexpectedJSONParseError]: " + error.message;
         }
@@ -511,15 +511,15 @@
           throw new TypeError("arr-union expects the first argument to be an array.");
         }
         var len = arguments.length;
-        var i = 0;
-        while (++i < len) {
-          var arg = arguments[i];
+        var i2 = 0;
+        while (++i2 < len) {
+          var arg = arguments[i2];
           if (!arg) continue;
           if (!Array.isArray(arg)) {
             arg = [arg];
           }
-          for (var j = 0; j < arg.length; j++) {
-            var ele = arg[j];
+          for (var j2 = 0; j2 < arg.length; j2++) {
+            var ele = arg[j2];
             if (init.indexOf(ele) >= 0) {
               continue;
             }
@@ -546,13 +546,13 @@
     "node_modules/is-plain-object/index.js"(exports2, module2) {
       "use strict";
       var isObject = require_isobject();
-      function isObjectObject(o) {
-        return isObject(o) === true && Object.prototype.toString.call(o) === "[object Object]";
+      function isObjectObject(o2) {
+        return isObject(o2) === true && Object.prototype.toString.call(o2) === "[object Object]";
       }
-      module2.exports = function isPlainObject2(o) {
+      module2.exports = function isPlainObject2(o2) {
         var ctor, prot;
-        if (isObjectObject(o) === false) return false;
-        ctor = o.constructor;
+        if (isObjectObject(o2) === false) return false;
+        ctor = o2.constructor;
         if (typeof ctor !== "function") return false;
         prot = ctor.prototype;
         if (isObjectObject(prot) === false) return false;
@@ -598,9 +598,9 @@
         if (!isObject(target)) {
           throw new TypeError("mixin-object expects the first argument to be an object.");
         }
-        var len = arguments.length, i = 0;
-        while (++i < len) {
-          var obj2 = arguments[i];
+        var len = arguments.length, i2 = 0;
+        while (++i2 < len) {
+          var obj2 = arguments[i2];
           if (isObject(obj2)) {
             forIn(obj2, copy, target);
           }
@@ -729,12 +729,12 @@
           return obj2;
         }
       };
-      clone.regexp = function cloneRegExp(re) {
+      clone.regexp = function cloneRegExp(re2) {
         var flags = "";
-        flags += re.multiline ? "m" : "";
-        flags += re.global ? "g" : "";
-        flags += re.ignorecase ? "i" : "";
-        return new RegExp(re.source, flags);
+        flags += re2.multiline ? "m" : "";
+        flags += re2.global ? "g" : "";
+        flags += re2.ignorecase ? "i" : "";
+        return new RegExp(re2.source, flags);
       };
       module2.exports = clone;
     }
@@ -905,9 +905,9 @@
       }
       function cloneArrayDeep(arr, instanceClone) {
         var len = arr.length, res = [];
-        var i = -1;
-        while (++i < len) {
-          res[i] = cloneDeep(arr[i], instanceClone);
+        var i2 = -1;
+        while (++i2 < len) {
+          res[i2] = cloneDeep(arr[i2], instanceClone);
         }
         return res;
       }
@@ -1328,8 +1328,8 @@
          * @private
          */
         _getMissingDependencies(plugins2) {
-          const pluginNames = new Set(plugins2.map((p) => p.name));
-          const missing = new Set(Array.from(this.dependencies.values()).filter((x) => !pluginNames.has(x)));
+          const pluginNames = new Set(plugins2.map((p2) => p2.name));
+          const missing = new Set(Array.from(this.dependencies.values()).filter((x2) => !pluginNames.has(x2)));
           return missing;
         }
         /**
@@ -1480,7 +1480,7 @@
          */
         get dependencies() {
           return new Set(
-            [...this.opts.enabledEvasions].map((e) => `${this.name}/evasions/${e}`)
+            [...this.opts.enabledEvasions].map((e2) => `${this.name}/evasions/${e2}`)
           );
         }
         /**
@@ -1801,8 +1801,8 @@
         if (array1.length !== array2.length) {
           return false;
         }
-        for (let i = 0; i < array1.length; ++i) {
-          if (array1[i] !== array2[i]) {
+        for (let i2 = 0; i2 < array1.length; ++i2) {
+          if (array1[i2] !== array2[i2]) {
             return false;
           }
         }
@@ -1811,10 +1811,10 @@
       utils.memoize = (fn) => {
         const cache = [];
         return function(...args2) {
-          if (!cache.some((c) => utils.arrayEquals(c.key, args2))) {
+          if (!cache.some((c2) => utils.arrayEquals(c2.key, args2))) {
             cache.push({ key: args2, value: fn.apply(this, args2) });
           }
-          return cache.find((c) => utils.arrayEquals(c.key, args2)).value;
+          return cache.find((c2) => utils.arrayEquals(c2.key, args2)).value;
         };
       };
       module.exports = utils;
@@ -2073,8 +2073,8 @@
               };
               const { timing } = window.performance;
               function toFixed(num, fixed) {
-                var re = new RegExp("^-?\\d+(?:.\\d{0," + (fixed || -1) + "})?");
-                return num.toString().match(re)[0];
+                var re2 = new RegExp("^-?\\d+(?:.\\d{0," + (fixed || -1) + "})?");
+                return num.toString().match(re2)[0];
               }
               const timingInfo = {
                 get firstPaintAfterLoadTime() {
@@ -2300,21 +2300,21 @@
                     if (Object.keys(ci).length === 0) {
                       throw Errors.MustSpecifyExtensionID;
                     }
-                    Object.entries(ci).forEach(([k, v]) => {
-                      const isExpected = ["name", "includeTlsChannelId"].includes(k);
+                    Object.entries(ci).forEach(([k2, v2]) => {
+                      const isExpected = ["name", "includeTlsChannelId"].includes(k2);
                       if (!isExpected) {
                         throw new TypeError(
-                          errorPreamble + `Unexpected property: '${k}'.`
+                          errorPreamble + `Unexpected property: '${k2}'.`
                         );
                       }
                       const MismatchError = (propName2, expected, found) => TypeError(
                         errorPreamble + `Error at property '${propName2}': Invalid type: expected ${expected}, found ${found}.`
                       );
-                      if (k === "name" && typeof v !== "string") {
-                        throw MismatchError(k, "string", typeof v);
+                      if (k2 === "name" && typeof v2 !== "string") {
+                        throw MismatchError(k2, "string", typeof v2);
                       }
-                      if (k === "includeTlsChannelId" && typeof v !== "boolean") {
-                        throw MismatchError(k, "boolean", typeof v);
+                      if (k2 === "includeTlsChannelId" && typeof v2 !== "boolean") {
+                        throw MismatchError(k2, "boolean", typeof v2);
                       }
                     });
                   };
@@ -2538,7 +2538,7 @@
               const [mime, codecStr] = arg.trim().split(";");
               let codecs = [];
               if (codecStr && codecStr.includes('codecs="')) {
-                codecs = codecStr.trim().replace(`codecs="`, "").replace(`"`, "").trim().split(",").filter((x) => !!x).map((x) => x.trim());
+                codecs = codecStr.trim().replace(`codecs="`, "").replace(`"`, "").trim().split(",").filter((x2) => !!x2).map((x2) => x2.trim());
               }
               return {
                 mime,
@@ -2782,7 +2782,7 @@
           const blacklist = [...Object.keys(data), "length", "enabledPlugin"];
           return new Proxy(obj2, {
             ownKeys(target) {
-              return Reflect.ownKeys(target).filter((k) => !blacklist.includes(k));
+              return Reflect.ownKeys(target).filter((k2) => !blacklist.includes(k2));
             },
             getOwnPropertyDescriptor(target, prop) {
               if (blacklist.includes(prop)) {
@@ -2833,8 +2833,8 @@
           },
           ownKeys(target) {
             const keys = [];
-            const typeProps = magicArray.map((mt) => mt[itemMainProp]);
-            typeProps.forEach((_, i) => keys.push(`${i}`));
+            const typeProps = magicArray.map((mt2) => mt2[itemMainProp]);
+            typeProps.forEach((_2, i2) => keys.push(`${i2}`));
             typeProps.forEach((propName2) => keys.push(propName2));
             return keys;
           },
@@ -2874,7 +2874,7 @@
                 `Failed to execute 'namedItem' on '${proto[Symbol.toStringTag]}': 1 argument required, but only 0 present.`
               );
             }
-            return dataArray.find((mt) => mt[itemMainProp] === args2[0]) || null;
+            return dataArray.find((mt2) => mt2[itemMainProp] === args2[0]) || null;
           }
         }),
         /** Does nothing and shall return nothing */
@@ -3369,34 +3369,34 @@
   });
 
   // node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js
-  function __extends(d, b) {
-    if (typeof b !== "function" && b !== null)
-      throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-    extendStatics(d, b);
+  function __extends(d2, b2) {
+    if (typeof b2 !== "function" && b2 !== null)
+      throw new TypeError("Class extends value " + String(b2) + " is not a constructor or null");
+    extendStatics(d2, b2);
     function __() {
-      this.constructor = d;
+      this.constructor = d2;
     }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    d2.prototype = b2 === null ? Object.create(b2) : (__.prototype = b2.prototype, new __());
   }
-  function __awaiter(thisArg, _arguments, P, generator) {
+  function __awaiter(thisArg, _arguments, P2, generator) {
     function adopt(value2) {
-      return value2 instanceof P ? value2 : new P(function(resolve) {
+      return value2 instanceof P2 ? value2 : new P2(function(resolve) {
         resolve(value2);
       });
     }
-    return new (P || (P = Promise))(function(resolve, reject) {
+    return new (P2 || (P2 = Promise))(function(resolve, reject) {
       function fulfilled(value2) {
         try {
           step(generator.next(value2));
-        } catch (e) {
-          reject(e);
+        } catch (e2) {
+          reject(e2);
         }
       }
       function rejected(value2) {
         try {
           step(generator["throw"](value2));
-        } catch (e) {
-          reject(e);
+        } catch (e2) {
+          reject(e2);
         }
       }
       function step(result) {
@@ -3406,144 +3406,144 @@
     });
   }
   function __generator(thisArg, body) {
-    var _ = { label: 0, sent: function() {
-      if (t[0] & 1) throw t[1];
-      return t[1];
-    }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+    var _2 = { label: 0, sent: function() {
+      if (t2[0] & 1) throw t2[1];
+      return t2[1];
+    }, trys: [], ops: [] }, f2, y2, t2, g2 = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g2.next = verb(0), g2["throw"] = verb(1), g2["return"] = verb(2), typeof Symbol === "function" && (g2[Symbol.iterator] = function() {
       return this;
-    }), g;
-    function verb(n) {
-      return function(v) {
-        return step([n, v]);
+    }), g2;
+    function verb(n2) {
+      return function(v2) {
+        return step([n2, v2]);
       };
     }
     function step(op) {
-      if (f) throw new TypeError("Generator is already executing.");
-      while (g && (g = 0, op[0] && (_ = 0)), _) try {
-        if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-        if (y = 0, t) op = [op[0] & 2, t.value];
+      if (f2) throw new TypeError("Generator is already executing.");
+      while (g2 && (g2 = 0, op[0] && (_2 = 0)), _2) try {
+        if (f2 = 1, y2 && (t2 = op[0] & 2 ? y2["return"] : op[0] ? y2["throw"] || ((t2 = y2["return"]) && t2.call(y2), 0) : y2.next) && !(t2 = t2.call(y2, op[1])).done) return t2;
+        if (y2 = 0, t2) op = [op[0] & 2, t2.value];
         switch (op[0]) {
           case 0:
           case 1:
-            t = op;
+            t2 = op;
             break;
           case 4:
-            _.label++;
+            _2.label++;
             return { value: op[1], done: false };
           case 5:
-            _.label++;
-            y = op[1];
+            _2.label++;
+            y2 = op[1];
             op = [0];
             continue;
           case 7:
-            op = _.ops.pop();
-            _.trys.pop();
+            op = _2.ops.pop();
+            _2.trys.pop();
             continue;
           default:
-            if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-              _ = 0;
+            if (!(t2 = _2.trys, t2 = t2.length > 0 && t2[t2.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+              _2 = 0;
               continue;
             }
-            if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-              _.label = op[1];
+            if (op[0] === 3 && (!t2 || op[1] > t2[0] && op[1] < t2[3])) {
+              _2.label = op[1];
               break;
             }
-            if (op[0] === 6 && _.label < t[1]) {
-              _.label = t[1];
-              t = op;
+            if (op[0] === 6 && _2.label < t2[1]) {
+              _2.label = t2[1];
+              t2 = op;
               break;
             }
-            if (t && _.label < t[2]) {
-              _.label = t[2];
-              _.ops.push(op);
+            if (t2 && _2.label < t2[2]) {
+              _2.label = t2[2];
+              _2.ops.push(op);
               break;
             }
-            if (t[2]) _.ops.pop();
-            _.trys.pop();
+            if (t2[2]) _2.ops.pop();
+            _2.trys.pop();
             continue;
         }
-        op = body.call(thisArg, _);
-      } catch (e) {
-        op = [6, e];
-        y = 0;
+        op = body.call(thisArg, _2);
+      } catch (e2) {
+        op = [6, e2];
+        y2 = 0;
       } finally {
-        f = t = 0;
+        f2 = t2 = 0;
       }
       if (op[0] & 5) throw op[1];
       return { value: op[0] ? op[1] : void 0, done: true };
     }
   }
-  function __values(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
+  function __values(o2) {
+    var s2 = typeof Symbol === "function" && Symbol.iterator, m2 = s2 && o2[s2], i2 = 0;
+    if (m2) return m2.call(o2);
+    if (o2 && typeof o2.length === "number") return {
       next: function() {
-        if (o && i >= o.length) o = void 0;
-        return { value: o && o[i++], done: !o };
+        if (o2 && i2 >= o2.length) o2 = void 0;
+        return { value: o2 && o2[i2++], done: !o2 };
       }
     };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+    throw new TypeError(s2 ? "Object is not iterable." : "Symbol.iterator is not defined.");
   }
-  function __read(o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
+  function __read(o2, n2) {
+    var m2 = typeof Symbol === "function" && o2[Symbol.iterator];
+    if (!m2) return o2;
+    var i2 = m2.call(o2), r2, ar2 = [], e2;
     try {
-      while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+      while ((n2 === void 0 || n2-- > 0) && !(r2 = i2.next()).done) ar2.push(r2.value);
     } catch (error) {
-      e = { error };
+      e2 = { error };
     } finally {
       try {
-        if (r && !r.done && (m = i["return"])) m.call(i);
+        if (r2 && !r2.done && (m2 = i2["return"])) m2.call(i2);
       } finally {
-        if (e) throw e.error;
+        if (e2) throw e2.error;
       }
     }
-    return ar;
+    return ar2;
   }
-  function __spreadArray(to, from2, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from2.length, ar; i < l; i++) {
-      if (ar || !(i in from2)) {
-        if (!ar) ar = Array.prototype.slice.call(from2, 0, i);
-        ar[i] = from2[i];
+  function __spreadArray(to2, from2, pack) {
+    if (pack || arguments.length === 2) for (var i2 = 0, l2 = from2.length, ar2; i2 < l2; i2++) {
+      if (ar2 || !(i2 in from2)) {
+        if (!ar2) ar2 = Array.prototype.slice.call(from2, 0, i2);
+        ar2[i2] = from2[i2];
       }
     }
-    return to.concat(ar || Array.prototype.slice.call(from2));
+    return to2.concat(ar2 || Array.prototype.slice.call(from2));
   }
-  function __await(v) {
-    return this instanceof __await ? (this.v = v, this) : new __await(v);
+  function __await(v2) {
+    return this instanceof __await ? (this.v = v2, this) : new __await(v2);
   }
   function __asyncGenerator(thisArg, _arguments, generator) {
     if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var g = generator.apply(thisArg, _arguments || []), i, q = [];
-    return i = Object.create((typeof AsyncIterator === "function" ? AsyncIterator : Object).prototype), verb("next"), verb("throw"), verb("return", awaitReturn), i[Symbol.asyncIterator] = function() {
+    var g2 = generator.apply(thisArg, _arguments || []), i2, q2 = [];
+    return i2 = Object.create((typeof AsyncIterator === "function" ? AsyncIterator : Object).prototype), verb("next"), verb("throw"), verb("return", awaitReturn), i2[Symbol.asyncIterator] = function() {
       return this;
-    }, i;
-    function awaitReturn(f) {
-      return function(v) {
-        return Promise.resolve(v).then(f, reject);
+    }, i2;
+    function awaitReturn(f2) {
+      return function(v2) {
+        return Promise.resolve(v2).then(f2, reject);
       };
     }
-    function verb(n, f) {
-      if (g[n]) {
-        i[n] = function(v) {
-          return new Promise(function(a, b) {
-            q.push([n, v, a, b]) > 1 || resume(n, v);
+    function verb(n2, f2) {
+      if (g2[n2]) {
+        i2[n2] = function(v2) {
+          return new Promise(function(a2, b2) {
+            q2.push([n2, v2, a2, b2]) > 1 || resume(n2, v2);
           });
         };
-        if (f) i[n] = f(i[n]);
+        if (f2) i2[n2] = f2(i2[n2]);
       }
     }
-    function resume(n, v) {
+    function resume(n2, v2) {
       try {
-        step(g[n](v));
-      } catch (e) {
-        settle(q[0][3], e);
+        step(g2[n2](v2));
+      } catch (e2) {
+        settle(q2[0][3], e2);
       }
     }
-    function step(r) {
-      r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
+    function step(r2) {
+      r2.value instanceof __await ? Promise.resolve(r2.value.v).then(fulfill, reject) : settle(q2[0][2], r2);
     }
     function fulfill(value2) {
       resume("next", value2);
@@ -3551,26 +3551,26 @@
     function reject(value2) {
       resume("throw", value2);
     }
-    function settle(f, v) {
-      if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
+    function settle(f2, v2) {
+      if (f2(v2), q2.shift(), q2.length) resume(q2[0][0], q2[0][1]);
     }
   }
-  function __asyncValues(o) {
+  function __asyncValues(o2) {
     if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function() {
+    var m2 = o2[Symbol.asyncIterator], i2;
+    return m2 ? m2.call(o2) : (o2 = typeof __values === "function" ? __values(o2) : o2[Symbol.iterator](), i2 = {}, verb("next"), verb("throw"), verb("return"), i2[Symbol.asyncIterator] = function() {
       return this;
-    }, i);
-    function verb(n) {
-      i[n] = o[n] && function(v) {
+    }, i2);
+    function verb(n2) {
+      i2[n2] = o2[n2] && function(v2) {
         return new Promise(function(resolve, reject) {
-          v = o[n](v), settle(resolve, reject, v.done, v.value);
+          v2 = o2[n2](v2), settle(resolve, reject, v2.done, v2.value);
         });
       };
     }
-    function settle(resolve, reject, d, v) {
-      Promise.resolve(v).then(function(v2) {
-        resolve({ value: v2, done: d });
+    function settle(resolve, reject, d2, v2) {
+      Promise.resolve(v2).then(function(v22) {
+        resolve({ value: v22, done: d2 });
       }, reject);
     }
   }
@@ -3671,8 +3671,8 @@
       return onStoppedNotification(notification, subscriber);
     });
   }
-  function identity(x) {
-    return x;
+  function identity(x2) {
+    return x2;
   }
   function pipe() {
     var fns = [];
@@ -3838,8 +3838,8 @@
   }
   function fromArrayLike(array) {
     return new Observable(function(subscriber) {
-      for (var i = 0; i < array.length && !subscriber.closed; i++) {
-        subscriber.next(array[i]);
+      for (var i2 = 0; i2 < array.length && !subscriber.closed; i2++) {
+        subscriber.next(array[i2]);
       }
       subscriber.complete();
     });
@@ -3997,12 +3997,12 @@
   }
   function scheduleArray(input, scheduler) {
     return new Observable(function(subscriber) {
-      var i = 0;
+      var i2 = 0;
       return scheduler.schedule(function() {
-        if (i === input.length) {
+        if (i2 === input.length) {
           subscriber.complete();
         } else {
-          subscriber.next(input[i++]);
+          subscriber.next(input[i2++]);
           if (!subscriber.closed) {
             this.schedule();
           }
@@ -4154,8 +4154,8 @@
     return obj2 && typeof obj2 === "object" && getPrototypeOf(obj2) === objectProto;
   }
   function createObject(keys, values) {
-    return keys.reduce(function(result, key2, i) {
-      return result[key2] = values[i], result;
+    return keys.reduce(function(result, key2, i2) {
+      return result[key2] = values[i2], result;
     }, {});
   }
   function combineLatest() {
@@ -4184,12 +4184,12 @@
         var values = new Array(length);
         var active = length;
         var remainingFirstValues = length;
-        var _loop_1 = function(i2) {
+        var _loop_1 = function(i22) {
           maybeSchedule(scheduler, function() {
-            var source2 = from(observables[i2], scheduler);
+            var source2 = from(observables[i22], scheduler);
             var hasFirstValue = false;
             source2.subscribe(createOperatorSubscriber(subscriber, function(value2) {
-              values[i2] = value2;
+              values[i22] = value2;
               if (!hasFirstValue) {
                 hasFirstValue = true;
                 remainingFirstValues--;
@@ -4204,8 +4204,8 @@
             }));
           }, subscriber);
         };
-        for (var i = 0; i < length; i++) {
-          _loop_1(i);
+        for (var i2 = 0; i2 < length; i2++) {
+          _loop_1(i2);
         }
       }, subscriber);
     };
@@ -4280,10 +4280,10 @@
       concurrent = Infinity;
     }
     if (isFunction(resultSelector)) {
-      return mergeMap(function(a, i) {
-        return map(function(b, ii) {
-          return resultSelector(a, b, i, ii);
-        })(innerFrom(project(a, i)));
+      return mergeMap(function(a2, i2) {
+        return map(function(b2, ii) {
+          return resultSelector(a2, b2, i2, ii);
+        })(innerFrom(project(a2, i2)));
       }, concurrent);
     } else if (typeof resultSelector === "number") {
       concurrent = resultSelector;
@@ -4386,10 +4386,10 @@
       if (due < 0) {
         due = 0;
       }
-      var n = 0;
+      var n2 = 0;
       return scheduler.schedule(function() {
         if (!subscriber.closed) {
-          subscriber.next(n++);
+          subscriber.next(n2++);
           if (0 <= intervalDuration) {
             this.schedule(void 0, intervalDuration);
           } else {
@@ -4431,19 +4431,19 @@
   function raceInit(sources) {
     return function(subscriber) {
       var subscriptions = [];
-      var _loop_1 = function(i2) {
-        subscriptions.push(innerFrom(sources[i2]).subscribe(createOperatorSubscriber(subscriber, function(value2) {
+      var _loop_1 = function(i22) {
+        subscriptions.push(innerFrom(sources[i22]).subscribe(createOperatorSubscriber(subscriber, function(value2) {
           if (subscriptions) {
-            for (var s = 0; s < subscriptions.length; s++) {
-              s !== i2 && subscriptions[s].unsubscribe();
+            for (var s2 = 0; s2 < subscriptions.length; s2++) {
+              s2 !== i22 && subscriptions[s2].unsubscribe();
             }
             subscriptions = null;
           }
           subscriber.next(value2);
         })));
       };
-      for (var i = 0; subscriptions && !subscriber.closed && i < sources.length; i++) {
-        _loop_1(i);
+      for (var i2 = 0; subscriptions && !subscriber.closed && i2 < sources.length; i2++) {
+        _loop_1(i2);
       }
     };
   }
@@ -4536,8 +4536,8 @@
       }));
     });
   }
-  function defaultCompare(a, b) {
-    return a === b;
+  function defaultCompare(a2, b2) {
+    return a2 === b2;
   }
   function throwIfEmpty(errorFactory) {
     if (errorFactory === void 0) {
@@ -4559,8 +4559,8 @@
   function first(predicate, defaultValue) {
     var hasDefaultValue = arguments.length >= 2;
     return function(source2) {
-      return source2.pipe(predicate ? filter(function(v, i) {
-        return predicate(v, i, source2);
+      return source2.pipe(predicate ? filter(function(v2, i2) {
+        return predicate(v2, i2, source2);
       }) : identity, take(1), hasDefaultValue ? defaultIfEmpty(defaultValue) : throwIfEmpty(function() {
         return new EmptyError();
       }));
@@ -4723,19 +4723,19 @@
   var extendStatics, UnsubscriptionError, Subscription, EMPTY_SUBSCRIPTION, config, timeoutProvider, COMPLETE_NOTIFICATION, context, Subscriber, _bind, ConsumerObserver, SafeSubscriber, EMPTY_OBSERVER, observable, Observable, OperatorSubscriber, ObjectUnsubscribedError, Subject, AnonymousSubject, dateTimestampProvider, ReplaySubject, Action, intervalProvider, AsyncAction, Scheduler, AsyncScheduler, asyncScheduler, async, EMPTY, isArrayLike, iterator, EmptyError, isArray, isArray2, getPrototypeOf, objectProto, getKeys, nodeEventEmitterMethods, eventTargetMethods, jqueryMethods, NEVER, isArray3;
   var init_rxjs = __esm({
     "node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js"() {
-      extendStatics = function(d, b) {
-        extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
-          d2.__proto__ = b2;
-        } || function(d2, b2) {
-          for (var p in b2) if (Object.prototype.hasOwnProperty.call(b2, p)) d2[p] = b2[p];
+      extendStatics = function(d2, b2) {
+        extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d22, b22) {
+          d22.__proto__ = b22;
+        } || function(d22, b22) {
+          for (var p2 in b22) if (Object.prototype.hasOwnProperty.call(b22, p2)) d22[p2] = b22[p2];
         };
-        return extendStatics(d, b);
+        return extendStatics(d2, b2);
       };
       UnsubscriptionError = createErrorClass(function(_super) {
         return function UnsubscriptionErrorImpl(errors) {
           _super(this);
-          this.message = errors ? errors.length + " errors occurred during unsubscription:\n" + errors.map(function(err, i) {
-            return i + 1 + ") " + err.toString();
+          this.message = errors ? errors.length + " errors occurred during unsubscription:\n" + errors.map(function(err, i2) {
+            return i2 + 1 + ") " + err.toString();
           }).join("\n  ") : "";
           this.name = "UnsubscriptionError";
           this.errors = errors;
@@ -4779,8 +4779,8 @@
             if (isFunction(initialFinalizer)) {
               try {
                 initialFinalizer();
-              } catch (e) {
-                errors = e instanceof UnsubscriptionError ? e.errors : [e];
+              } catch (e2) {
+                errors = e2 instanceof UnsubscriptionError ? e2.errors : [e2];
               }
             }
             var _finalizers = this._finalizers;
@@ -5104,8 +5104,8 @@
           promiseCtor = getPromiseCtor(promiseCtor);
           return new promiseCtor(function(resolve, reject) {
             var value2;
-            _this.subscribe(function(x) {
-              return value2 = x;
+            _this.subscribe(function(x2) {
+              return value2 = x2;
             }, function(err) {
               return reject(err);
             }, function() {
@@ -5365,8 +5365,8 @@
           var subscription = this._innerSubscribe(subscriber);
           var _a3 = this, _infiniteTimeWindow = _a3._infiniteTimeWindow, _buffer = _a3._buffer;
           var copy = _buffer.slice();
-          for (var i = 0; i < copy.length && !subscriber.closed; i += _infiniteTimeWindow ? 1 : 2) {
-            subscriber.next(copy[i]);
+          for (var i2 = 0; i2 < copy.length && !subscriber.closed; i2 += _infiniteTimeWindow ? 1 : 2) {
+            subscriber.next(copy[i2]);
           }
           this._checkFinalizedStatuses(subscriber);
           return subscription;
@@ -5378,8 +5378,8 @@
           if (!_infiniteTimeWindow) {
             var now = _timestampProvider.now();
             var last2 = 0;
-            for (var i = 1; i < _buffer.length && _buffer[i] <= now; i += 2) {
-              last2 = i;
+            for (var i2 = 1; i2 < _buffer.length && _buffer[i2] <= now; i2 += 2) {
+              last2 = i2;
             }
             last2 && _buffer.splice(0, last2 + 1);
           }
@@ -5480,9 +5480,9 @@
           var errorValue;
           try {
             this.work(state);
-          } catch (e) {
+          } catch (e2) {
             errored = true;
-            errorValue = e ? e : new Error("Scheduled action threw falsy error");
+            errorValue = e2 ? e2 : new Error("Scheduled action threw falsy error");
           }
           if (errored) {
             this.unsubscribe();
@@ -5561,8 +5561,8 @@
       EMPTY = new Observable(function(subscriber) {
         return subscriber.complete();
       });
-      isArrayLike = (function(x) {
-        return x && typeof x.length === "number" && typeof x !== "function";
+      isArrayLike = (function(x2) {
+        return x2 && typeof x2.length === "number" && typeof x2 !== "function";
       });
       iterator = getSymbolIterator();
       EmptyError = createErrorClass(function(_super) {
@@ -5586,19 +5586,19 @@
   });
 
   // node_modules/puppeteer-core/lib/esm/third_party/mitt/mitt.js
-  function mitt_default(n) {
-    return { all: n = n || /* @__PURE__ */ new Map(), on: function(t, e) {
-      var i = n.get(t);
-      i ? i.push(e) : n.set(t, [e]);
-    }, off: function(t, e) {
-      var i = n.get(t);
-      i && (e ? i.splice(i.indexOf(e) >>> 0, 1) : n.set(t, []));
-    }, emit: function(t, e) {
-      var i = n.get(t);
-      i && i.slice().map(function(n2) {
-        n2(e);
-      }), (i = n.get("*")) && i.slice().map(function(n2) {
-        n2(t, e);
+  function mitt_default(n2) {
+    return { all: n2 = n2 || /* @__PURE__ */ new Map(), on: function(t2, e2) {
+      var i2 = n2.get(t2);
+      i2 ? i2.push(e2) : n2.set(t2, [e2]);
+    }, off: function(t2, e2) {
+      var i2 = n2.get(t2);
+      i2 && (e2 ? i2.splice(i2.indexOf(e2) >>> 0, 1) : n2.set(t2, []));
+    }, emit: function(t2, e2) {
+      var i2 = n2.get(t2);
+      i2 && i2.slice().map(function(n22) {
+        n22(e2);
+      }), (i2 = n2.get("*")) && i2.slice().map(function(n22) {
+        n22(t2, e2);
       });
     } };
   }
@@ -5726,8 +5726,8 @@
           for (const resource of this.#stack.reverse()) {
             try {
               resource[disposeSymbol]();
-            } catch (e) {
-              errors.push(e);
+            } catch (e2) {
+              errors.push(e2);
             }
           }
           if (errors.length === 1) {
@@ -5868,8 +5868,8 @@
           for (const resource of this.#stack.reverse()) {
             try {
               await resource[asyncDisposeSymbol]();
-            } catch (e) {
-              errors.push(e);
+            } catch (e2) {
+              errors.push(e2);
             }
           }
           if (errors.length === 1) {
@@ -6068,8 +6068,8 @@
       if (typeof Buffer === "function") {
         return Buffer.from(string, "base64");
       }
-      return Uint8Array.from(atob(string), (m) => {
-        return m.codePointAt(0);
+      return Uint8Array.from(atob(string), (m2) => {
+        return m2.codePointAt(0);
       });
     }
     return new TextEncoder().encode(string);
@@ -6080,8 +6080,8 @@
   function typedArrayToBase64(typedArray) {
     const chunkSize = 65534;
     const chunks = [];
-    for (let i = 0; i < typedArray.length; i += chunkSize) {
-      const chunk = typedArray.subarray(i, i + chunkSize);
+    for (let i2 = 0; i2 < typedArray.length; i2 += chunkSize) {
+      const chunk = typedArray.subarray(i2, i2 + chunkSize);
       chunks.push(String.fromCodePoint.apply(null, chunk));
     }
     const binaryString = chunks.join("");
@@ -6503,7 +6503,7 @@
           return object;
         }
         const original = Error.prepareStackTrace;
-        Error.prepareStackTrace = (_, stack) => {
+        Error.prepareStackTrace = (_2, stack) => {
           return stack[2];
         };
         const site = new Error().stack;
@@ -6625,8 +6625,8 @@
           const contextPages = await Promise.all(this.browserContexts().map((context2) => {
             return context2.pages(includeAll);
           }));
-          return contextPages.reduce((acc, x) => {
-            return acc.concat(x);
+          return contextPages.reduce((acc, x2) => {
+            return acc.concat(x2);
           }, []);
         }
         /**
@@ -7289,8 +7289,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -7301,34 +7301,34 @@
       };
       __disposeResources = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       DEFAULT_BATCH_SIZE = 20;
     }
@@ -7380,8 +7380,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -7392,34 +7392,34 @@
       };
       __disposeResources2 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       QueryHandler = class {
         // Either one of these may be implemented, but at least one must be.
@@ -7589,7 +7589,7 @@
           throw new Error(`Selector ${selector} is too long`);
         }
         const queryOptions = {};
-        const defaultName = selector.replace(ATTRIBUTE_REGEXP, (_, attribute, __, value2) => {
+        const defaultName = selector.replace(ATTRIBUTE_REGEXP, (_2, attribute, __, value2) => {
           assert(isKnownAttribute(attribute), `Unknown aria attribute "${attribute}" in selector`);
           queryOptions[attribute] = value2;
           return "";
@@ -7833,8 +7833,8 @@
     }
     const tokens = [text];
     for (const [type, pattern] of Object.entries(grammar)) {
-      for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
+      for (let i2 = 0; i2 < tokens.length; i2++) {
+        const token = tokens[i2];
         if (typeof token !== "string") {
           continue;
         }
@@ -7859,7 +7859,7 @@
         if (after) {
           args2.push(after);
         }
-        tokens.splice(i, 1, ...args2);
+        tokens.splice(i2, 1, ...args2);
       }
     }
     let offset = 0;
@@ -8181,7 +8181,7 @@
   });
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/util/decorators.js
-  function moveable(Class, _) {
+  function moveable(Class, _2) {
     let hasDispose = false;
     if (Class.prototype[disposeSymbol]) {
       const dispose = Class.prototype[disposeSymbol];
@@ -8216,7 +8216,7 @@
   function throwIfDisposed(message = (value2) => {
     return `Attempted to use disposed ${value2.constructor.name}.`;
   }) {
-    return (target, _) => {
+    return (target, _2) => {
       return function(...args2) {
         if (this.disposed) {
           throw new Error(message(this));
@@ -8225,7 +8225,7 @@
       };
     };
   }
-  function inertIfDisposed(target, _) {
+  function inertIfDisposed(target, _2) {
     return function(...args2) {
       if (this.disposed) {
         return;
@@ -8233,7 +8233,7 @@
       return target.call(this, ...args2);
     };
   }
-  function invokeAtMostOnceForArguments(target, _) {
+  function invokeAtMostOnceForArguments(target, _2) {
     const cache = /* @__PURE__ */ new WeakMap();
     let cacheDepth = -1;
     return function(...args2) {
@@ -8263,7 +8263,7 @@
   function guarded(getKey = function() {
     return this;
   }) {
-    return (target, _) => {
+    return (target, _2) => {
       const mutexes = /* @__PURE__ */ new WeakMap();
       return async function(...args2) {
         const env_1 = { stack: [], error: void 0, hasError: false };
@@ -8274,7 +8274,7 @@
             mutex = new Mutex();
             mutexes.set(key2, mutex);
           }
-          const _2 = __addDisposableResource3(env_1, await mutex.acquire(), true);
+          const _3 = __addDisposableResource3(env_1, await mutex.acquire(), true);
           return await target.call(this, ...args2);
         } catch (e_1) {
           env_1.error = e_1;
@@ -8339,8 +8339,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -8351,34 +8351,34 @@
       };
       __disposeResources3 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       instances = /* @__PURE__ */ new WeakSet();
       bubbleHandlers = /* @__PURE__ */ new WeakMap();
@@ -8409,38 +8409,38 @@
       init_disposable();
       __runInitializers = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -8463,8 +8463,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -8475,34 +8475,34 @@
       };
       __disposeResources4 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       JSHandle = (() => {
         let _classDecorators = [moveable];
@@ -8649,8 +8649,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -8661,34 +8661,34 @@
       };
       __disposeResources5 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       (function(LocatorEvent2) {
         LocatorEvent2["Action"] = "action";
@@ -9306,7 +9306,7 @@
   });
 
   // node_modules/puppeteer-core/lib/esm/puppeteer/api/ElementHandle.js
-  function bindIsolatedHandle(target, _) {
+  function bindIsolatedHandle(target, _2) {
     return async function(...args2) {
       if (this.realm === this.frame.isolatedRealm()) {
         return await target.call(this, ...args2);
@@ -9361,38 +9361,38 @@
       init_locators();
       __runInitializers2 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate2 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -9415,8 +9415,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -9427,38 +9427,38 @@
       };
       __disposeResources6 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
-      __setFunctionName = function(f, name, prefix) {
+      __setFunctionName = function(f2, name, prefix) {
         if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-        return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+        return Object.defineProperty(f2, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
       };
       ElementHandle = (() => {
         let _classSuper = JSHandle;
@@ -9831,7 +9831,7 @@
             try {
               pageFunction = withSourcePuppeteerURLIfNone(this.$$eval.name, pageFunction);
               const results = await this.$$(selector);
-              const elements = __addDisposableResource6(env_2, await this.evaluateHandle((_, ...elements2) => {
+              const elements = __addDisposableResource6(env_2, await this.evaluateHandle((_2, ...elements2) => {
                 return elements2;
               }, ...results), false);
               const [result] = await Promise.all([
@@ -9981,8 +9981,8 @@
            */
           async hover() {
             await this.scrollIntoViewIfNeeded();
-            const { x, y } = await this.clickablePoint();
-            await this.frame.page().mouse.move(x, y);
+            const { x: x2, y: y2 } = await this.clickablePoint();
+            await this.frame.page().mouse.move(x2, y2);
           }
           /**
            * This method scrolls element into view if needed, and then
@@ -9991,19 +9991,19 @@
            */
           async click(options = {}) {
             await this.scrollIntoViewIfNeeded();
-            const { x, y } = await this.clickablePoint(options.offset);
+            const { x: x2, y: y2 } = await this.clickablePoint(options.offset);
             try {
-              await this.frame.page().mouse.click(x, y, options);
+              await this.frame.page().mouse.click(x2, y2, options);
             } finally {
               if (options.debugHighlight) {
-                await this.frame.page().evaluate((x2, y2) => {
+                await this.frame.page().evaluate((x3, y3) => {
                   const highlight = document.createElement("div");
                   highlight.innerHTML = `<style>
         @scope {
           :scope {
               position: fixed;
-              left: ${x2}px;
-              top: ${y2}px;
+              left: ${x3}px;
+              top: ${y3}px;
               width: 10px;
               height: 10px;
               border-radius: 50%;
@@ -10025,7 +10025,7 @@
                     highlight.remove();
                   }, { once: true });
                   document.body.append(highlight);
-                }, x, y);
+                }, x2, y2);
               }
             }
           }
@@ -10165,8 +10165,8 @@
            */
           async tap() {
             await this.scrollIntoViewIfNeeded();
-            const { x, y } = await this.clickablePoint();
-            await this.frame.page().touchscreen.tap(x, y);
+            const { x: x2, y: y2 } = await this.clickablePoint();
+            await this.frame.page().touchscreen.tap(x2, y2);
           }
           /**
            * This method scrolls the element into view if needed, and then
@@ -10175,8 +10175,8 @@
            */
           async touchStart() {
             await this.scrollIntoViewIfNeeded();
-            const { x, y } = await this.clickablePoint();
-            return await this.frame.page().touchscreen.touchStart(x, y);
+            const { x: x2, y: y2 } = await this.clickablePoint();
+            return await this.frame.page().touchscreen.touchStart(x2, y2);
           }
           /**
            * This method scrolls the element into view if needed, and then
@@ -10186,11 +10186,11 @@
            */
           async touchMove(touch) {
             await this.scrollIntoViewIfNeeded();
-            const { x, y } = await this.clickablePoint();
+            const { x: x2, y: y2 } = await this.clickablePoint();
             if (touch) {
-              return await touch.move(x, y);
+              return await touch.move(x2, y2);
             }
-            await this.frame.page().touchscreen.touchMove(x, y);
+            await this.frame.page().touchscreen.touchMove(x2, y2);
           }
           async touchEnd() {
             await this.scrollIntoViewIfNeeded();
@@ -10646,38 +10646,38 @@
       init_locators();
       __runInitializers3 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate3 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -10700,8 +10700,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -10712,34 +10712,34 @@
       };
       __disposeResources7 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       (function(FrameEvent2) {
         FrameEvent2.FrameNavigated = Symbol("Frame.FrameNavigated");
@@ -11962,8 +11962,8 @@
          * @param x - Horizontal position of the tap.
          * @param y - Vertical position of the tap.
          */
-        async tap(x, y) {
-          const touch = await this.touchStart(x, y);
+        async tap(x2, y2) {
+          const touch = await this.touchStart(x2, y2);
           await touch.end();
         }
         /**
@@ -11978,12 +11978,12 @@
          * {@link https://developer.chrome.com/blog/a-more-compatible-smoother-touch/#chromes-new-model-the-throttled-async-touchmove-model | throttles}
          * touch move events.
          */
-        async touchMove(x, y) {
+        async touchMove(x2, y2) {
           const touch = this.touches[0];
           if (!touch) {
             throw new TouchError("Must start a new Touch first");
           }
-          return await touch.move(x, y);
+          return await touch.move(x2, y2);
         }
         /**
          * Dispatches a `touchend` event on the first touch that is active.
@@ -12066,11 +12066,11 @@
     };
   }
   function roundRectangle(clip) {
-    const x = Math.round(clip.x);
-    const y = Math.round(clip.y);
-    const width = Math.round(clip.width + clip.x - x);
-    const height = Math.round(clip.height + clip.y - y);
-    return { ...clip, x, y, width, height };
+    const x2 = Math.round(clip.x);
+    const y2 = Math.round(clip.y);
+    const width = Math.round(clip.width + clip.x - x2);
+    const height = Math.round(clip.height + clip.y - y2);
+    return { ...clip, x: x2, y: y2, width, height };
   }
   var __runInitializers4, __esDecorate4, __addDisposableResource8, __disposeResources8, Page;
   var init_Page = __esm({
@@ -12087,38 +12087,38 @@
       init_locators();
       __runInitializers4 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate4 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -12141,8 +12141,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -12153,34 +12153,34 @@
       };
       __disposeResources8 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       Page = (() => {
         let _classSuper = EventEmitter;
@@ -12946,8 +12946,8 @@
             const [width, height, devicePixelRatio] = await this.#getNativePixelDimensions();
             let crop;
             if (options.crop) {
-              const { x, y, width: cropWidth, height: cropHeight } = roundRectangle(normalizeRectangle(options.crop));
-              if (x < 0 || y < 0) {
+              const { x: x2, y: y2, width: cropWidth, height: cropHeight } = roundRectangle(normalizeRectangle(options.crop));
+              if (x2 < 0 || y2 < 0) {
                 throw new Error(`\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`);
               }
               if (cropWidth <= 0 || cropHeight <= 0) {
@@ -12955,15 +12955,15 @@
               }
               const viewportWidth = width / devicePixelRatio;
               const viewportHeight = height / devicePixelRatio;
-              if (x + cropWidth > viewportWidth) {
+              if (x2 + cropWidth > viewportWidth) {
                 throw new Error(`\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`);
               }
-              if (y + cropHeight > viewportHeight) {
+              if (y2 + cropHeight > viewportHeight) {
                 throw new Error(`\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`);
               }
               crop = {
-                x: x * devicePixelRatio,
-                y: y * devicePixelRatio,
+                x: x2 * devicePixelRatio,
+                y: y2 * devicePixelRatio,
                 width: cropWidth * devicePixelRatio,
                 height: cropHeight * devicePixelRatio
               };
@@ -13865,8 +13865,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -13877,34 +13877,34 @@
       };
       __disposeResources9 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       Accessibility = class {
         #realm;
@@ -14607,16 +14607,16 @@
       points.push({ offset: range.startOffset, type: 0, range });
       points.push({ offset: range.endOffset, type: 1, range });
     }
-    points.sort((a, b) => {
-      if (a.offset !== b.offset) {
-        return a.offset - b.offset;
+    points.sort((a2, b2) => {
+      if (a2.offset !== b2.offset) {
+        return a2.offset - b2.offset;
       }
-      if (a.type !== b.type) {
-        return b.type - a.type;
+      if (a2.type !== b2.type) {
+        return b2.type - a2.type;
       }
-      const aLength = a.range.endOffset - a.range.startOffset;
-      const bLength = b.range.endOffset - b.range.startOffset;
-      if (a.type === 0) {
+      const aLength = a2.range.endOffset - a2.range.startOffset;
+      const bLength = b2.range.endOffset - b2.range.startOffset;
+      if (a2.type === 0) {
         return bLength - aLength;
       }
       return aLength - bLength;
@@ -14921,46 +14921,46 @@
       init_ErrorLike();
       __runInitializers5 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate5 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __setFunctionName2 = function(f, name, prefix) {
+      __setFunctionName2 = function(f2, name, prefix) {
         if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-        return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+        return Object.defineProperty(f2, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
       };
       EmulatedState = class {
         #state;
@@ -15213,8 +15213,8 @@
             client.once(CDPSessionEvent.Disconnected, () => {
               this.#secondaryClients.delete(client);
             });
-            void Promise.all(this.#states.map((s) => {
-              return s.sync().catch(debugError);
+            void Promise.all(this.#states.map((s2) => {
+              return s2.sync().catch(debugError);
             }));
           }
           get javascriptEnabled() {
@@ -15591,19 +15591,19 @@
   __export(mitt_exports, {
     default: () => mitt_default2
   });
-  function mitt_default2(n) {
-    return { all: n = n || /* @__PURE__ */ new Map(), on: function(t, e) {
-      var i = n.get(t);
-      i ? i.push(e) : n.set(t, [e]);
-    }, off: function(t, e) {
-      var i = n.get(t);
-      i && (e ? i.splice(i.indexOf(e) >>> 0, 1) : n.set(t, []));
-    }, emit: function(t, e) {
-      var i = n.get(t);
-      i && i.slice().map(function(n2) {
-        n2(e);
-      }), (i = n.get("*")) && i.slice().map(function(n2) {
-        n2(t, e);
+  function mitt_default2(n2) {
+    return { all: n2 = n2 || /* @__PURE__ */ new Map(), on: function(t2, e2) {
+      var i2 = n2.get(t2);
+      i2 ? i2.push(e2) : n2.set(t2, [e2]);
+    }, off: function(t2, e2) {
+      var i2 = n2.get(t2);
+      i2 && (e2 ? i2.splice(i2.indexOf(e2) >>> 0, 1) : n2.set(t2, []));
+    }, emit: function(t2, e2) {
+      var i2 = n2.get(t2);
+      i2 && i2.slice().map(function(n3) {
+        n3(e2);
+      }), (i2 = n2.get("*")) && i2.slice().map(function(n3) {
+        n3(t2, e2);
       });
     } };
   }
@@ -16106,45 +16106,45 @@
   var require_protocol = __commonJS({
     "node_modules/chromium-bidi/lib/cjs/protocol/protocol.js"(exports2) {
       "use strict";
-      var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o, m, k, k2) {
-        if (k2 === void 0) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o2, m2, k2, k22) {
+        if (k22 === void 0) k22 = k2;
+        var desc = Object.getOwnPropertyDescriptor(m2, k2);
+        if (!desc || ("get" in desc ? !m2.__esModule : desc.writable || desc.configurable)) {
           desc = { enumerable: true, get: function() {
-            return m[k];
+            return m2[k2];
           } };
         }
-        Object.defineProperty(o, k2, desc);
-      }) : (function(o, m, k, k2) {
-        if (k2 === void 0) k2 = k;
-        o[k2] = m[k];
+        Object.defineProperty(o2, k22, desc);
+      }) : (function(o2, m2, k2, k22) {
+        if (k22 === void 0) k22 = k2;
+        o2[k22] = m2[k2];
       }));
-      var __setModuleDefault = exports2 && exports2.__setModuleDefault || (Object.create ? (function(o, v) {
-        Object.defineProperty(o, "default", { enumerable: true, value: v });
-      }) : function(o, v) {
-        o["default"] = v;
+      var __setModuleDefault = exports2 && exports2.__setModuleDefault || (Object.create ? (function(o2, v2) {
+        Object.defineProperty(o2, "default", { enumerable: true, value: v2 });
+      }) : function(o2, v2) {
+        o2["default"] = v2;
       });
       var __importStar = exports2 && exports2.__importStar || /* @__PURE__ */ (function() {
-        var ownKeys = function(o) {
-          ownKeys = Object.getOwnPropertyNames || function(o2) {
-            var ar = [];
-            for (var k in o2) if (Object.prototype.hasOwnProperty.call(o2, k)) ar[ar.length] = k;
-            return ar;
+        var ownKeys = function(o2) {
+          ownKeys = Object.getOwnPropertyNames || function(o3) {
+            var ar2 = [];
+            for (var k2 in o3) if (Object.prototype.hasOwnProperty.call(o3, k2)) ar2[ar2.length] = k2;
+            return ar2;
           };
-          return ownKeys(o);
+          return ownKeys(o2);
         };
         return function(mod) {
           if (mod && mod.__esModule) return mod;
           var result = {};
           if (mod != null) {
-            for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+            for (var k2 = ownKeys(mod), i2 = 0; i2 < k2.length; i2++) if (k2[i2] !== "default") __createBinding(result, mod, k2[i2]);
           }
           __setModuleDefault(result, mod);
           return result;
         };
       })();
-      var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
-        for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
+      var __exportStar = exports2 && exports2.__exportStar || function(m2, exports3) {
+        for (var p2 in m2) if (p2 !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p2)) __createBinding(exports3, m2, p2);
       };
       Object.defineProperty(exports2, "__esModule", { value: true });
       exports2.UAClientHints = exports2.ChromiumBidi = exports2.Cdp = void 0;
@@ -16516,7 +16516,7 @@
           };
         }
         async getClientWindows() {
-          const topLevelTargetIds = this.#browsingContextStorage.getTopLevelContexts().map((b) => b.cdpTarget.id);
+          const topLevelTargetIds = this.#browsingContextStorage.getTopLevelContexts().map((b2) => b2.cdpTarget.id);
           const clientWindows = await Promise.all(topLevelTargetIds.map(async (targetId) => await this.#getWindowInfo(targetId)));
           const uniqueClientWindowIds = /* @__PURE__ */ new Set();
           const uniqueClientWindows = new Array();
@@ -16556,7 +16556,7 @@
         async setDownloadBehavior(params) {
           let userContexts;
           if (params.userContexts === void 0) {
-            userContexts = (await this.#userContextStorage.getUserContexts()).map((c) => c.userContext);
+            userContexts = (await this.#userContextStorage.getUserContexts()).map((c2) => c2.userContext);
           } else {
             userContexts = Array.from(await this.#userContextStorage.verifyUserContextIdList(params.userContexts));
           }
@@ -16685,7 +16685,7 @@
         getTree(params) {
           const resultContexts = params.root === void 0 ? this.#browsingContextStorage.getTopLevelContexts() : [this.#browsingContextStorage.getContext(params.root)];
           return {
-            contexts: resultContexts.map((c) => c.serializeToBidiValue(params.maxDepth ?? Number.MAX_VALUE))
+            contexts: resultContexts.map((c2) => c2.serializeToBidiValue(params.maxDepth ?? Number.MAX_VALUE))
           };
         }
         async create(params) {
@@ -17205,22 +17205,22 @@
         try {
           new Intl.Locale(locale);
           return true;
-        } catch (e) {
-          if (e instanceof RangeError) {
+        } catch (e2) {
+          if (e2 instanceof RangeError) {
             return false;
           }
-          throw e;
+          throw e2;
         }
       }
       function isValidTimezone(timezone) {
         try {
           Intl.DateTimeFormat(void 0, { timeZone: timezone });
           return true;
-        } catch (e) {
-          if (e instanceof RangeError) {
+        } catch (e2) {
+          if (e2 instanceof RangeError) {
             return false;
           }
-          throw e;
+          throw e2;
         }
       }
       function isTimeZoneOffsetString(timezone) {
@@ -17363,9 +17363,9 @@
           #x;
           #y;
           #time;
-          constructor(x, y, time) {
-            this.#x = x;
-            this.#y = y;
+          constructor(x2, y2, time) {
+            this.#x = x2;
+            this.#y = y2;
             this.#time = time;
           }
           compare(context2) {
@@ -18154,9 +18154,9 @@
       var InputSource_js_1 = require_InputSource();
       var keyUtils_js_1 = require_keyUtils();
       var USKeyboardLayout_js_1 = require_USKeyboardLayout();
-      var CALCULATE_IN_VIEW_CENTER_PT_DECL = ((i) => {
-        const t = i.getClientRects()[0], e = Math.max(0, Math.min(t.x, t.x + t.width)), n = Math.min(window.innerWidth, Math.max(t.x, t.x + t.width)), h = Math.max(0, Math.min(t.y, t.y + t.height)), m = Math.min(window.innerHeight, Math.max(t.y, t.y + t.height));
-        return [e + (n - e >> 1), h + (m - h >> 1)];
+      var CALCULATE_IN_VIEW_CENTER_PT_DECL = ((i2) => {
+        const t2 = i2.getClientRects()[0], e2 = Math.max(0, Math.min(t2.x, t2.x + t2.width)), n2 = Math.min(window.innerWidth, Math.max(t2.x, t2.x + t2.width)), h2 = Math.max(0, Math.min(t2.y, t2.y + t2.height)), m2 = Math.min(window.innerHeight, Math.max(t2.y, t2.y + t2.height));
+        return [e2 + (n2 - e2 >> 1), h2 + (m2 - h2 >> 1)];
       }).toString();
       var IS_MAC_DECL = (() => {
         return navigator.platform.toLowerCase().includes("mac");
@@ -18170,8 +18170,8 @@
         (0, assert_js_1.assert)(result.result.type === "array");
         (0, assert_js_1.assert)(result.result.value?.[0]?.type === "number");
         (0, assert_js_1.assert)(result.result.value?.[1]?.type === "number");
-        const { result: { value: [{ value: x }, { value: y }] } } = result;
-        return { x, y };
+        const { result: { value: [{ value: x2 }, { value: y2 }] } } = result;
+        return { x: x2, y: y2 };
       }
       var ActionDispatcher = class {
         static isMacOS = async (context2) => {
@@ -18275,7 +18275,7 @@
             return;
           }
           source2.pressed.add(button);
-          const { x, y, subtype: pointerType } = source2;
+          const { x: x2, y: y2, subtype: pointerType } = source2;
           const { width, height, pressure, twist, tangentialPressure } = action;
           const { tiltX, tiltY } = getTilt(action);
           const { modifiers } = keyState;
@@ -18285,12 +18285,12 @@
             case "pen":
               await this.#context.cdpTarget.cdpClient.sendCommand("Input.dispatchMouseEvent", {
                 type: "mousePressed",
-                x,
-                y,
+                x: x2,
+                y: y2,
                 modifiers,
                 button: getCdpButton(button),
                 buttons: source2.buttons,
-                clickCount: source2.setClickCount(button, new InputSource_js_1.PointerSource.ClickContext(x, y, performance.now())),
+                clickCount: source2.setClickCount(button, new InputSource_js_1.PointerSource.ClickContext(x2, y2, performance.now())),
                 pointerType,
                 tangentialPressure,
                 tiltX,
@@ -18304,8 +18304,8 @@
                 type: "touchStart",
                 touchPoints: [
                   {
-                    x,
-                    y,
+                    x: x2,
+                    y: y2,
                     radiusX,
                     radiusY,
                     tangentialPressure,
@@ -18330,15 +18330,15 @@
             return;
           }
           source2.pressed.delete(button);
-          const { x, y, force, radiusX, radiusY, subtype: pointerType } = source2;
+          const { x: x2, y: y2, force, radiusX, radiusY, subtype: pointerType } = source2;
           const { modifiers } = keyState;
           switch (pointerType) {
             case "mouse":
             case "pen":
               return this.#context.cdpTarget.cdpClient.sendCommand("Input.dispatchMouseEvent", {
                 type: "mouseReleased",
-                x,
-                y,
+                x: x2,
+                y: y2,
                 modifiers,
                 button: getCdpButton(button),
                 buttons: source2.buttons,
@@ -18350,8 +18350,8 @@
                 type: "touchEnd",
                 touchPoints: [
                   {
-                    x,
-                    y,
+                    x: x2,
+                    y: y2,
                     id: source2.pointerId,
                     force,
                     radiusX,
@@ -18375,23 +18375,23 @@
           do {
             const ratio = duration > 0 ? (performance.now() - this.#tickStart) / duration : 1;
             last2 = ratio >= 1;
-            let x;
-            let y;
+            let x2;
+            let y2;
             if (last2) {
-              x = targetX;
-              y = targetY;
+              x2 = targetX;
+              y2 = targetY;
             } else {
-              x = Math.round(ratio * (targetX - startX) + startX);
-              y = Math.round(ratio * (targetY - startY) + startY);
+              x2 = Math.round(ratio * (targetX - startX) + startX);
+              y2 = Math.round(ratio * (targetY - startY) + startY);
             }
-            if (source2.x !== x || source2.y !== y) {
+            if (source2.x !== x2 || source2.y !== y2) {
               const { modifiers } = keyState;
               switch (pointerType) {
                 case "mouse":
                   await this.#context.cdpTarget.cdpClient.sendCommand("Input.dispatchMouseEvent", {
                     type: "mouseMoved",
-                    x,
-                    y,
+                    x: x2,
+                    y: y2,
                     modifiers,
                     clickCount: 0,
                     button: getCdpButton(source2.pressed.values().next().value ?? 5),
@@ -18408,8 +18408,8 @@
                   if (source2.pressed.size !== 0) {
                     await this.#context.cdpTarget.cdpClient.sendCommand("Input.dispatchMouseEvent", {
                       type: "mouseMoved",
-                      x,
-                      y,
+                      x: x2,
+                      y: y2,
                       modifiers,
                       clickCount: 0,
                       button: getCdpButton(source2.pressed.values().next().value ?? 5),
@@ -18429,8 +18429,8 @@
                       type: "touchMove",
                       touchPoints: [
                         {
-                          x,
-                          y,
+                          x: x2,
+                          y: y2,
                           radiusX,
                           radiusY,
                           tangentialPressure,
@@ -18446,8 +18446,8 @@
                   }
                   break;
               }
-              source2.x = x;
-              source2.y = y;
+              source2.x = x2;
+              source2.y = y2;
               source2.radiusX = radiusX;
               source2.radiusY = radiusY;
               source2.force = pressure;
@@ -19046,7 +19046,7 @@
             return {};
           }
           const paths = [];
-          for (let i = 0; i < params.files.length; ++i) {
+          for (let i2 = 0; i2 < params.files.length; ++i2) {
             const result2 = await hiddenSandboxRealm.callFunction(
               String(function getFiles(index) {
                 return this.files?.item(index);
@@ -19113,11 +19113,11 @@
               id: action.id,
               action: item
             }));
-            for (let i = 0; i < actions.length; i++) {
-              if (actionsByTick.length === i) {
+            for (let i2 = 0; i2 < actions.length; i2++) {
+              if (actionsByTick.length === i2) {
                 actionsByTick.push([]);
               }
-              actionsByTick[i].push(actions[i]);
+              actionsByTick[i2].push(actions[i2]);
             }
           }
           return actionsByTick;
@@ -19179,8 +19179,8 @@
       function typedArrayToBase642(typedArray) {
         const chunkSize = 65534;
         const chunks = [];
-        for (let i = 0; i < typedArray.length; i += chunkSize) {
-          const chunk = typedArray.subarray(i, i + chunkSize);
+        for (let i2 = 0; i2 < typedArray.length; i2 += chunkSize) {
+          const chunk = typedArray.subarray(i2, i2 + chunkSize);
           chunks.push(String.fromCodePoint.apply(null, chunk));
         }
         const binaryString = chunks.join("");
@@ -19636,17 +19636,17 @@
                   }
                   urlPattern.hostname = unescapeURLPattern(urlPattern.hostname);
                   let insideBrackets = false;
-                  for (const c of urlPattern.hostname) {
-                    if (c === "/" || c === "?" || c === "#") {
+                  for (const c2 of urlPattern.hostname) {
+                    if (c2 === "/" || c2 === "?" || c2 === "#") {
                       throw new protocol_js_1.InvalidArgumentException(`'/', '?', '#' are forbidden in hostname`);
                     }
-                    if (!insideBrackets && c === ":") {
+                    if (!insideBrackets && c2 === ":") {
                       throw new protocol_js_1.InvalidArgumentException(`':' is only allowed inside brackets in hostname`);
                     }
-                    if (c === "[") {
+                    if (c2 === "[") {
                       insideBrackets = true;
                     }
-                    if (c === "]") {
+                    if (c2 === "]") {
                       insideBrackets = false;
                     }
                   }
@@ -19823,17 +19823,17 @@
         const forbidden = /* @__PURE__ */ new Set(["(", ")", "*", "{", "}"]);
         let result = "";
         let isEscaped = false;
-        for (const c of pattern) {
+        for (const c2 of pattern) {
           if (!isEscaped) {
-            if (forbidden.has(c)) {
+            if (forbidden.has(c2)) {
               throw new protocol_js_1.InvalidArgumentException("Forbidden characters");
             }
-            if (c === "\\") {
+            if (c2 === "\\") {
               isEscaped = true;
               continue;
             }
           }
-          result += c;
+          result += c2;
           isEscaped = false;
         }
         return result;
@@ -20119,12 +20119,12 @@
         async #getHandleFromWindow(realm) {
           const channelHandleResult = await realm.cdpClient.sendCommand("Runtime.callFunctionOn", {
             functionDeclaration: String((id) => {
-              const w = window;
-              if (w[id] === void 0) {
-                return new Promise((resolve) => w[id] = resolve);
+              const w2 = window;
+              if (w2[id] === void 0) {
+                return new Promise((resolve) => w2[id] = resolve);
               }
-              const channelProxy = w[id];
-              delete w[id];
+              const channelProxy = w2[id];
+              delete w2[id];
               return channelProxy;
             }),
             arguments: [{ value: this.#id }],
@@ -20152,12 +20152,12 @@
          */
         getEvalInWindowStr() {
           const delegate = String((id, channelProxy) => {
-            const w = window;
-            if (w[id] === void 0) {
-              w[id] = channelProxy;
+            const w2 = window;
+            if (w2[id] === void 0) {
+              w2[id] = channelProxy;
             } else {
-              w[id](channelProxy);
-              delete w[id];
+              w2[id](channelProxy);
+              delete w2[id];
             }
             return channelProxy.sendMessage;
           });
@@ -20201,7 +20201,7 @@
           return this.#targetIds;
         }
         constructor(params, logger) {
-          this.#channels = params.arguments?.map((a) => new ChannelProxy_js_1.ChannelProxy(a.value, logger)) ?? [];
+          this.#channels = params.arguments?.map((a2) => new ChannelProxy_js_1.ChannelProxy(a2.value, logger)) ?? [];
           this.#functionDeclaration = params.functionDeclaration;
           this.#sandbox = params.sandbox;
           this.#contexts = params.contexts;
@@ -20227,7 +20227,7 @@
          * 3. Call the user-provided function with channels as arguments.
          */
         #getEvaluateString() {
-          const channelsArgStr = `[${this.channels.map((c) => c.getEvalInWindowStr()).join(", ")}]`;
+          const channelsArgStr = `[${this.channels.map((c2) => c2.getEvalInWindowStr()).join(", ")}]`;
           return `(()=>{(${this.#functionDeclaration})(...${channelsArgStr})})()`;
         }
         /**
@@ -20429,7 +20429,7 @@
             }
             mergedCapabilities.push(result);
           }
-          const match = mergedCapabilities.find((c) => c.browserName === "chrome") ?? mergedCapabilities[0] ?? {};
+          const match = mergedCapabilities.find((c2) => c2.browserName === "chrome") ?? mergedCapabilities[0] ?? {};
           match.unhandledPromptBehavior = this.#getUnhandledPromptBehavior(match.unhandledPromptBehavior);
           return match;
         }
@@ -20547,7 +20547,7 @@
             // CDP's partition key is the source origin. If the request specifies the
             // `sourceOrigin` partition key, only cookies with the requested source origin
             // are returned.
-            (c) => partitionKey.sourceOrigin === void 0 || c.partitionKey?.topLevelSite === partitionKey.sourceOrigin
+            (c2) => partitionKey.sourceOrigin === void 0 || c2.partitionKey?.topLevelSite === partitionKey.sourceOrigin
           ).filter((cdpCookie) => {
             const bidiCookie = (0, NetworkUtils_js_1.cdpToBiDiCookie)(cdpCookie);
             return this.#matchCookie(bidiCookie, params.filter);
@@ -20581,8 +20581,8 @@
             // CDP's partition key is the source origin. If the request specifies the
             // `sourceOrigin` partition key, only cookies with the requested source origin
             // are returned.
-            (c) => partitionKey.sourceOrigin === void 0 || c.partitionKey?.topLevelSite === partitionKey.sourceOrigin
-          ).map((c) => (0, NetworkUtils_js_1.cdpToBiDiCookie)(c)).filter((c) => this.#matchCookie(c, params.filter));
+            (c2) => partitionKey.sourceOrigin === void 0 || c2.partitionKey?.topLevelSite === partitionKey.sourceOrigin
+          ).map((c2) => (0, NetworkUtils_js_1.cdpToBiDiCookie)(c2)).filter((c2) => this.#matchCookie(c2, params.filter));
           return {
             cookies: filteredBiDiCookies,
             partitionKey
@@ -21036,16 +21036,16 @@
               message: OutgoingMessage_js_1.OutgoingMessage.createResolved(response, command["goog:channel"]),
               event: command.method
             });
-          } catch (e) {
-            if (e instanceof protocol_js_1.Exception) {
+          } catch (e2) {
+            if (e2 instanceof protocol_js_1.Exception) {
               this.emit("response", {
-                message: OutgoingMessage_js_1.OutgoingMessage.createResolved(e.toErrorResponse(command.id), command["goog:channel"]),
+                message: OutgoingMessage_js_1.OutgoingMessage.createResolved(e2.toErrorResponse(command.id), command["goog:channel"]),
                 event: command.method
               });
             } else {
-              const error = e;
+              const error = e2;
               this.#logger?.(log_js_1.LogType.bidi, error);
-              const errorException = this.#browserCdpClient.isCloseError(e) ? new protocol_js_1.NoSuchFrameException(`Browsing context is gone`) : new protocol_js_1.UnknownErrorException(error.message, error.stack);
+              const errorException = this.#browserCdpClient.isCloseError(e2) ? new protocol_js_1.NoSuchFrameException(`Browsing context is gone`) : new protocol_js_1.UnknownErrorException(error.message, error.stack);
               this.emit("response", {
                 message: OutgoingMessage_js_1.OutgoingMessage.createResolved(errorException.toErrorResponse(command.id), command["goog:channel"]),
                 event: command.method
@@ -21387,7 +21387,7 @@
                 characteristicUuid: characteristic.uuid,
                 type,
                 ...event.data && {
-                  data: Array.from(atob(event.data), (c) => c.charCodeAt(0))
+                  data: Array.from(atob(event.data), (c2) => c2.charCodeAt(0))
                 }
               }
             }, cdpTarget.id);
@@ -21408,7 +21408,7 @@
                 descriptorUuid: descriptor.uuid,
                 type: event.type,
                 ...event.data && {
-                  data: Array.from(atob(event.data), (c) => c.charCodeAt(0))
+                  data: Array.from(atob(event.data), (c2) => c2.charCodeAt(0))
                 }
               }
             }, cdpTarget.id);
@@ -21815,15 +21815,15 @@
             return deepSerializedValue;
           }
           if (["array", "set", "htmlcollection", "nodelist"].includes(deepSerializedValue.type)) {
-            for (const i in bidiValue) {
-              bidiValue[i] = this.serializeForBiDi(bidiValue[i], internalIdMap);
+            for (const i2 in bidiValue) {
+              bidiValue[i2] = this.serializeForBiDi(bidiValue[i2], internalIdMap);
             }
           }
           if (["object", "map"].includes(deepSerializedValue.type)) {
-            for (const i in bidiValue) {
-              bidiValue[i] = [
-                this.serializeForBiDi(bidiValue[i][0], internalIdMap),
-                this.serializeForBiDi(bidiValue[i][1], internalIdMap)
+            for (const i2 in bidiValue) {
+              bidiValue[i2] = [
+                this.serializeForBiDi(bidiValue[i2][0], internalIdMap),
+                this.serializeForBiDi(bidiValue[i2][1], internalIdMap)
               ];
             }
           }
@@ -22053,8 +22053,8 @@
               const { result } = await this.cdpClient.sendCommand("Runtime.callFunctionOn", {
                 functionDeclaration: String((...args2) => {
                   const result2 = /* @__PURE__ */ new Map();
-                  for (let i = 0; i < args2.length; i += 2) {
-                    result2.set(args2[i], args2[i + 1]);
+                  for (let i2 = 0; i2 < args2.length; i2 += 2) {
+                    result2.set(args2[i2], args2[i2 + 1]);
                   }
                   return result2;
                 }),
@@ -22070,9 +22070,9 @@
               const { result } = await this.cdpClient.sendCommand("Runtime.callFunctionOn", {
                 functionDeclaration: String((...args2) => {
                   const result2 = {};
-                  for (let i = 0; i < args2.length; i += 2) {
-                    const key2 = args2[i];
-                    result2[key2] = args2[i + 1];
+                  for (let i2 = 0; i2 < args2.length; i2 += 2) {
+                    const key2 = args2[i2];
+                    result2[key2] = args2[i2 + 1];
                   }
                   return result2;
                 }),
@@ -22240,8 +22240,8 @@
               delete bidiValue["backendNodeId"];
             }
             if (Object.hasOwn(bidiValue, "children")) {
-              for (const i in bidiValue.children) {
-                bidiValue.children[i] = this.serializeForBiDi(bidiValue.children[i], internalIdMap);
+              for (const i2 in bidiValue.children) {
+                bidiValue.children[i2] = this.serializeForBiDi(bidiValue.children[i2], internalIdMap);
               }
             }
             if (Object.hasOwn(bidiValue, "shadowRoot") && bidiValue.shadowRoot !== null) {
@@ -22839,7 +22839,7 @@
             userContext: this.userContext,
             originalOpener: this.#originalOpener ?? null,
             clientWindow: `${this.cdpTarget.windowId}`,
-            children: maxDepth === null || maxDepth > 0 ? this.directChildren.map((c) => c.serializeToBidiValue(maxDepth === null ? maxDepth : maxDepth - 1, false)) : null,
+            children: maxDepth === null || maxDepth > 0 ? this.directChildren.map((c2) => c2.serializeToBidiValue(maxDepth === null ? maxDepth : maxDepth - 1, false)) : null,
             ...addParentField ? { parent: this.#parentId } : {}
           };
         }
@@ -23524,8 +23524,8 @@
                   const locateNodesUsingXpath = (element) => {
                     const xPathResult = expression.evaluate(element, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE);
                     const returnedNodes2 = [];
-                    for (let i = 0; i < xPathResult.snapshotLength; i++) {
-                      returnedNodes2.push(xPathResult.snapshotItem(i));
+                    for (let i2 = 0; i2 < xPathResult.snapshotLength; i2++) {
+                      returnedNodes2.push(xPathResult.snapshotItem(i2));
                     }
                     return returnedNodes2;
                   };
@@ -23687,7 +23687,7 @@
                       collect(childNodes, selector);
                     }
                   }
-                  startNodes2 = startNodes2.length > 0 ? startNodes2 : Array.from(document.documentElement.children).filter((c) => c instanceof HTMLElement);
+                  startNodes2 = startNodes2.length > 0 ? startNodes2 : Array.from(document.documentElement.children).filter((c2) => c2 instanceof HTMLElement);
                   collect(startNodes2, {
                     role,
                     name
@@ -23775,7 +23775,7 @@
         #getAllRelatedCdpTargets() {
           const targets = /* @__PURE__ */ new Set();
           targets.add(this.cdpTarget);
-          this.allChildren.forEach((c) => targets.add(c.cdpTarget));
+          this.allChildren.forEach((c2) => targets.add(c2.cdpTarget));
           return Array.from(targets);
         }
         async setTimezoneOverride(timezone) {
@@ -23838,10 +23838,10 @@
         if (result.type !== "object" || result.value === void 0) {
           return;
         }
-        const x = result.value.find(([key2]) => {
+        const x2 = result.value.find(([key2]) => {
           return key2 === "x";
         })?.[1];
-        const y = result.value.find(([key2]) => {
+        const y2 = result.value.find(([key2]) => {
           return key2 === "y";
         })?.[1];
         const height = result.value.find(([key2]) => {
@@ -23850,12 +23850,12 @@
         const width = result.value.find(([key2]) => {
           return key2 === "width";
         })?.[1];
-        if (x?.type !== "number" || y?.type !== "number" || height?.type !== "number" || width?.type !== "number") {
+        if (x2?.type !== "number" || y2?.type !== "number" || height?.type !== "number" || width?.type !== "number") {
           return;
         }
         return {
-          x: x.value,
-          y: y.value,
+          x: x2.value,
+          y: y2.value,
           width: width.value,
           height: height.value
         };
@@ -23881,13 +23881,13 @@
       function getIntersectionRect2(first2, second) {
         first2 = normalizeRect(first2);
         second = normalizeRect(second);
-        const x = Math.max(first2.x, second.x);
-        const y = Math.max(first2.y, second.y);
+        const x2 = Math.max(first2.x, second.x);
+        const y2 = Math.max(first2.y, second.y);
         return {
-          x,
-          y,
-          width: Math.max(Math.min(first2.x + first2.width, second.x + second.width) - x, 0),
-          height: Math.max(Math.min(first2.y + first2.height, second.y + second.height) - y, 0)
+          x: x2,
+          y: y2,
+          width: Math.max(Math.min(first2.x + first2.width, second.x + second.width) - x2, 0),
+          height: Math.max(Math.min(first2.y + first2.height, second.y + second.height) - y2, 0)
         };
       }
       function parseInteger(value2) {
@@ -26110,9 +26110,9 @@
         }
         async setUserAgentAndAcceptLanguage(userAgent, acceptLanguage, clientHints) {
           const userAgentMetadata = clientHints ? {
-            brands: clientHints.brands?.map((b) => ({
-              brand: b.brand,
-              version: b.version
+            brands: clientHints.brands?.map((b2) => ({
+              brand: b2.brand,
+              version: b2.version
             })),
             fullVersionList: clientHints.fullVersionList,
             platform: clientHints.platform ?? "",
@@ -26675,7 +26675,7 @@
           this.findRealms(filter2).map((realm) => {
             realm.dispose();
             this.#realmMap.delete(realm.realmId);
-            Array.from(this.knownHandlesToRealmMap.entries()).filter(([, r]) => r === realm.realmId).map(([handle]) => this.knownHandlesToRealmMap.delete(handle));
+            Array.from(this.knownHandlesToRealmMap.entries()).filter(([, r2]) => r2 === realm.realmId).map(([handle]) => this.knownHandlesToRealmMap.delete(handle));
           });
         }
       };
@@ -26768,8 +26768,8 @@
       exports2.difference = difference;
       var protocol_js_1 = require_protocol();
       var uuid_js_1 = require_uuid();
-      function cartesianProduct(...a) {
-        return a.reduce((a2, b) => a2.flatMap((d) => b.map((e) => [d, e].flat())));
+      function cartesianProduct(...a2) {
+        return a2.reduce((a3, b2) => a3.flatMap((d2) => b2.map((e2) => [d2, e2].flat())));
       }
       function unrollEvents(events) {
         const allEvents = /* @__PURE__ */ new Set();
@@ -26963,18 +26963,18 @@
       exports2.SubscriptionManager = SubscriptionManager;
       function intersection(setA, setB) {
         const result = /* @__PURE__ */ new Set();
-        for (const a of setA) {
-          if (setB.has(a)) {
-            result.add(a);
+        for (const a2 of setA) {
+          if (setB.has(a2)) {
+            result.add(a2);
           }
         }
         return result;
       }
       function difference(setA, setB) {
         const result = /* @__PURE__ */ new Set();
-        for (const a of setA) {
-          if (!setB.has(a)) {
-            result.add(a);
+        for (const a2 of setA) {
+          if (!setB.has(a2)) {
+            result.add(a2);
           }
         }
         return result;
@@ -26983,8 +26983,8 @@
         if (setA.size !== setB.size) {
           return false;
         }
-        for (const a of setA) {
-          if (!setB.has(a)) {
+        for (const a2 of setA) {
+          if (!setB.has(a2)) {
             return false;
           }
         }
@@ -27124,9 +27124,9 @@
               throw new protocol_js_1.InvalidArgumentException("Invalid context id");
             }
             return id;
-          }) : this.#browsingContextStorage.getTopLevelContexts().map((c) => c.id));
+          }) : this.#browsingContextStorage.getTopLevelContexts().map((c2) => c2.id));
           for (const eventName of unrolledEventNames) {
-            const subscribedNavigableIds = new Set(this.#browsingContextStorage.getTopLevelContexts().map((c) => c.id).filter((id) => {
+            const subscribedNavigableIds = new Set(this.#browsingContextStorage.getTopLevelContexts().map((c2) => c2.id).filter((id) => {
               return this.#subscriptionManager.isSubscribedTo(eventName, id);
             }));
             subscribeStepEvents.set(eventName, (0, SubscriptionManager_js_1.difference)(subscriptionNavigableIds, subscribedNavigableIds));
@@ -27410,7 +27410,7 @@
           this.#transport.close();
         }
         async #topLevelContextsLoaded() {
-          await Promise.all(this.#browsingContextStorage.getTopLevelContexts().map((c) => c.lifecycleLoaded()));
+          await Promise.all(this.#browsingContextStorage.getTopLevelContexts().map((c2) => c2.lifecycleLoaded()));
         }
       };
       exports2.BidiServer = BidiServer2;
@@ -27613,8 +27613,8 @@
          */
         async onMessage(message) {
           if (this.#delay) {
-            await new Promise((f) => {
-              return setTimeout(f, this.#delay);
+            await new Promise((f2) => {
+              return setTimeout(f2, this.#delay);
             });
           }
           debugProtocolReceive2(message);
@@ -27893,10 +27893,10 @@
           this.#session = session;
           this.#promptId = promptId;
           this.#contextId = contextId;
-          this.devices.push(...devices.map((d) => {
+          this.devices.push(...devices.map((d2) => {
             return {
-              id: d.id,
-              name: d.name ?? "UNKNOWN"
+              id: d2.id,
+              name: d2.name ?? "UNKNOWN"
             };
           }));
         }
@@ -27931,38 +27931,38 @@
       init_disposable();
       __runInitializers8 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate8 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -28095,38 +28095,38 @@
       init_disposable();
       __runInitializers9 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate9 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -28365,38 +28365,38 @@
       init_encoding();
       __runInitializers10 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate10 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -28654,38 +28654,38 @@
       init_disposable();
       __runInitializers11 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate11 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -28792,38 +28792,38 @@
       init_UserPrompt();
       __runInitializers12 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate12 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -29373,38 +29373,38 @@
       init_BrowsingContext();
       __runInitializers13 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate13 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -29720,38 +29720,38 @@
       init_JSHandle2();
       __runInitializers14 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate14 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -29774,8 +29774,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -29786,34 +29786,34 @@
       };
       __disposeResources14 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       BidiElementHandle = (() => {
         let _classSuper = ElementHandle;
@@ -29976,8 +29976,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -29988,34 +29988,34 @@
       };
       __disposeResources15 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       ExposableFunction = class _ExposableFunction {
         static async from(frame, name, apply, isolate = false) {
@@ -30208,38 +30208,38 @@
       init_decorators();
       __runInitializers15 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate15 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -30788,8 +30788,8 @@
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -30800,34 +30800,34 @@
       };
       __disposeResources16 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       BidiRealm = class extends Realm {
         realm;
@@ -31147,46 +31147,46 @@ ${sourceUrlComment}
       init_WebWorker2();
       __runInitializers16 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate16 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
         done = true;
       };
-      __setFunctionName3 = function(f, name, prefix) {
+      __setFunctionName3 = function(f2, name, prefix) {
         if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-        return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+        return Object.defineProperty(f2, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
       };
       BidiFrame = (() => {
         var _a3;
@@ -31958,28 +31958,28 @@ ${sourceUrlComment}
           this.#lastMovePoint = { x: 0, y: 0 };
           await this.#page.mainFrame().browsingContext.releaseActions();
         }
-        async move(x, y, options = {}) {
+        async move(x2, y2, options = {}) {
           const from2 = this.#lastMovePoint;
-          const to = {
-            x: Math.round(x),
-            y: Math.round(y)
+          const to2 = {
+            x: Math.round(x2),
+            y: Math.round(y2)
           };
           const actions = [];
           const steps = options.steps ?? 0;
-          for (let i = 0; i < steps; ++i) {
+          for (let i2 = 0; i2 < steps; ++i2) {
             actions.push({
               type: ActionType.PointerMove,
-              x: from2.x + (to.x - from2.x) * (i / steps),
-              y: from2.y + (to.y - from2.y) * (i / steps),
+              x: from2.x + (to2.x - from2.x) * (i2 / steps),
+              y: from2.y + (to2.y - from2.y) * (i2 / steps),
               origin: options.origin
             });
           }
           actions.push({
             type: ActionType.PointerMove,
-            ...to,
+            ...to2,
             origin: options.origin
           });
-          this.#lastMovePoint = to;
+          this.#lastMovePoint = to2;
           await this.#page.mainFrame().browsingContext.performActions([
             {
               type: SourceActionsType.Pointer,
@@ -32016,12 +32016,12 @@ ${sourceUrlComment}
             }
           ]);
         }
-        async click(x, y, options = {}) {
+        async click(x2, y2, options = {}) {
           const actions = [
             {
               type: ActionType.PointerMove,
-              x: Math.round(x),
-              y: Math.round(y),
+              x: Math.round(x2),
+              y: Math.round(y2),
               origin: options.origin
             }
           ];
@@ -32033,7 +32033,7 @@ ${sourceUrlComment}
             type: ActionType.PointerUp,
             button: pointerDownAction.button
           };
-          for (let i = 1; i < (options.count ?? 1); ++i) {
+          for (let i2 = 1; i2 < (options.count ?? 1); ++i2) {
             actions.push(pointerDownAction, pointerUpAction);
           }
           actions.push(pointerDownAction);
@@ -32095,11 +32095,11 @@ ${sourceUrlComment}
         #page;
         #touchScreen;
         #properties;
-        constructor(page2, touchScreen, id, x, y, properties) {
+        constructor(page2, touchScreen, id, x2, y2, properties) {
           this.#page = page2;
           this.#touchScreen = touchScreen;
-          this.#x = Math.round(x);
-          this.#y = Math.round(y);
+          this.#x = Math.round(x2);
+          this.#y = Math.round(y2);
           this.#properties = properties;
           this.#bidiId = `${"__puppeteer_finger"}_${id}`;
         }
@@ -32131,9 +32131,9 @@ ${sourceUrlComment}
           ]);
           this.#started = true;
         }
-        move(x, y) {
-          const newX = Math.round(x);
-          const newY = Math.round(y);
+        move(x2, y2) {
+          const newX = Math.round(x2);
+          const newY = Math.round(y2);
           return this.#page.mainFrame().browsingContext.performActions([
             {
               type: SourceActionsType.Pointer,
@@ -32177,7 +32177,7 @@ ${sourceUrlComment}
           super();
           this.#page = page2;
         }
-        async touchStart(x, y, options = {}) {
+        async touchStart(x2, y2, options = {}) {
           const id = this.idGenerator();
           const properties = {
             width: 0.5 * 2,
@@ -32187,7 +32187,7 @@ ${sourceUrlComment}
             pressure: 0.5,
             altitudeAngle: Math.PI / 2
           };
-          const touch = new BidiTouchHandle(this.#page, this, id, x, y, properties);
+          const touch = new BidiTouchHandle(this.#page, this, id, x2, y2, properties);
           await touch.start(options);
           this.touches.push(touch);
           return touch;
@@ -32332,32 +32332,32 @@ ${sourceUrlComment}
       init_Input2();
       init_util2();
       __esDecorate17 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -32365,8 +32365,8 @@ ${sourceUrlComment}
       };
       __runInitializers17 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
@@ -32387,8 +32387,8 @@ ${sourceUrlComment}
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -32399,34 +32399,34 @@ ${sourceUrlComment}
       };
       __disposeResources17 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       BidiPage = (() => {
         let _classSuper = Page;
@@ -33206,32 +33206,32 @@ ${sourceUrlComment}
       init_Target2();
       init_Target2();
       __esDecorate18 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -33239,8 +33239,8 @@ ${sourceUrlComment}
       };
       __runInitializers18 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
@@ -33261,8 +33261,8 @@ ${sourceUrlComment}
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -33273,34 +33273,34 @@ ${sourceUrlComment}
       };
       __disposeResources18 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       BidiBrowserContext = (() => {
         let _classSuper = BrowserContext;
@@ -33549,38 +33549,38 @@ ${sourceUrlComment}
       init_UserContext();
       __runInitializers19 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate19 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -33603,8 +33603,8 @@ ${sourceUrlComment}
           if (inner) dispose = function() {
             try {
               inner.call(this);
-            } catch (e) {
-              return Promise.reject(e);
+            } catch (e2) {
+              return Promise.reject(e2);
             }
           };
           env.stack.push({ value: value2, dispose, async: async2 });
@@ -33615,34 +33615,34 @@ ${sourceUrlComment}
       };
       __disposeResources19 = /* @__PURE__ */ (function(SuppressedError3) {
         return function(env) {
-          function fail(e) {
-            env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+          function fail(e2) {
+            env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
             env.hasError = true;
           }
-          var r, s = 0;
+          var r2, s2 = 0;
           function next() {
-            while (r = env.stack.pop()) {
+            while (r2 = env.stack.pop()) {
               try {
-                if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-                if (r.dispose) {
-                  var result = r.dispose.call(r.value);
-                  if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                    fail(e);
+                if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+                if (r2.dispose) {
+                  var result = r2.dispose.call(r2.value);
+                  if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                    fail(e2);
                     return next();
                   });
-                } else s |= 1;
-              } catch (e) {
-                fail(e);
+                } else s2 |= 1;
+              } catch (e2) {
+                fail(e2);
               }
             }
-            if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+            if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
             if (env.hasError) throw env.error;
           }
           return next();
         };
       })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-        var e = new Error(message);
-        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+        var e2 = new Error(message);
+        return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
       });
       Browser2 = (() => {
         let _classSuper = EventEmitter;
@@ -33868,38 +33868,38 @@ ${sourceUrlComment}
       init_Browser2();
       __runInitializers20 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
       __esDecorate20 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -34048,32 +34048,32 @@ ${sourceUrlComment}
       init_Session();
       init_Target2();
       __esDecorate21 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-        function accept(f) {
-          if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-          return f;
+        function accept(f2) {
+          if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+          return f2;
         }
         var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
         var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
         var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-        var _, done = false;
-        for (var i = decorators.length - 1; i >= 0; i--) {
+        var _2, done = false;
+        for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
           var context2 = {};
-          for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-          for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-          context2.addInitializer = function(f) {
+          for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+          for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+          context2.addInitializer = function(f2) {
             if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-            extraInitializers.push(accept(f || null));
+            extraInitializers.push(accept(f2 || null));
           };
-          var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+          var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
           if (kind === "accessor") {
             if (result === void 0) continue;
             if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-          } else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key2] = _;
+            if (_2 = accept(result.get)) descriptor.get = _2;
+            if (_2 = accept(result.set)) descriptor.set = _2;
+            if (_2 = accept(result.init)) initializers.unshift(_2);
+          } else if (_2 = accept(result)) {
+            if (kind === "field") initializers.unshift(_2);
+            else descriptor[key2] = _2;
           }
         }
         if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -34081,14 +34081,14 @@ ${sourceUrlComment}
       };
       __runInitializers21 = function(thisArg, initializers, value2) {
         var useValue = arguments.length > 2;
-        for (var i = 0; i < initializers.length; i++) {
-          value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+        for (var i2 = 0; i2 < initializers.length; i2++) {
+          value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
         }
         return useValue ? value2 : void 0;
       };
-      __setFunctionName4 = function(f, name, prefix) {
+      __setFunctionName4 = function(f2, name, prefix) {
         if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-        return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+        return Object.defineProperty(f2, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
       };
       BidiBrowser = (() => {
         let _classSuper = Browser;
@@ -34413,7 +34413,2183 @@ ${sourceUrlComment}
     }
   });
 
+  // node_modules/web-streams-polyfill/dist/ponyfill.mjs
+  function e() {
+  }
+  function t(e2) {
+    return "object" == typeof e2 && null !== e2 || "function" == typeof e2;
+  }
+  var r = e;
+  function o(e2, t2) {
+    try {
+      Object.defineProperty(e2, "name", { value: t2, configurable: true });
+    } catch (e3) {
+    }
+  }
+  var n = Promise;
+  var i = Promise.resolve.bind(n);
+  var a = Promise.prototype.then;
+  var s = Promise.reject.bind(n);
+  var l = i;
+  function u(e2) {
+    return new n(e2);
+  }
+  function c(e2) {
+    return u((t2) => t2(e2));
+  }
+  function d(e2) {
+    return s(e2);
+  }
+  function f(e2, t2, r2) {
+    return a.call(e2, t2, r2);
+  }
+  function h(e2, t2, o2) {
+    f(f(e2, t2, o2), void 0, r);
+  }
+  function b(e2, t2) {
+    h(e2, t2);
+  }
+  function _(e2, t2) {
+    h(e2, void 0, t2);
+  }
+  function m(e2, t2, r2) {
+    return f(e2, t2, r2);
+  }
+  function p(e2) {
+    f(e2, void 0, r);
+  }
+  var y = (e2) => {
+    if ("function" == typeof queueMicrotask) y = queueMicrotask;
+    else {
+      const e3 = c(void 0);
+      y = (t2) => f(e3, t2);
+    }
+    return y(e2);
+  };
+  function S(e2, t2, r2) {
+    if ("function" != typeof e2) throw new TypeError("Argument is not a function");
+    return Function.prototype.apply.call(e2, t2, r2);
+  }
+  function g(e2, t2, r2) {
+    try {
+      return c(S(e2, t2, r2));
+    } catch (e3) {
+      return d(e3);
+    }
+  }
+  var v = class {
+    constructor() {
+      this._cursor = 0, this._size = 0, this._front = { _elements: [], _next: void 0 }, this._back = this._front, this._cursor = 0, this._size = 0;
+    }
+    get length() {
+      return this._size;
+    }
+    push(e2) {
+      const t2 = this._back;
+      let r2 = t2;
+      16383 === t2._elements.length && (r2 = { _elements: [], _next: void 0 }), t2._elements.push(e2), r2 !== t2 && (this._back = r2, t2._next = r2), ++this._size;
+    }
+    shift() {
+      const e2 = this._front;
+      let t2 = e2;
+      const r2 = this._cursor;
+      let o2 = r2 + 1;
+      const n2 = e2._elements, i2 = n2[r2];
+      return 16384 === o2 && (t2 = e2._next, o2 = 0), --this._size, this._cursor = o2, e2 !== t2 && (this._front = t2), n2[r2] = void 0, i2;
+    }
+    forEach(e2) {
+      let t2 = this._cursor, r2 = this._front, o2 = r2._elements;
+      for (; !(t2 === o2.length && void 0 === r2._next || t2 === o2.length && (r2 = r2._next, o2 = r2._elements, t2 = 0, 0 === o2.length)); ) e2(o2[t2]), ++t2;
+    }
+    peek() {
+      const e2 = this._front, t2 = this._cursor;
+      return e2._elements[t2];
+    }
+  };
+  var w = Symbol("[[AbortSteps]]");
+  var R = Symbol("[[ErrorSteps]]");
+  var T = Symbol("[[CancelSteps]]");
+  var P = Symbol("[[PullSteps]]");
+  var C = Symbol("[[CanPullSyncSteps]]");
+  var q = Symbol("[[ReleaseSteps]]");
+  function E(e2, t2) {
+    e2._ownerReadableStream = t2, t2._reader = e2, "readable" === t2._state ? j(e2) : "closed" === t2._state ? (function(e3) {
+      j(e3), z(e3);
+    })(e2) : k(e2, t2._storedError);
+  }
+  function W(e2, t2) {
+    return Mr(e2._ownerReadableStream, t2);
+  }
+  function O(e2) {
+    const t2 = e2._ownerReadableStream;
+    "readable" === t2._state ? A(e2, new TypeError("Reader was released and can no longer be used to monitor the stream's closedness")) : (function(e3, t3) {
+      k(e3, t3);
+    })(e2, new TypeError("Reader was released and can no longer be used to monitor the stream's closedness")), t2._readableStreamController[q](), t2._reader = void 0, e2._ownerReadableStream = void 0;
+  }
+  function B(e2) {
+    return new TypeError("Cannot " + e2 + " a stream using a released reader");
+  }
+  function j(e2) {
+    e2._closedPromise = u((t2, r2) => {
+      e2._closedPromise_resolve = t2, e2._closedPromise_reject = r2;
+    });
+  }
+  function k(e2, t2) {
+    j(e2), A(e2, t2);
+  }
+  function A(e2, t2) {
+    void 0 !== e2._closedPromise_reject && (p(e2._closedPromise), e2._closedPromise_reject(t2), e2._closedPromise_resolve = void 0, e2._closedPromise_reject = void 0);
+  }
+  function z(e2) {
+    void 0 !== e2._closedPromise_resolve && (e2._closedPromise_resolve(void 0), e2._closedPromise_resolve = void 0, e2._closedPromise_reject = void 0);
+  }
+  var D = Number.isFinite || function(e2) {
+    return "number" == typeof e2 && isFinite(e2);
+  };
+  var F = Math.trunc || function(e2) {
+    return e2 < 0 ? Math.ceil(e2) : Math.floor(e2);
+  };
+  function L(e2, t2) {
+    if (void 0 !== e2 && ("object" != typeof (r2 = e2) && "function" != typeof r2)) throw new TypeError(`${t2} is not an object.`);
+    var r2;
+  }
+  function I(e2, t2) {
+    if ("function" != typeof e2) throw new TypeError(`${t2} is not a function.`);
+  }
+  function $(e2, t2) {
+    if (!/* @__PURE__ */ (function(e3) {
+      return "object" == typeof e3 && null !== e3 || "function" == typeof e3;
+    })(e2)) throw new TypeError(`${t2} is not an object.`);
+  }
+  function M(e2, t2, r2) {
+    if (void 0 === e2) throw new TypeError(`Parameter ${t2} is required in '${r2}'.`);
+  }
+  function Y(e2, t2, r2) {
+    if (void 0 === e2) throw new TypeError(`${t2} is required in '${r2}'.`);
+  }
+  function x(e2) {
+    return Number(e2);
+  }
+  function Q(e2) {
+    return 0 === e2 ? 0 : e2;
+  }
+  function N(e2, t2) {
+    const r2 = Number.MAX_SAFE_INTEGER;
+    let o2 = Number(e2);
+    if (o2 = Q(o2), !D(o2)) throw new TypeError(`${t2} is not a finite number`);
+    if (o2 = (function(e3) {
+      return Q(F(e3));
+    })(o2), o2 < 0 || o2 > r2) throw new TypeError(`${t2} is outside the accepted range of 0 to ${r2}, inclusive`);
+    return D(o2) && 0 !== o2 ? o2 : 0;
+  }
+  function H(e2, t2) {
+    if (!Ir(e2)) throw new TypeError(`${t2} is not a ReadableStream.`);
+  }
+  function V(e2) {
+    return new ReadableStreamDefaultReader(e2);
+  }
+  function U(e2, t2) {
+    e2._reader._readRequests.push(t2);
+  }
+  function G(e2, t2, r2) {
+    const o2 = e2._reader._readRequests.shift();
+    r2 ? o2._closeSteps() : o2._chunkSteps(t2);
+  }
+  function X(e2) {
+    return e2._reader._readRequests.length;
+  }
+  function J(e2) {
+    const t2 = e2._reader;
+    return void 0 !== t2 && !!ee(t2);
+  }
+  var ReadableStreamDefaultReader = class {
+    constructor(e2) {
+      if (M(e2, 1, "ReadableStreamDefaultReader"), H(e2, "First parameter"), $r(e2)) throw new TypeError("This stream has already been locked for exclusive reading by another reader");
+      E(this, e2), this._readRequests = new v();
+    }
+    get closed() {
+      return ee(this) ? this._closedPromise : d(ne("closed"));
+    }
+    cancel(e2 = void 0) {
+      return ee(this) ? void 0 === this._ownerReadableStream ? d(B("cancel")) : W(this, e2) : d(ne("cancel"));
+    }
+    read() {
+      if (!ee(this)) return d(ne("read"));
+      if (void 0 === this._ownerReadableStream) return d(B("read from"));
+      const e2 = re(this) ? new Z() : new K();
+      return te(this, e2), e2._promise;
+    }
+    releaseLock() {
+      if (!ee(this)) throw ne("releaseLock");
+      void 0 !== this._ownerReadableStream && (function(e2) {
+        O(e2);
+        const t2 = new TypeError("Reader was released");
+        oe(e2, t2);
+      })(this);
+    }
+  };
+  Object.defineProperties(ReadableStreamDefaultReader.prototype, { cancel: { enumerable: true }, read: { enumerable: true }, releaseLock: { enumerable: true }, closed: { enumerable: true } }), o(ReadableStreamDefaultReader.prototype.cancel, "cancel"), o(ReadableStreamDefaultReader.prototype.read, "read"), o(ReadableStreamDefaultReader.prototype.releaseLock, "releaseLock"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(ReadableStreamDefaultReader.prototype, Symbol.toStringTag, { value: "ReadableStreamDefaultReader", configurable: true });
+  var K = class {
+    constructor() {
+      this._promise = u((e2, t2) => {
+        this._resolvePromise = e2, this._rejectPromise = t2;
+      });
+    }
+    _chunkSteps(e2) {
+      this._resolvePromise({ value: e2, done: false });
+    }
+    _closeSteps() {
+      this._resolvePromise({ value: void 0, done: true });
+    }
+    _errorSteps(e2) {
+      this._rejectPromise(e2);
+    }
+  };
+  var Z = class {
+    constructor() {
+      this._promise = void 0;
+    }
+    _chunkSteps(e2) {
+      this._promise = l({ value: e2, done: false });
+    }
+    _closeSteps() {
+      this._promise = l({ value: void 0, done: true });
+    }
+    _errorSteps(e2) {
+      this._promise = d(e2);
+    }
+  };
+  function ee(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_readRequests") && e2 instanceof ReadableStreamDefaultReader);
+  }
+  function te(e2, t2) {
+    const r2 = e2._ownerReadableStream;
+    r2._disturbed = true, "closed" === r2._state ? t2._closeSteps() : "errored" === r2._state ? t2._errorSteps(r2._storedError) : r2._readableStreamController[P](t2);
+  }
+  function re(e2) {
+    const t2 = e2._ownerReadableStream;
+    return "closed" === t2._state || ("errored" === t2._state || t2._readableStreamController[C]());
+  }
+  function oe(e2, t2) {
+    const r2 = e2._readRequests;
+    e2._readRequests = new v(), r2.forEach((e3) => {
+      e3._errorSteps(t2);
+    });
+  }
+  function ne(e2) {
+    return new TypeError(`ReadableStreamDefaultReader.prototype.${e2} can only be used on a ReadableStreamDefaultReader`);
+  }
+  var ie;
+  var ae;
+  var se;
+  function le(e2) {
+    return e2.slice();
+  }
+  function ue(e2, t2, r2, o2, n2) {
+    new Uint8Array(e2).set(new Uint8Array(r2, o2, n2), t2);
+  }
+  var ce = (e2) => (ce = "function" == typeof e2.transfer ? (e3) => e3.transfer() : "function" == typeof structuredClone ? (e3) => structuredClone(e3, { transfer: [e3] }) : (e3) => e3, ce(e2));
+  var de = (e2) => (de = "boolean" == typeof e2.detached ? (e3) => e3.detached : (e3) => 0 === e3.byteLength, de(e2));
+  function fe(e2, t2, r2) {
+    if (e2.slice) return e2.slice(t2, r2);
+    const o2 = r2 - t2, n2 = new ArrayBuffer(o2);
+    return ue(n2, 0, e2, t2, o2), n2;
+  }
+  function he(e2, t2) {
+    const r2 = e2[t2];
+    if (null != r2) {
+      if ("function" != typeof r2) throw new TypeError(`${String(t2)} is not a function`);
+      return r2;
+    }
+  }
+  function be(e2) {
+    try {
+      const t2 = e2.done, r2 = e2.value;
+      return f(l(r2), (e3) => ({ done: t2, value: e3 }));
+    } catch (e3) {
+      return d(e3);
+    }
+  }
+  var _e = null !== (se = null !== (ie = Symbol.asyncIterator) && void 0 !== ie ? ie : null === (ae = Symbol.for) || void 0 === ae ? void 0 : ae.call(Symbol, "Symbol.asyncIterator")) && void 0 !== se ? se : "@@asyncIterator";
+  function me(e2, r2 = "sync", o2) {
+    if (void 0 === o2) if ("async" === r2) {
+      if (void 0 === (o2 = he(e2, _e))) {
+        return (function(e3) {
+          const r3 = { next() {
+            let t2;
+            try {
+              t2 = pe(e3);
+            } catch (e4) {
+              return d(e4);
+            }
+            return be(t2);
+          }, return(r4) {
+            let o3;
+            try {
+              const t2 = he(e3.iterator, "return");
+              if (void 0 === t2) return c({ done: true, value: r4 });
+              o3 = S(t2, e3.iterator, [r4]);
+            } catch (e4) {
+              return d(e4);
+            }
+            return t(o3) ? be(o3) : d(new TypeError("The iterator.return() method must return an object"));
+          } };
+          return { iterator: r3, nextMethod: r3.next, done: false };
+        })(me(e2, "sync", he(e2, Symbol.iterator)));
+      }
+    } else o2 = he(e2, Symbol.iterator);
+    if (void 0 === o2) throw new TypeError("The object is not iterable");
+    const n2 = S(o2, e2, []);
+    if (!t(n2)) throw new TypeError("The iterator method must return an object");
+    return { iterator: n2, nextMethod: n2.next, done: false };
+  }
+  function pe(e2) {
+    const r2 = S(e2.nextMethod, e2.iterator, []);
+    if (!t(r2)) throw new TypeError("The iterator.next() method must return an object");
+    return r2;
+  }
+  var ye = class {
+    constructor(e2, t2) {
+      this._ongoingPromise = void 0, this._isFinished = false, this._reader = e2, this._preventCancel = t2;
+    }
+    next() {
+      const e2 = () => this._nextSteps();
+      return this._ongoingPromise = this._ongoingPromise ? m(this._ongoingPromise, e2, e2) : e2(), this._ongoingPromise;
+    }
+    return(e2) {
+      const t2 = () => this._returnSteps(e2);
+      return this._ongoingPromise = this._ongoingPromise ? m(this._ongoingPromise, t2, t2) : t2(), this._ongoingPromise;
+    }
+    _nextSteps() {
+      if (this._isFinished) return Promise.resolve({ value: void 0, done: true });
+      const e2 = this._reader, t2 = new Se(this);
+      return te(e2, t2), t2._promise;
+    }
+    _returnSteps(e2) {
+      if (this._isFinished) return Promise.resolve({ value: e2, done: true });
+      this._isFinished = true;
+      const t2 = this._reader;
+      if (!this._preventCancel) {
+        const r2 = W(t2, e2);
+        return O(t2), m(r2, () => ({ value: e2, done: true }));
+      }
+      return O(t2), c({ value: e2, done: true });
+    }
+  };
+  var Se = class {
+    constructor(e2) {
+      this._iterator = e2, this._promise = u((e3, t2) => {
+        this._resolvePromise = e3, this._rejectPromise = t2;
+      });
+    }
+    _chunkSteps(e2) {
+      this._iterator._ongoingPromise = void 0, y(() => this._resolvePromise({ value: e2, done: false }));
+    }
+    _closeSteps() {
+      const e2 = this._iterator;
+      e2._ongoingPromise = void 0, e2._isFinished = true, O(e2._reader), this._resolvePromise({ value: void 0, done: true });
+    }
+    _errorSteps(e2) {
+      const t2 = this._iterator;
+      t2._ongoingPromise = void 0, t2._isFinished = true, O(t2._reader), this._rejectPromise(e2);
+    }
+  };
+  var ge = { next() {
+    return ve(this) ? this._asyncIteratorImpl.next() : d(we("next"));
+  }, return(e2) {
+    return ve(this) ? this._asyncIteratorImpl.return(e2) : d(we("return"));
+  }, [_e]() {
+    return this;
+  } };
+  function ve(e2) {
+    if (!t(e2)) return false;
+    if (!Object.prototype.hasOwnProperty.call(e2, "_asyncIteratorImpl")) return false;
+    try {
+      return e2._asyncIteratorImpl instanceof ye;
+    } catch (e3) {
+      return false;
+    }
+  }
+  function we(e2) {
+    return new TypeError(`ReadableStreamAsyncIterator.${e2} can only be used on a ReadableSteamAsyncIterator`);
+  }
+  Object.defineProperty(ge, _e, { enumerable: false });
+  var Re = Number.isNaN || function(e2) {
+    return e2 != e2;
+  };
+  function Te(e2) {
+    const t2 = fe(e2.buffer, e2.byteOffset, e2.byteOffset + e2.byteLength);
+    return new Uint8Array(t2);
+  }
+  function Pe(e2) {
+    const t2 = e2._queue.shift();
+    return e2._queueTotalSize -= t2.size, e2._queueTotalSize < 0 && (e2._queueTotalSize = 0), t2.value;
+  }
+  function Ce(e2, t2, r2) {
+    if ("number" != typeof (o2 = r2) || Re(o2) || o2 < 0 || r2 === 1 / 0) throw new RangeError("Size must be a finite, non-NaN, non-negative number.");
+    var o2;
+    e2._queue.push({ value: t2, size: r2 }), e2._queueTotalSize += r2;
+  }
+  function qe(e2) {
+    e2._queue = new v(), e2._queueTotalSize = 0;
+  }
+  function Ee(e2) {
+    return e2 === DataView;
+  }
+  function We(e2) {
+    return Ee(e2) ? 1 : e2.BYTES_PER_ELEMENT;
+  }
+  var ReadableStreamBYOBRequest = class {
+    constructor() {
+      throw new TypeError("Illegal constructor");
+    }
+    get view() {
+      if (!Be(this)) throw ot("view");
+      return this._view;
+    }
+    respond(e2) {
+      if (!Be(this)) throw ot("respond");
+      if (M(e2, 1, "respond"), e2 = N(e2, "First parameter"), void 0 === this._associatedReadableByteStreamController) throw new TypeError("This BYOB request has been invalidated");
+      if (de(this._view.buffer)) throw new TypeError("The BYOB request's buffer has been detached and so cannot be used as a response");
+      et(this._associatedReadableByteStreamController, e2);
+    }
+    respondWithNewView(e2) {
+      if (!Be(this)) throw ot("respondWithNewView");
+      if (M(e2, 1, "respondWithNewView"), !ArrayBuffer.isView(e2)) throw new TypeError("You can only respond with array buffer views");
+      if (void 0 === this._associatedReadableByteStreamController) throw new TypeError("This BYOB request has been invalidated");
+      if (de(e2.buffer)) throw new TypeError("The given view's buffer has been detached and so cannot be used as a response");
+      tt(this._associatedReadableByteStreamController, e2);
+    }
+  };
+  Object.defineProperties(ReadableStreamBYOBRequest.prototype, { respond: { enumerable: true }, respondWithNewView: { enumerable: true }, view: { enumerable: true } }), o(ReadableStreamBYOBRequest.prototype.respond, "respond"), o(ReadableStreamBYOBRequest.prototype.respondWithNewView, "respondWithNewView"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(ReadableStreamBYOBRequest.prototype, Symbol.toStringTag, { value: "ReadableStreamBYOBRequest", configurable: true });
+  var ReadableByteStreamController = class {
+    constructor() {
+      throw new TypeError("Illegal constructor");
+    }
+    get byobRequest() {
+      if (!Oe(this)) throw nt("byobRequest");
+      return Ke(this);
+    }
+    get desiredSize() {
+      if (!Oe(this)) throw nt("desiredSize");
+      return Ze(this);
+    }
+    close() {
+      if (!Oe(this)) throw nt("close");
+      if (this._closeRequested) throw new TypeError("The stream has already been closed; do not close it again!");
+      const e2 = this._controlledReadableByteStream._state;
+      if ("readable" !== e2) throw new TypeError(`The stream (in ${e2} state) is not in the readable state and cannot be closed`);
+      Ue(this);
+    }
+    enqueue(e2) {
+      if (!Oe(this)) throw nt("enqueue");
+      if (M(e2, 1, "enqueue"), !ArrayBuffer.isView(e2)) throw new TypeError("chunk must be an array buffer view");
+      if (0 === e2.byteLength) throw new TypeError("chunk must have non-zero byteLength");
+      if (0 === e2.buffer.byteLength) throw new TypeError("chunk's buffer must have non-zero byteLength");
+      if (this._closeRequested) throw new TypeError("stream is closed or draining");
+      const t2 = this._controlledReadableByteStream._state;
+      if ("readable" !== t2) throw new TypeError(`The stream (in ${t2} state) is not in the readable state and cannot be enqueued to`);
+      Ge(this, e2);
+    }
+    error(e2 = void 0) {
+      if (!Oe(this)) throw nt("error");
+      Xe(this, e2);
+    }
+    [T](e2) {
+      ke(this), qe(this);
+      const t2 = this._cancelAlgorithm(e2);
+      return Ve(this), t2;
+    }
+    [P](e2) {
+      const t2 = this._controlledReadableByteStream;
+      if (this._queueTotalSize > 0) return void Je(this, e2);
+      const r2 = this._autoAllocateChunkSize;
+      if (void 0 !== r2) {
+        let t3;
+        try {
+          t3 = new ArrayBuffer(r2);
+        } catch (t4) {
+          return void e2._errorSteps(t4);
+        }
+        const o2 = { buffer: t3, bufferByteLength: r2, byteOffset: 0, byteLength: r2, bytesFilled: 0, minimumFill: 1, elementSize: 1, viewConstructor: Uint8Array, readerType: "default" };
+        this._pendingPullIntos.push(o2);
+      }
+      U(t2, e2), je(this);
+    }
+    [C]() {
+      return this._queueTotalSize > 0;
+    }
+    [q]() {
+      if (this._pendingPullIntos.length > 0) {
+        const e2 = this._pendingPullIntos.peek();
+        e2.readerType = "none", this._pendingPullIntos = new v(), this._pendingPullIntos.push(e2);
+      }
+    }
+  };
+  function Oe(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_controlledReadableByteStream") && e2 instanceof ReadableByteStreamController);
+  }
+  function Be(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_associatedReadableByteStreamController") && e2 instanceof ReadableStreamBYOBRequest);
+  }
+  function je(e2) {
+    const t2 = (function(e3) {
+      const t3 = e3._controlledReadableByteStream;
+      if ("readable" !== t3._state) return false;
+      if (e3._closeRequested) return false;
+      if (!e3._started) return false;
+      if (J(t3) && X(t3) > 0) return true;
+      if (ut(t3) && lt(t3) > 0) return true;
+      const r2 = Ze(e3);
+      if (r2 > 0) return true;
+      return false;
+    })(e2);
+    if (!t2) return;
+    if (e2._pulling) return void (e2._pullAgain = true);
+    e2._pulling = true;
+    h(e2._pullAlgorithm(), () => (e2._pulling = false, e2._pullAgain && (e2._pullAgain = false, je(e2)), null), (t3) => (Xe(e2, t3), null));
+  }
+  function ke(e2) {
+    xe(e2), e2._pendingPullIntos = new v();
+  }
+  function Ae(e2, t2) {
+    let r2 = false;
+    "closed" === e2._state && (r2 = true);
+    const o2 = De(t2);
+    "default" === t2.readerType ? G(e2, o2, r2) : (function(e3, t3, r3) {
+      const o3 = e3._reader, n2 = o3._readIntoRequests.shift();
+      r3 ? n2._closeSteps(t3) : n2._chunkSteps(t3);
+    })(e2, o2, r2);
+  }
+  function ze(e2, t2) {
+    for (let r2 = 0; r2 < t2.length; ++r2) Ae(e2, t2[r2]);
+  }
+  function De(e2) {
+    const t2 = e2.bytesFilled, r2 = e2.elementSize;
+    return new e2.viewConstructor(e2.buffer, e2.byteOffset, t2 / r2);
+  }
+  function Fe(e2, t2, r2, o2) {
+    e2._queue.push({ buffer: t2, byteOffset: r2, byteLength: o2 }), e2._queueTotalSize += o2;
+  }
+  function Le(e2, t2, r2, o2) {
+    let n2;
+    try {
+      n2 = fe(t2, r2, r2 + o2);
+    } catch (t3) {
+      throw Xe(e2, t3), t3;
+    }
+    Fe(e2, n2, 0, o2);
+  }
+  function Ie(e2, t2) {
+    t2.bytesFilled > 0 && Le(e2, t2.buffer, t2.byteOffset, t2.bytesFilled), He(e2);
+  }
+  function $e(e2, t2) {
+    const r2 = Math.min(e2._queueTotalSize, t2.byteLength - t2.bytesFilled), o2 = t2.bytesFilled + r2;
+    let n2 = r2, i2 = false;
+    const a2 = o2 - o2 % t2.elementSize;
+    a2 >= t2.minimumFill && (n2 = a2 - t2.bytesFilled, i2 = true);
+    const s2 = e2._queue;
+    for (; n2 > 0; ) {
+      const r3 = s2.peek(), o3 = Math.min(n2, r3.byteLength), i3 = t2.byteOffset + t2.bytesFilled;
+      ue(t2.buffer, i3, r3.buffer, r3.byteOffset, o3), r3.byteLength === o3 ? s2.shift() : (r3.byteOffset += o3, r3.byteLength -= o3), e2._queueTotalSize -= o3, Me(e2, o3, t2), n2 -= o3;
+    }
+    return i2;
+  }
+  function Me(e2, t2, r2) {
+    r2.bytesFilled += t2;
+  }
+  function Ye(e2) {
+    0 === e2._queueTotalSize && e2._closeRequested ? (Ve(e2), Yr(e2._controlledReadableByteStream)) : je(e2);
+  }
+  function xe(e2) {
+    null !== e2._byobRequest && (e2._byobRequest._associatedReadableByteStreamController = void 0, e2._byobRequest._view = null, e2._byobRequest = null);
+  }
+  function Qe(e2) {
+    const t2 = [];
+    for (; e2._pendingPullIntos.length > 0 && 0 !== e2._queueTotalSize; ) {
+      const r2 = e2._pendingPullIntos.peek();
+      $e(e2, r2) && (He(e2), t2.push(r2));
+    }
+    return t2;
+  }
+  function Ne(e2, t2) {
+    const r2 = e2._pendingPullIntos.peek();
+    xe(e2);
+    "closed" === e2._controlledReadableByteStream._state ? (function(e3, t3) {
+      "none" === t3.readerType && He(e3);
+      const r3 = e3._controlledReadableByteStream;
+      if (ut(r3)) {
+        const t4 = [];
+        for (; t4.length < lt(r3); ) t4.push(He(e3));
+        ze(r3, t4);
+      }
+    })(e2, r2) : (function(e3, t3, r3) {
+      if (Me(0, t3, r3), "none" === r3.readerType) {
+        Ie(e3, r3);
+        const t4 = Qe(e3);
+        return void ze(e3._controlledReadableByteStream, t4);
+      }
+      if (r3.bytesFilled < r3.minimumFill) return;
+      He(e3);
+      const o2 = r3.bytesFilled % r3.elementSize;
+      if (o2 > 0) {
+        const t4 = r3.byteOffset + r3.bytesFilled;
+        Le(e3, r3.buffer, t4 - o2, o2);
+      }
+      r3.bytesFilled -= o2;
+      const n2 = Qe(e3);
+      Ae(e3._controlledReadableByteStream, r3), ze(e3._controlledReadableByteStream, n2);
+    })(e2, t2, r2), je(e2);
+  }
+  function He(e2) {
+    return e2._pendingPullIntos.shift();
+  }
+  function Ve(e2) {
+    e2._pullAlgorithm = void 0, e2._cancelAlgorithm = void 0;
+  }
+  function Ue(e2) {
+    const t2 = e2._controlledReadableByteStream;
+    if (!e2._closeRequested && "readable" === t2._state) if (e2._queueTotalSize > 0) e2._closeRequested = true;
+    else {
+      if (e2._pendingPullIntos.length > 0) {
+        const t3 = e2._pendingPullIntos.peek();
+        if (t3.bytesFilled % t3.elementSize !== 0) {
+          const t4 = new TypeError("Insufficient bytes to fill elements in the given buffer");
+          throw Xe(e2, t4), t4;
+        }
+      }
+      Ve(e2), Yr(t2);
+    }
+  }
+  function Ge(e2, t2) {
+    const r2 = e2._controlledReadableByteStream;
+    if (e2._closeRequested || "readable" !== r2._state) return;
+    const { buffer: o2, byteOffset: n2, byteLength: i2 } = t2;
+    if (de(o2)) throw new TypeError("chunk's buffer is detached and so cannot be enqueued");
+    const a2 = ce(o2);
+    if (e2._pendingPullIntos.length > 0) {
+      const t3 = e2._pendingPullIntos.peek();
+      if (de(t3.buffer)) throw new TypeError("The BYOB request's buffer has been detached and so cannot be filled with an enqueued chunk");
+      xe(e2), t3.buffer = ce(t3.buffer), "none" === t3.readerType && Ie(e2, t3);
+    }
+    if (J(r2)) if ((function(e3) {
+      const t3 = e3._controlledReadableByteStream._reader;
+      for (; t3._readRequests.length > 0; ) {
+        if (0 === e3._queueTotalSize) return;
+        Je(e3, t3._readRequests.shift());
+      }
+    })(e2), 0 === X(r2)) Fe(e2, a2, n2, i2);
+    else {
+      e2._pendingPullIntos.length > 0 && He(e2);
+      G(r2, new Uint8Array(a2, n2, i2), false);
+    }
+    else if (ut(r2)) {
+      Fe(e2, a2, n2, i2);
+      ze(r2, Qe(e2));
+    } else Fe(e2, a2, n2, i2);
+    je(e2);
+  }
+  function Xe(e2, t2) {
+    const r2 = e2._controlledReadableByteStream;
+    "readable" === r2._state && (ke(e2), qe(e2), Ve(e2), xr(r2, t2));
+  }
+  function Je(e2, t2) {
+    const r2 = e2._queue.shift();
+    e2._queueTotalSize -= r2.byteLength, Ye(e2);
+    const o2 = new Uint8Array(r2.buffer, r2.byteOffset, r2.byteLength);
+    t2._chunkSteps(o2);
+  }
+  function Ke(e2) {
+    if (null === e2._byobRequest && e2._pendingPullIntos.length > 0) {
+      const t2 = e2._pendingPullIntos.peek(), r2 = new Uint8Array(t2.buffer, t2.byteOffset + t2.bytesFilled, t2.byteLength - t2.bytesFilled), o2 = Object.create(ReadableStreamBYOBRequest.prototype);
+      !(function(e3, t3, r3) {
+        e3._associatedReadableByteStreamController = t3, e3._view = r3;
+      })(o2, e2, r2), e2._byobRequest = o2;
+    }
+    return e2._byobRequest;
+  }
+  function Ze(e2) {
+    const t2 = e2._controlledReadableByteStream._state;
+    return "errored" === t2 ? null : "closed" === t2 ? 0 : e2._strategyHWM - e2._queueTotalSize;
+  }
+  function et(e2, t2) {
+    const r2 = e2._pendingPullIntos.peek();
+    if ("closed" === e2._controlledReadableByteStream._state) {
+      if (0 !== t2) throw new TypeError("bytesWritten must be 0 when calling respond() on a closed stream");
+    } else {
+      if (0 === t2) throw new TypeError("bytesWritten must be greater than 0 when calling respond() on a readable stream");
+      if (r2.bytesFilled + t2 > r2.byteLength) throw new RangeError("bytesWritten out of range");
+    }
+    r2.buffer = ce(r2.buffer), Ne(e2, t2);
+  }
+  function tt(e2, t2) {
+    const r2 = e2._pendingPullIntos.peek();
+    if ("closed" === e2._controlledReadableByteStream._state) {
+      if (0 !== t2.byteLength) throw new TypeError("The view's length must be 0 when calling respondWithNewView() on a closed stream");
+    } else if (0 === t2.byteLength) throw new TypeError("The view's length must be greater than 0 when calling respondWithNewView() on a readable stream");
+    if (r2.byteOffset + r2.bytesFilled !== t2.byteOffset) throw new RangeError("The region specified by view does not match byobRequest");
+    if (r2.bufferByteLength !== t2.buffer.byteLength) throw new RangeError("The buffer of view has different capacity than byobRequest");
+    if (r2.bytesFilled + t2.byteLength > r2.byteLength) throw new RangeError("The region specified by view is larger than byobRequest");
+    const o2 = t2.byteLength;
+    r2.buffer = ce(t2.buffer), Ne(e2, o2);
+  }
+  function rt(e2, t2, r2, o2, n2, i2, a2) {
+    t2._controlledReadableByteStream = e2, t2._pullAgain = false, t2._pulling = false, t2._byobRequest = null, t2._queue = t2._queueTotalSize = void 0, qe(t2), t2._closeRequested = false, t2._started = false, t2._strategyHWM = i2, t2._pullAlgorithm = o2, t2._cancelAlgorithm = n2, t2._autoAllocateChunkSize = a2, t2._pendingPullIntos = new v(), e2._readableStreamController = t2;
+    h(c(r2()), () => (t2._started = true, je(t2), null), (e3) => (Xe(t2, e3), null));
+  }
+  function ot(e2) {
+    return new TypeError(`ReadableStreamBYOBRequest.prototype.${e2} can only be used on a ReadableStreamBYOBRequest`);
+  }
+  function nt(e2) {
+    return new TypeError(`ReadableByteStreamController.prototype.${e2} can only be used on a ReadableByteStreamController`);
+  }
+  function it(e2, t2) {
+    if ("byob" !== (e2 = `${e2}`)) throw new TypeError(`${t2} '${e2}' is not a valid enumeration value for ReadableStreamReaderMode`);
+    return e2;
+  }
+  function at(e2) {
+    return new ReadableStreamBYOBReader(e2);
+  }
+  function st(e2, t2) {
+    e2._reader._readIntoRequests.push(t2);
+  }
+  function lt(e2) {
+    return e2._reader._readIntoRequests.length;
+  }
+  function ut(e2) {
+    const t2 = e2._reader;
+    return void 0 !== t2 && !!ft(t2);
+  }
+  Object.defineProperties(ReadableByteStreamController.prototype, { close: { enumerable: true }, enqueue: { enumerable: true }, error: { enumerable: true }, byobRequest: { enumerable: true }, desiredSize: { enumerable: true } }), o(ReadableByteStreamController.prototype.close, "close"), o(ReadableByteStreamController.prototype.enqueue, "enqueue"), o(ReadableByteStreamController.prototype.error, "error"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(ReadableByteStreamController.prototype, Symbol.toStringTag, { value: "ReadableByteStreamController", configurable: true });
+  var ReadableStreamBYOBReader = class {
+    constructor(e2) {
+      if (M(e2, 1, "ReadableStreamBYOBReader"), H(e2, "First parameter"), $r(e2)) throw new TypeError("This stream has already been locked for exclusive reading by another reader");
+      if (!Oe(e2._readableStreamController)) throw new TypeError("Cannot construct a ReadableStreamBYOBReader for a stream not constructed with a byte source");
+      E(this, e2), this._readIntoRequests = new v();
+    }
+    get closed() {
+      return ft(this) ? this._closedPromise : d(_t("closed"));
+    }
+    cancel(e2 = void 0) {
+      return ft(this) ? void 0 === this._ownerReadableStream ? d(B("cancel")) : W(this, e2) : d(_t("cancel"));
+    }
+    read(e2, t2 = {}) {
+      if (!ft(this)) return d(_t("read"));
+      if (!ArrayBuffer.isView(e2)) return d(new TypeError("view must be an array buffer view"));
+      if (0 === e2.byteLength) return d(new TypeError("view must have non-zero byteLength"));
+      if (0 === e2.buffer.byteLength) return d(new TypeError("view's buffer must have non-zero byteLength"));
+      if (de(e2.buffer)) return d(new TypeError("view's buffer has been detached"));
+      let r2;
+      try {
+        r2 = (function(e3, t3) {
+          var r3;
+          return L(e3, t3), { min: N(null !== (r3 = null == e3 ? void 0 : e3.min) && void 0 !== r3 ? r3 : 1, `${t3} has member 'min' that`) };
+        })(t2, "options");
+      } catch (e3) {
+        return d(e3);
+      }
+      const o2 = r2.min;
+      if (0 === o2) return d(new TypeError("options.min must be greater than 0"));
+      if ((function(e3) {
+        return Ee(e3.constructor);
+      })(e2)) {
+        if (o2 > e2.byteLength) return d(new RangeError("options.min must be less than or equal to view's byteLength"));
+      } else if (o2 > e2.length) return d(new RangeError("options.min must be less than or equal to view's length"));
+      if (void 0 === this._ownerReadableStream) return d(B("read from"));
+      const n2 = (function(e3, t3, r3) {
+        const o3 = e3._ownerReadableStream;
+        return "errored" === o3._state || (function(e4, t4, r4) {
+          const o4 = e4._controlledReadableByteStream, n3 = We(t4.constructor), { byteLength: i2 } = t4, a2 = r4 * n3;
+          return !(e4._pendingPullIntos.length > 0) && ("closed" === o4._state || e4._queueTotalSize >= a2);
+        })(o3._readableStreamController, t3, r3);
+      })(this, e2, o2) ? new dt() : new ct();
+      return ht(this, e2, o2, n2), n2._promise;
+    }
+    releaseLock() {
+      if (!ft(this)) throw _t("releaseLock");
+      void 0 !== this._ownerReadableStream && (function(e2) {
+        O(e2);
+        const t2 = new TypeError("Reader was released");
+        bt(e2, t2);
+      })(this);
+    }
+  };
+  Object.defineProperties(ReadableStreamBYOBReader.prototype, { cancel: { enumerable: true }, read: { enumerable: true }, releaseLock: { enumerable: true }, closed: { enumerable: true } }), o(ReadableStreamBYOBReader.prototype.cancel, "cancel"), o(ReadableStreamBYOBReader.prototype.read, "read"), o(ReadableStreamBYOBReader.prototype.releaseLock, "releaseLock"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(ReadableStreamBYOBReader.prototype, Symbol.toStringTag, { value: "ReadableStreamBYOBReader", configurable: true });
+  var ct = class {
+    constructor() {
+      this._promise = u((e2, t2) => {
+        this._resolvePromise = e2, this._rejectPromise = t2;
+      });
+    }
+    _chunkSteps(e2) {
+      this._resolvePromise({ value: e2, done: false });
+    }
+    _closeSteps(e2) {
+      this._resolvePromise({ value: e2, done: true });
+    }
+    _errorSteps(e2) {
+      this._rejectPromise(e2);
+    }
+  };
+  var dt = class {
+    constructor() {
+      this._promise = void 0;
+    }
+    _chunkSteps(e2) {
+      this._promise = l({ value: e2, done: false });
+    }
+    _closeSteps(e2) {
+      this._promise = l({ value: e2, done: true });
+    }
+    _errorSteps(e2) {
+      this._promise = d(e2);
+    }
+  };
+  function ft(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_readIntoRequests") && e2 instanceof ReadableStreamBYOBReader);
+  }
+  function ht(e2, t2, r2, o2) {
+    const n2 = e2._ownerReadableStream;
+    n2._disturbed = true, "errored" === n2._state ? o2._errorSteps(n2._storedError) : (function(e3, t3, r3, o3) {
+      const n3 = e3._controlledReadableByteStream, i2 = t3.constructor, a2 = We(i2), { byteOffset: s2, byteLength: l2 } = t3, u2 = r3 * a2;
+      let c2;
+      try {
+        c2 = ce(t3.buffer);
+      } catch (e4) {
+        return void o3._errorSteps(e4);
+      }
+      const d2 = { buffer: c2, bufferByteLength: c2.byteLength, byteOffset: s2, byteLength: l2, bytesFilled: 0, minimumFill: u2, elementSize: a2, viewConstructor: i2, readerType: "byob" };
+      if (e3._pendingPullIntos.length > 0) return e3._pendingPullIntos.push(d2), void st(n3, o3);
+      if ("closed" === n3._state) {
+        const e4 = new i2(d2.buffer, d2.byteOffset, 0);
+        return void o3._closeSteps(e4);
+      }
+      if (e3._queueTotalSize > 0) {
+        if ($e(e3, d2)) {
+          const t4 = De(d2);
+          return Ye(e3), void o3._chunkSteps(t4);
+        }
+        if (e3._closeRequested) {
+          const t4 = new TypeError("Insufficient bytes to fill elements in the given buffer");
+          return Xe(e3, t4), void o3._errorSteps(t4);
+        }
+      }
+      e3._pendingPullIntos.push(d2), st(n3, o3), je(e3);
+    })(n2._readableStreamController, t2, r2, o2);
+  }
+  function bt(e2, t2) {
+    const r2 = e2._readIntoRequests;
+    e2._readIntoRequests = new v(), r2.forEach((e3) => {
+      e3._errorSteps(t2);
+    });
+  }
+  function _t(e2) {
+    return new TypeError(`ReadableStreamBYOBReader.prototype.${e2} can only be used on a ReadableStreamBYOBReader`);
+  }
+  function mt(e2, t2) {
+    const { highWaterMark: r2 } = e2;
+    if (void 0 === r2) return t2;
+    if (Re(r2) || r2 < 0) throw new RangeError("Invalid highWaterMark");
+    return r2;
+  }
+  function pt(e2) {
+    const { size: t2 } = e2;
+    return t2 || (() => 1);
+  }
+  function yt(e2, t2) {
+    L(e2, t2);
+    const r2 = null == e2 ? void 0 : e2.highWaterMark, o2 = null == e2 ? void 0 : e2.size;
+    return { highWaterMark: void 0 === r2 ? void 0 : x(r2), size: void 0 === o2 ? void 0 : St(o2, `${t2} has member 'size' that`) };
+  }
+  function St(e2, t2) {
+    return I(e2, t2), (t3) => x(e2(t3));
+  }
+  function gt(e2, t2, r2) {
+    return I(e2, r2), (r3) => g(e2, t2, [r3]);
+  }
+  function vt(e2, t2, r2) {
+    return I(e2, r2), () => g(e2, t2, []);
+  }
+  function wt(e2, t2, r2) {
+    return I(e2, r2), (r3) => S(e2, t2, [r3]);
+  }
+  function Rt(e2, t2, r2) {
+    return I(e2, r2), (r3, o2) => g(e2, t2, [r3, o2]);
+  }
+  function Tt(e2, t2) {
+    if (!qt(e2)) throw new TypeError(`${t2} is not a WritableStream.`);
+  }
+  var WritableStream = class {
+    constructor(e2 = {}, t2 = {}) {
+      void 0 === e2 ? e2 = null : $(e2, "First parameter");
+      const r2 = yt(t2, "Second parameter"), o2 = (function(e3, t3) {
+        L(e3, t3);
+        const r3 = null == e3 ? void 0 : e3.abort, o3 = null == e3 ? void 0 : e3.close, n3 = null == e3 ? void 0 : e3.start, i2 = null == e3 ? void 0 : e3.type, a2 = null == e3 ? void 0 : e3.write;
+        return { abort: void 0 === r3 ? void 0 : gt(r3, e3, `${t3} has member 'abort' that`), close: void 0 === o3 ? void 0 : vt(o3, e3, `${t3} has member 'close' that`), start: void 0 === n3 ? void 0 : wt(n3, e3, `${t3} has member 'start' that`), write: void 0 === a2 ? void 0 : Rt(a2, e3, `${t3} has member 'write' that`), type: i2 };
+      })(e2, "First parameter");
+      Ct(this);
+      if (void 0 !== o2.type) throw new RangeError("Invalid type is specified");
+      const n2 = pt(r2);
+      !(function(e3, t3, r3, o3) {
+        const n3 = Object.create(WritableStreamDefaultController.prototype);
+        let i2, a2, s2, l2;
+        i2 = void 0 !== t3.start ? () => t3.start(n3) : () => {
+        };
+        a2 = void 0 !== t3.write ? (e4) => t3.write(e4, n3) : () => c(void 0);
+        s2 = void 0 !== t3.close ? () => t3.close() : () => c(void 0);
+        l2 = void 0 !== t3.abort ? (e4) => t3.abort(e4) : () => c(void 0);
+        Nt(e3, n3, i2, a2, s2, l2, r3, o3);
+      })(this, o2, mt(r2, 1), n2);
+    }
+    get locked() {
+      if (!qt(this)) throw Kt("locked");
+      return Et(this);
+    }
+    abort(e2 = void 0) {
+      return qt(this) ? Et(this) ? d(new TypeError("Cannot abort a stream that already has a writer")) : Wt(this, e2) : d(Kt("abort"));
+    }
+    close() {
+      return qt(this) ? Et(this) ? d(new TypeError("Cannot close a stream that already has a writer")) : At(this) ? d(new TypeError("Cannot close an already-closing stream")) : Ot(this) : d(Kt("close"));
+    }
+    getWriter() {
+      if (!qt(this)) throw Kt("getWriter");
+      return Pt(this);
+    }
+  };
+  function Pt(e2) {
+    return new WritableStreamDefaultWriter(e2);
+  }
+  function Ct(e2) {
+    e2._state = "writable", e2._storedError = void 0, e2._writer = void 0, e2._writableStreamController = void 0, e2._writeRequests = new v(), e2._inFlightWriteRequest = void 0, e2._closeRequest = void 0, e2._inFlightCloseRequest = void 0, e2._pendingAbortRequest = void 0, e2._backpressure = false;
+  }
+  function qt(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_writableStreamController") && e2 instanceof WritableStream);
+  }
+  function Et(e2) {
+    return void 0 !== e2._writer;
+  }
+  function Wt(e2, t2) {
+    var r2;
+    if ("closed" === e2._state || "errored" === e2._state) return c(void 0);
+    e2._writableStreamController._abortReason = t2, null === (r2 = e2._writableStreamController._abortController) || void 0 === r2 || r2.abort(t2);
+    const o2 = e2._state;
+    if ("closed" === o2 || "errored" === o2) return c(void 0);
+    if (void 0 !== e2._pendingAbortRequest) return e2._pendingAbortRequest._promise;
+    let n2 = false;
+    "erroring" === o2 && (n2 = true, t2 = void 0);
+    const i2 = u((r3, o3) => {
+      e2._pendingAbortRequest = { _promise: void 0, _resolve: r3, _reject: o3, _reason: t2, _wasAlreadyErroring: n2 };
+    });
+    return e2._pendingAbortRequest._promise = i2, n2 || jt(e2, t2), i2;
+  }
+  function Ot(e2) {
+    const t2 = e2._state;
+    if ("closed" === t2 || "errored" === t2) return d(new TypeError(`The stream (in ${t2} state) is not in the writable state and cannot be closed`));
+    const r2 = u((t3, r3) => {
+      const o3 = { _resolve: t3, _reject: r3 };
+      e2._closeRequest = o3;
+    }), o2 = e2._writer;
+    var n2;
+    return void 0 !== o2 && e2._backpressure && "writable" === t2 && cr(o2), Ce(n2 = e2._writableStreamController, xt, 0), Ut(n2), r2;
+  }
+  function Bt(e2, t2) {
+    "writable" !== e2._state ? kt(e2) : jt(e2, t2);
+  }
+  function jt(e2, t2) {
+    const r2 = e2._writableStreamController;
+    e2._state = "erroring", e2._storedError = t2;
+    const o2 = e2._writer;
+    void 0 !== o2 && $t(o2, t2), !(function(e3) {
+      if (void 0 === e3._inFlightWriteRequest && void 0 === e3._inFlightCloseRequest) return false;
+      return true;
+    })(e2) && r2._started && kt(e2);
+  }
+  function kt(e2) {
+    e2._state = "errored", e2._writableStreamController[R]();
+    const t2 = e2._storedError;
+    if (e2._writeRequests.forEach((e3) => {
+      e3._reject(t2);
+    }), e2._writeRequests = new v(), void 0 === e2._pendingAbortRequest) return void zt(e2);
+    const r2 = e2._pendingAbortRequest;
+    if (e2._pendingAbortRequest = void 0, r2._wasAlreadyErroring) return r2._reject(t2), void zt(e2);
+    h(e2._writableStreamController[w](r2._reason), () => (r2._resolve(), zt(e2), null), (t3) => (r2._reject(t3), zt(e2), null));
+  }
+  function At(e2) {
+    return void 0 !== e2._closeRequest || void 0 !== e2._inFlightCloseRequest;
+  }
+  function zt(e2) {
+    void 0 !== e2._closeRequest && (e2._closeRequest._reject(e2._storedError), e2._closeRequest = void 0);
+    const t2 = e2._writer;
+    void 0 !== t2 && nr(t2, e2._storedError);
+  }
+  function Dt(e2, t2) {
+    const r2 = e2._writer;
+    void 0 !== r2 && t2 !== e2._backpressure && (t2 ? (function(e3) {
+      ar(e3);
+    })(r2) : cr(r2)), e2._backpressure = t2;
+  }
+  Object.defineProperties(WritableStream.prototype, { abort: { enumerable: true }, close: { enumerable: true }, getWriter: { enumerable: true }, locked: { enumerable: true } }), o(WritableStream.prototype.abort, "abort"), o(WritableStream.prototype.close, "close"), o(WritableStream.prototype.getWriter, "getWriter"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(WritableStream.prototype, Symbol.toStringTag, { value: "WritableStream", configurable: true });
+  var WritableStreamDefaultWriter = class {
+    constructor(e2) {
+      if (M(e2, 1, "WritableStreamDefaultWriter"), Tt(e2, "First parameter"), Et(e2)) throw new TypeError("This stream has already been locked for exclusive writing by another writer");
+      this._ownerWritableStream = e2, e2._writer = this;
+      const t2 = e2._state;
+      if ("writable" === t2) !At(e2) && e2._backpressure ? ar(this) : lr(this), rr(this);
+      else if ("erroring" === t2) sr(this, e2._storedError), rr(this);
+      else if ("closed" === t2) lr(this), rr(r2 = this), ir(r2);
+      else {
+        const t3 = e2._storedError;
+        sr(this, t3), or(this, t3);
+      }
+      var r2;
+    }
+    get closed() {
+      return Ft(this) ? this._closedPromise : d(er("closed"));
+    }
+    get desiredSize() {
+      if (!Ft(this)) throw er("desiredSize");
+      if (void 0 === this._ownerWritableStream) throw tr("desiredSize");
+      return (function(e2) {
+        const t2 = e2._ownerWritableStream, r2 = t2._state;
+        if ("errored" === r2 || "erroring" === r2) return null;
+        if ("closed" === r2) return 0;
+        return Vt(t2._writableStreamController);
+      })(this);
+    }
+    get ready() {
+      return Ft(this) ? this._readyPromise : d(er("ready"));
+    }
+    abort(e2 = void 0) {
+      return Ft(this) ? void 0 === this._ownerWritableStream ? d(tr("abort")) : (function(e3, t2) {
+        return Wt(e3._ownerWritableStream, t2);
+      })(this, e2) : d(er("abort"));
+    }
+    close() {
+      if (!Ft(this)) return d(er("close"));
+      const e2 = this._ownerWritableStream;
+      return void 0 === e2 ? d(tr("close")) : At(e2) ? d(new TypeError("Cannot close an already-closing stream")) : Lt(this);
+    }
+    releaseLock() {
+      if (!Ft(this)) throw er("releaseLock");
+      void 0 !== this._ownerWritableStream && Mt(this);
+    }
+    write(e2 = void 0) {
+      return Ft(this) ? void 0 === this._ownerWritableStream ? d(tr("write to")) : Yt(this, e2) : d(er("write"));
+    }
+  };
+  function Ft(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_ownerWritableStream") && e2 instanceof WritableStreamDefaultWriter);
+  }
+  function Lt(e2) {
+    return Ot(e2._ownerWritableStream);
+  }
+  function It(e2, t2) {
+    "pending" === e2._closedPromiseState ? nr(e2, t2) : (function(e3, t3) {
+      or(e3, t3);
+    })(e2, t2);
+  }
+  function $t(e2, t2) {
+    "pending" === e2._readyPromiseState ? ur(e2, t2) : (function(e3, t3) {
+      sr(e3, t3);
+    })(e2, t2);
+  }
+  function Mt(e2) {
+    const t2 = e2._ownerWritableStream, r2 = new TypeError("Writer was released and can no longer be used to monitor the stream's closedness");
+    $t(e2, r2), It(e2, r2), t2._writer = void 0, e2._ownerWritableStream = void 0;
+  }
+  function Yt(e2, t2) {
+    const r2 = e2._ownerWritableStream, o2 = r2._writableStreamController, n2 = (function(e3, t3) {
+      if (void 0 === e3._strategySizeAlgorithm) return 1;
+      try {
+        return e3._strategySizeAlgorithm(t3);
+      } catch (t4) {
+        return Gt(e3, t4), 1;
+      }
+    })(o2, t2);
+    if (r2 !== e2._ownerWritableStream) return d(tr("write to"));
+    const i2 = r2._state;
+    if ("errored" === i2) return d(r2._storedError);
+    if (At(r2) || "closed" === i2) return d(new TypeError("The stream is closing or closed and cannot be written to"));
+    if ("erroring" === i2) return d(r2._storedError);
+    const a2 = (function(e3) {
+      return u((t3, r3) => {
+        const o3 = { _resolve: t3, _reject: r3 };
+        e3._writeRequests.push(o3);
+      });
+    })(r2);
+    return (function(e3, t3, r3) {
+      try {
+        Ce(e3, t3, r3);
+      } catch (t4) {
+        return void Gt(e3, t4);
+      }
+      const o3 = e3._controlledWritableStream;
+      if (!At(o3) && "writable" === o3._state) {
+        Dt(o3, Xt(e3));
+      }
+      Ut(e3);
+    })(o2, t2, n2), a2;
+  }
+  Object.defineProperties(WritableStreamDefaultWriter.prototype, { abort: { enumerable: true }, close: { enumerable: true }, releaseLock: { enumerable: true }, write: { enumerable: true }, closed: { enumerable: true }, desiredSize: { enumerable: true }, ready: { enumerable: true } }), o(WritableStreamDefaultWriter.prototype.abort, "abort"), o(WritableStreamDefaultWriter.prototype.close, "close"), o(WritableStreamDefaultWriter.prototype.releaseLock, "releaseLock"), o(WritableStreamDefaultWriter.prototype.write, "write"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(WritableStreamDefaultWriter.prototype, Symbol.toStringTag, { value: "WritableStreamDefaultWriter", configurable: true });
+  var xt = {};
+  var WritableStreamDefaultController = class {
+    constructor() {
+      throw new TypeError("Illegal constructor");
+    }
+    get abortReason() {
+      if (!Qt(this)) throw Zt("abortReason");
+      return this._abortReason;
+    }
+    get signal() {
+      if (!Qt(this)) throw Zt("signal");
+      if (void 0 === this._abortController) throw new TypeError("WritableStreamDefaultController.prototype.signal is not supported");
+      return this._abortController.signal;
+    }
+    error(e2 = void 0) {
+      if (!Qt(this)) throw Zt("error");
+      "writable" === this._controlledWritableStream._state && Jt(this, e2);
+    }
+    [w](e2) {
+      const t2 = this._abortAlgorithm(e2);
+      return Ht(this), t2;
+    }
+    [R]() {
+      qe(this);
+    }
+  };
+  function Qt(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_controlledWritableStream") && e2 instanceof WritableStreamDefaultController);
+  }
+  function Nt(e2, t2, r2, o2, n2, i2, a2, s2) {
+    t2._controlledWritableStream = e2, e2._writableStreamController = t2, t2._queue = void 0, t2._queueTotalSize = void 0, qe(t2), t2._abortReason = void 0, t2._abortController = (function() {
+      if ("function" == typeof AbortController) return new AbortController();
+    })(), t2._started = false, t2._strategySizeAlgorithm = s2, t2._strategyHWM = a2, t2._writeAlgorithm = o2, t2._closeAlgorithm = n2, t2._abortAlgorithm = i2;
+    const l2 = Xt(t2);
+    Dt(e2, l2);
+    h(c(r2()), () => (t2._started = true, Ut(t2), null), (r3) => (t2._started = true, Bt(e2, r3), null));
+  }
+  function Ht(e2) {
+    e2._writeAlgorithm = void 0, e2._closeAlgorithm = void 0, e2._abortAlgorithm = void 0, e2._strategySizeAlgorithm = void 0;
+  }
+  function Vt(e2) {
+    return e2._strategyHWM - e2._queueTotalSize;
+  }
+  function Ut(e2) {
+    const t2 = e2._controlledWritableStream;
+    if (!e2._started) return;
+    if (void 0 !== t2._inFlightWriteRequest) return;
+    if ("erroring" === t2._state) return void kt(t2);
+    if (0 === e2._queue.length) return;
+    const r2 = e2._queue.peek().value;
+    r2 === xt ? (function(e3) {
+      const t3 = e3._controlledWritableStream;
+      (function(e4) {
+        e4._inFlightCloseRequest = e4._closeRequest, e4._closeRequest = void 0;
+      })(t3), Pe(e3);
+      const r3 = e3._closeAlgorithm();
+      Ht(e3), h(r3, () => ((function(e4) {
+        e4._inFlightCloseRequest._resolve(void 0), e4._inFlightCloseRequest = void 0, "erroring" === e4._state && (e4._storedError = void 0, void 0 !== e4._pendingAbortRequest && (e4._pendingAbortRequest._resolve(), e4._pendingAbortRequest = void 0)), e4._state = "closed";
+        const t4 = e4._writer;
+        void 0 !== t4 && ir(t4);
+      })(t3), null), (e4) => ((function(e5, t4) {
+        e5._inFlightCloseRequest._reject(t4), e5._inFlightCloseRequest = void 0, void 0 !== e5._pendingAbortRequest && (e5._pendingAbortRequest._reject(t4), e5._pendingAbortRequest = void 0), Bt(e5, t4);
+      })(t3, e4), null));
+    })(e2) : (function(e3, t3) {
+      const r3 = e3._controlledWritableStream;
+      !(function(e4) {
+        e4._inFlightWriteRequest = e4._writeRequests.shift();
+      })(r3);
+      const o2 = e3._writeAlgorithm(t3);
+      h(o2, () => {
+        !(function(e4) {
+          e4._inFlightWriteRequest._resolve(void 0), e4._inFlightWriteRequest = void 0;
+        })(r3);
+        const t4 = r3._state;
+        if (Pe(e3), !At(r3) && "writable" === t4) {
+          const t5 = Xt(e3);
+          Dt(r3, t5);
+        }
+        return Ut(e3), null;
+      }, (t4) => ("writable" === r3._state && Ht(e3), (function(e4, t5) {
+        e4._inFlightWriteRequest._reject(t5), e4._inFlightWriteRequest = void 0, Bt(e4, t5);
+      })(r3, t4), null));
+    })(e2, r2);
+  }
+  function Gt(e2, t2) {
+    "writable" === e2._controlledWritableStream._state && Jt(e2, t2);
+  }
+  function Xt(e2) {
+    return Vt(e2) <= 0;
+  }
+  function Jt(e2, t2) {
+    const r2 = e2._controlledWritableStream;
+    Ht(e2), jt(r2, t2);
+  }
+  function Kt(e2) {
+    return new TypeError(`WritableStream.prototype.${e2} can only be used on a WritableStream`);
+  }
+  function Zt(e2) {
+    return new TypeError(`WritableStreamDefaultController.prototype.${e2} can only be used on a WritableStreamDefaultController`);
+  }
+  function er(e2) {
+    return new TypeError(`WritableStreamDefaultWriter.prototype.${e2} can only be used on a WritableStreamDefaultWriter`);
+  }
+  function tr(e2) {
+    return new TypeError("Cannot " + e2 + " a stream using a released writer");
+  }
+  function rr(e2) {
+    e2._closedPromise = u((t2, r2) => {
+      e2._closedPromise_resolve = t2, e2._closedPromise_reject = r2, e2._closedPromiseState = "pending";
+    });
+  }
+  function or(e2, t2) {
+    rr(e2), nr(e2, t2);
+  }
+  function nr(e2, t2) {
+    void 0 !== e2._closedPromise_reject && (p(e2._closedPromise), e2._closedPromise_reject(t2), e2._closedPromise_resolve = void 0, e2._closedPromise_reject = void 0, e2._closedPromiseState = "rejected");
+  }
+  function ir(e2) {
+    void 0 !== e2._closedPromise_resolve && (e2._closedPromise_resolve(void 0), e2._closedPromise_resolve = void 0, e2._closedPromise_reject = void 0, e2._closedPromiseState = "resolved");
+  }
+  function ar(e2) {
+    e2._readyPromise = u((t2, r2) => {
+      e2._readyPromise_resolve = t2, e2._readyPromise_reject = r2;
+    }), e2._readyPromiseState = "pending";
+  }
+  function sr(e2, t2) {
+    ar(e2), ur(e2, t2);
+  }
+  function lr(e2) {
+    ar(e2), cr(e2);
+  }
+  function ur(e2, t2) {
+    void 0 !== e2._readyPromise_reject && (p(e2._readyPromise), e2._readyPromise_reject(t2), e2._readyPromise_resolve = void 0, e2._readyPromise_reject = void 0, e2._readyPromiseState = "rejected");
+  }
+  function cr(e2) {
+    void 0 !== e2._readyPromise_resolve && (e2._readyPromise_resolve(void 0), e2._readyPromise_resolve = void 0, e2._readyPromise_reject = void 0, e2._readyPromiseState = "fulfilled");
+  }
+  Object.defineProperties(WritableStreamDefaultController.prototype, { abortReason: { enumerable: true }, signal: { enumerable: true }, error: { enumerable: true } }), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(WritableStreamDefaultController.prototype, Symbol.toStringTag, { value: "WritableStreamDefaultController", configurable: true });
+  var dr = "undefined" != typeof globalThis ? globalThis : "undefined" != typeof self ? self : "undefined" != typeof global ? global : void 0;
+  var fr = (function() {
+    const e2 = null == dr ? void 0 : dr.DOMException;
+    return (function(e3) {
+      if ("function" != typeof e3 && "object" != typeof e3) return false;
+      if ("DOMException" !== e3.name) return false;
+      try {
+        return new e3(), true;
+      } catch (e4) {
+        return false;
+      }
+    })(e2) ? e2 : void 0;
+  })() || (function() {
+    const e2 = function(e3, t2) {
+      this.message = e3 || "", this.name = t2 || "Error", Error.captureStackTrace && Error.captureStackTrace(this, this.constructor);
+    };
+    return o(e2, "DOMException"), e2.prototype = Object.create(Error.prototype), Object.defineProperty(e2.prototype, "constructor", { value: e2, writable: true, configurable: true }), e2;
+  })();
+  function hr(e2, t2, r2, o2, n2, i2) {
+    const a2 = V(e2), s2 = Pt(t2);
+    e2._disturbed = true;
+    const l2 = new br(s2), _2 = new mr(l2);
+    return u((m2, y2) => {
+      let S2;
+      if (void 0 !== i2) {
+        if (S2 = () => {
+          const r3 = void 0 !== i2.reason ? i2.reason : new fr("Aborted", "AbortError"), a3 = [];
+          o2 || a3.push(() => "writable" === t2._state ? Wt(t2, r3) : c(void 0)), n2 || a3.push(() => "readable" === e2._state ? Mr(e2, r3) : c(void 0)), T2(() => Promise.all(a3.map((e3) => e3())), true, r3);
+        }, i2.aborted) return void S2();
+        i2.addEventListener("abort", S2);
+      }
+      function g2() {
+        for (; !l2._shuttingDown && !t2._backpressure && "writable" === t2._state && !At(t2) && "readable" === e2._state && re(a2); ) te(a2, _2);
+        if (l2._shuttingDown) return c(true);
+        if (t2._backpressure) return f(s2._readyPromise, g2);
+        const r3 = new _r(l2);
+        return te(a2, r3), r3._promise;
+      }
+      var v2, w2, R2;
+      if (pr(e2, a2._closedPromise, (e3) => (o2 ? P2(true, e3) : T2(() => Wt(t2, e3), true, e3), null)), pr(t2, s2._closedPromise, (t3) => (n2 ? P2(true, t3) : T2(() => Mr(e2, t3), true, t3), null)), v2 = e2, w2 = a2._closedPromise, R2 = () => (r2 ? P2() : T2(() => (function(e3) {
+        const t3 = e3._ownerWritableStream, r3 = t3._state;
+        return At(t3) || "closed" === r3 ? c(void 0) : "errored" === r3 ? d(t3._storedError) : Lt(e3);
+      })(s2)), null), "closed" === v2._state ? R2() : b(w2, R2), At(t2) || "closed" === t2._state) {
+        const t3 = new TypeError("the destination writable stream closed before all data could be piped to it");
+        n2 ? P2(true, t3) : T2(() => Mr(e2, t3), true, t3);
+      }
+      function T2(e3, r3, o3) {
+        function n3() {
+          return h(e3(), () => C2(r3, o3), (e4) => C2(true, e4)), null;
+        }
+        l2._shuttingDown || (l2._shuttingDown = true, "writable" !== t2._state || At(t2) ? n3() : b(l2._waitForWritesToFinish(), n3));
+      }
+      function P2(e3, r3) {
+        l2._shuttingDown || (l2._shuttingDown = true, "writable" !== t2._state || At(t2) ? C2(e3, r3) : b(l2._waitForWritesToFinish(), () => C2(e3, r3)));
+      }
+      function C2(e3, t3) {
+        return Mt(s2), O(a2), void 0 !== i2 && i2.removeEventListener("abort", S2), e3 ? y2(t3) : m2(void 0), null;
+      }
+      p(u((e3, t3) => {
+        !(function r3(o3) {
+          o3 ? e3() : f(g2(), r3, t3);
+        })(false);
+      }));
+    });
+  }
+  var br = class {
+    constructor(e2) {
+      this._writer = e2, this._shuttingDown = false, this._currentWrite = c(void 0);
+    }
+    _waitForWritesToFinish() {
+      const e2 = this._currentWrite;
+      return f(this._currentWrite, () => e2 !== this._currentWrite ? this._waitForWritesToFinish() : void 0);
+    }
+  };
+  var _r = class {
+    constructor(e2) {
+      this._state = e2, this._promise = u((e3, t2) => {
+        this._resolvePromise = e3, this._rejectPromise = t2;
+      });
+    }
+    _chunkSteps(t2) {
+      this._state._currentWrite = f(Yt(this._state._writer, t2), void 0, e), this._resolvePromise(false);
+    }
+    _closeSteps() {
+      this._resolvePromise(true);
+    }
+    _errorSteps(e2) {
+      this._rejectPromise(e2);
+    }
+  };
+  var mr = class {
+    constructor(e2) {
+      this._state = e2;
+    }
+    _chunkSteps(t2) {
+      this._state._currentWrite = f(Yt(this._state._writer, t2), void 0, e);
+    }
+    _closeSteps() {
+    }
+    _errorSteps(e2) {
+    }
+  };
+  function pr(e2, t2, r2) {
+    "errored" === e2._state ? r2(e2._storedError) : _(t2, r2);
+  }
+  var ReadableStreamDefaultController = class {
+    constructor() {
+      throw new TypeError("Illegal constructor");
+    }
+    get desiredSize() {
+      if (!yr(this)) throw Er("desiredSize");
+      return Pr(this);
+    }
+    close() {
+      if (!yr(this)) throw Er("close");
+      if (!Cr(this)) throw new TypeError("The stream is not in a state that permits close");
+      wr(this);
+    }
+    enqueue(e2 = void 0) {
+      if (!yr(this)) throw Er("enqueue");
+      if (!Cr(this)) throw new TypeError("The stream is not in a state that permits enqueue");
+      return Rr(this, e2);
+    }
+    error(e2 = void 0) {
+      if (!yr(this)) throw Er("error");
+      Tr(this, e2);
+    }
+    [T](e2) {
+      qe(this);
+      const t2 = this._cancelAlgorithm(e2);
+      return vr(this), t2;
+    }
+    [P](e2) {
+      const t2 = this._controlledReadableStream;
+      if (this._queue.length > 0) {
+        const r2 = Pe(this);
+        this._closeRequested && 0 === this._queue.length ? (vr(this), Yr(t2)) : Sr(this), e2._chunkSteps(r2);
+      } else U(t2, e2), Sr(this);
+    }
+    [C]() {
+      return this._queue.length > 0;
+    }
+    [q]() {
+    }
+  };
+  function yr(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_controlledReadableStream") && e2 instanceof ReadableStreamDefaultController);
+  }
+  function Sr(e2) {
+    if (!gr(e2)) return;
+    if (e2._pulling) return void (e2._pullAgain = true);
+    e2._pulling = true;
+    h(e2._pullAlgorithm(), () => (e2._pulling = false, e2._pullAgain && (e2._pullAgain = false, Sr(e2)), null), (t2) => (Tr(e2, t2), null));
+  }
+  function gr(e2) {
+    const t2 = e2._controlledReadableStream;
+    if (!Cr(e2)) return false;
+    if (!e2._started) return false;
+    if ($r(t2) && X(t2) > 0) return true;
+    return Pr(e2) > 0;
+  }
+  function vr(e2) {
+    e2._pullAlgorithm = void 0, e2._cancelAlgorithm = void 0, e2._strategySizeAlgorithm = void 0;
+  }
+  function wr(e2) {
+    if (!Cr(e2)) return;
+    const t2 = e2._controlledReadableStream;
+    e2._closeRequested = true, 0 === e2._queue.length && (vr(e2), Yr(t2));
+  }
+  function Rr(e2, t2) {
+    if (!Cr(e2)) return;
+    const r2 = e2._controlledReadableStream;
+    if ($r(r2) && X(r2) > 0) G(r2, t2, false);
+    else {
+      let r3;
+      try {
+        r3 = e2._strategySizeAlgorithm(t2);
+      } catch (t3) {
+        throw Tr(e2, t3), t3;
+      }
+      try {
+        Ce(e2, t2, r3);
+      } catch (t3) {
+        throw Tr(e2, t3), t3;
+      }
+    }
+    Sr(e2);
+  }
+  function Tr(e2, t2) {
+    const r2 = e2._controlledReadableStream;
+    "readable" === r2._state && (qe(e2), vr(e2), xr(r2, t2));
+  }
+  function Pr(e2) {
+    const t2 = e2._controlledReadableStream._state;
+    return "errored" === t2 ? null : "closed" === t2 ? 0 : e2._strategyHWM - e2._queueTotalSize;
+  }
+  function Cr(e2) {
+    const t2 = e2._controlledReadableStream._state;
+    return !e2._closeRequested && "readable" === t2;
+  }
+  function qr(e2, t2, r2, o2, n2, i2, a2) {
+    t2._controlledReadableStream = e2, t2._queue = void 0, t2._queueTotalSize = void 0, qe(t2), t2._started = false, t2._closeRequested = false, t2._pullAgain = false, t2._pulling = false, t2._strategySizeAlgorithm = a2, t2._strategyHWM = i2, t2._pullAlgorithm = o2, t2._cancelAlgorithm = n2, e2._readableStreamController = t2;
+    h(c(r2()), () => (t2._started = true, Sr(t2), null), (e3) => (Tr(t2, e3), null));
+  }
+  function Er(e2) {
+    return new TypeError(`ReadableStreamDefaultController.prototype.${e2} can only be used on a ReadableStreamDefaultController`);
+  }
+  function Wr(e2, t2) {
+    return Oe(e2._readableStreamController) ? (function(e3) {
+      let t3, r2, o2, n2, i2, a2 = V(e3), s2 = false, l2 = false, d2 = false, f2 = false, h2 = false;
+      const b2 = u((e4) => {
+        i2 = e4;
+      });
+      function m2(e4) {
+        _(e4._closedPromise, (t4) => (e4 !== a2 || (Xe(o2._readableStreamController, t4), Xe(n2._readableStreamController, t4), f2 && h2 || i2(void 0)), null));
+      }
+      function p2() {
+        ft(a2) && (O(a2), a2 = V(e3), m2(a2));
+        te(a2, { _chunkSteps: (t4) => {
+          y(() => {
+            l2 = false, d2 = false;
+            const r3 = t4;
+            let a3 = t4;
+            if (!f2 && !h2) try {
+              a3 = Te(t4);
+            } catch (t5) {
+              return Xe(o2._readableStreamController, t5), Xe(n2._readableStreamController, t5), void i2(Mr(e3, t5));
+            }
+            f2 || Ge(o2._readableStreamController, r3), h2 || Ge(n2._readableStreamController, a3), s2 = false, l2 ? g2() : d2 && v2();
+          });
+        }, _closeSteps: () => {
+          s2 = false, f2 || Ue(o2._readableStreamController), h2 || Ue(n2._readableStreamController), o2._readableStreamController._pendingPullIntos.length > 0 && et(o2._readableStreamController, 0), n2._readableStreamController._pendingPullIntos.length > 0 && et(n2._readableStreamController, 0), f2 && h2 || i2(void 0);
+        }, _errorSteps: () => {
+          s2 = false;
+        } });
+      }
+      function S2(t4, r3) {
+        ee(a2) && (O(a2), a2 = at(e3), m2(a2));
+        const u2 = r3 ? n2 : o2, c2 = r3 ? o2 : n2;
+        ht(a2, t4, 1, { _chunkSteps: (t5) => {
+          y(() => {
+            l2 = false, d2 = false;
+            const o3 = r3 ? h2 : f2;
+            if (r3 ? f2 : h2) o3 || tt(u2._readableStreamController, t5);
+            else {
+              let r4;
+              try {
+                r4 = Te(t5);
+              } catch (t6) {
+                return Xe(u2._readableStreamController, t6), Xe(c2._readableStreamController, t6), void i2(Mr(e3, t6));
+              }
+              o3 || tt(u2._readableStreamController, t5), Ge(c2._readableStreamController, r4);
+            }
+            s2 = false, l2 ? g2() : d2 && v2();
+          });
+        }, _closeSteps: (e4) => {
+          s2 = false;
+          const t5 = r3 ? h2 : f2, o3 = r3 ? f2 : h2;
+          t5 || Ue(u2._readableStreamController), o3 || Ue(c2._readableStreamController), void 0 !== e4 && (t5 || tt(u2._readableStreamController, e4), !o3 && c2._readableStreamController._pendingPullIntos.length > 0 && et(c2._readableStreamController, 0)), t5 && o3 || i2(void 0);
+        }, _errorSteps: () => {
+          s2 = false;
+        } });
+      }
+      function g2() {
+        if (s2) return l2 = true, c(void 0);
+        s2 = true;
+        const e4 = Ke(o2._readableStreamController);
+        return null === e4 ? p2() : S2(e4._view, false), c(void 0);
+      }
+      function v2() {
+        if (s2) return d2 = true, c(void 0);
+        s2 = true;
+        const e4 = Ke(n2._readableStreamController);
+        return null === e4 ? p2() : S2(e4._view, true), c(void 0);
+      }
+      function w2(o3) {
+        if (f2 = true, t3 = o3, h2) {
+          const o4 = le([t3, r2]), n3 = Mr(e3, o4);
+          i2(n3);
+        }
+        return b2;
+      }
+      function R2(o3) {
+        if (h2 = true, r2 = o3, f2) {
+          const o4 = le([t3, r2]), n3 = Mr(e3, o4);
+          i2(n3);
+        }
+        return b2;
+      }
+      function T2() {
+      }
+      return o2 = Fr(T2, g2, w2), n2 = Fr(T2, v2, R2), m2(a2), [o2, n2];
+    })(e2) : (function(e3) {
+      const t3 = V(e3);
+      let r2, o2, n2, i2, a2, s2 = false, l2 = false, d2 = false, f2 = false;
+      const h2 = u((e4) => {
+        a2 = e4;
+      });
+      function b2() {
+        if (s2) return l2 = true, c(void 0);
+        s2 = true;
+        return te(t3, { _chunkSteps: (e4) => {
+          y(() => {
+            l2 = false;
+            const t4 = e4, r3 = e4;
+            d2 || Rr(n2._readableStreamController, t4), f2 || Rr(i2._readableStreamController, r3), s2 = false, l2 && b2();
+          });
+        }, _closeSteps: () => {
+          s2 = false, d2 || wr(n2._readableStreamController), f2 || wr(i2._readableStreamController), d2 && f2 || a2(void 0);
+        }, _errorSteps: () => {
+          s2 = false;
+        } }), c(void 0);
+      }
+      function m2(t4) {
+        if (d2 = true, r2 = t4, f2) {
+          const t5 = le([r2, o2]), n3 = Mr(e3, t5);
+          a2(n3);
+        }
+        return h2;
+      }
+      function p2(t4) {
+        if (f2 = true, o2 = t4, d2) {
+          const t5 = le([r2, o2]), n3 = Mr(e3, t5);
+          a2(n3);
+        }
+        return h2;
+      }
+      function S2() {
+      }
+      return n2 = Dr(S2, b2, m2), i2 = Dr(S2, b2, p2), _(t3._closedPromise, (e4) => (Tr(n2._readableStreamController, e4), Tr(i2._readableStreamController, e4), d2 && f2 || a2(void 0), null)), [n2, i2];
+    })(e2);
+  }
+  function Or(r2) {
+    return t(o2 = r2) && void 0 !== o2.getReader ? (function(r3) {
+      let o3;
+      function n2() {
+        let e2;
+        try {
+          e2 = r3.read();
+        } catch (e3) {
+          return d(e3);
+        }
+        return m(e2, (e3) => {
+          if (!t(e3)) throw new TypeError("The promise returned by the reader.read() method must fulfill with an object");
+          if (e3.done) wr(o3._readableStreamController);
+          else {
+            const t2 = e3.value;
+            Rr(o3._readableStreamController, t2);
+          }
+        });
+      }
+      function i2(e2) {
+        try {
+          return c(r3.cancel(e2));
+        } catch (e3) {
+          return d(e3);
+        }
+      }
+      return o3 = Dr(e, n2, i2, 0), o3;
+    })(r2.getReader()) : (function(r3) {
+      let o3;
+      const n2 = me(r3, "async");
+      function i2() {
+        let e2;
+        try {
+          e2 = pe(n2);
+        } catch (e3) {
+          return d(e3);
+        }
+        return m(c(e2), (e3) => {
+          if (!t(e3)) throw new TypeError("The promise returned by the iterator.next() method must fulfill with an object");
+          if (e3.done) wr(o3._readableStreamController);
+          else {
+            const t2 = e3.value;
+            Rr(o3._readableStreamController, t2);
+          }
+        });
+      }
+      function a2(e2) {
+        const r4 = n2.iterator;
+        let o4;
+        try {
+          o4 = he(r4, "return");
+        } catch (e3) {
+          return d(e3);
+        }
+        if (void 0 === o4) return c(void 0);
+        return m(g(o4, r4, [e2]), (e3) => {
+          if (!t(e3)) throw new TypeError("The promise returned by the iterator.return() method must fulfill with an object");
+        });
+      }
+      return o3 = Dr(e, i2, a2, 0), o3;
+    })(r2);
+    var o2;
+  }
+  function Br(e2, t2, r2) {
+    return I(e2, r2), (r3) => g(e2, t2, [r3]);
+  }
+  function jr(e2, t2, r2) {
+    return I(e2, r2), (r3) => g(e2, t2, [r3]);
+  }
+  function kr(e2, t2, r2) {
+    return I(e2, r2), (r3) => S(e2, t2, [r3]);
+  }
+  function Ar(e2, t2) {
+    if ("bytes" !== (e2 = `${e2}`)) throw new TypeError(`${t2} '${e2}' is not a valid enumeration value for ReadableStreamType`);
+    return e2;
+  }
+  function zr(e2, t2) {
+    L(e2, t2);
+    const r2 = null == e2 ? void 0 : e2.preventAbort, o2 = null == e2 ? void 0 : e2.preventCancel, n2 = null == e2 ? void 0 : e2.preventClose, i2 = null == e2 ? void 0 : e2.signal;
+    return void 0 !== i2 && (function(e3, t3) {
+      if (!(function(e4) {
+        if ("object" != typeof e4 || null === e4) return false;
+        try {
+          return "boolean" == typeof e4.aborted;
+        } catch (e5) {
+          return false;
+        }
+      })(e3)) throw new TypeError(`${t3} is not an AbortSignal.`);
+    })(i2, `${t2} has member 'signal' that`), { preventAbort: Boolean(r2), preventCancel: Boolean(o2), preventClose: Boolean(n2), signal: i2 };
+  }
+  Object.defineProperties(ReadableStreamDefaultController.prototype, { close: { enumerable: true }, enqueue: { enumerable: true }, error: { enumerable: true }, desiredSize: { enumerable: true } }), o(ReadableStreamDefaultController.prototype.close, "close"), o(ReadableStreamDefaultController.prototype.enqueue, "enqueue"), o(ReadableStreamDefaultController.prototype.error, "error"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(ReadableStreamDefaultController.prototype, Symbol.toStringTag, { value: "ReadableStreamDefaultController", configurable: true });
+  var ReadableStream2 = class {
+    constructor(e2 = {}, t2 = {}) {
+      void 0 === e2 ? e2 = null : $(e2, "First parameter");
+      const r2 = yt(t2, "Second parameter"), o2 = (function(e3, t3) {
+        L(e3, t3);
+        const r3 = e3, o3 = null == r3 ? void 0 : r3.autoAllocateChunkSize, n2 = null == r3 ? void 0 : r3.cancel, i2 = null == r3 ? void 0 : r3.pull, a2 = null == r3 ? void 0 : r3.start, s2 = null == r3 ? void 0 : r3.type;
+        return { autoAllocateChunkSize: void 0 === o3 ? void 0 : N(o3, `${t3} has member 'autoAllocateChunkSize' that`), cancel: void 0 === n2 ? void 0 : Br(n2, r3, `${t3} has member 'cancel' that`), pull: void 0 === i2 ? void 0 : jr(i2, r3, `${t3} has member 'pull' that`), start: void 0 === a2 ? void 0 : kr(a2, r3, `${t3} has member 'start' that`), type: void 0 === s2 ? void 0 : Ar(s2, `${t3} has member 'type' that`) };
+      })(e2, "First parameter");
+      if (Lr(this), "bytes" === o2.type) {
+        if (void 0 !== r2.size) throw new RangeError("The strategy for a byte stream cannot have a size function");
+        !(function(e3, t3, r3) {
+          const o3 = Object.create(ReadableByteStreamController.prototype);
+          let n2, i2, a2;
+          n2 = void 0 !== t3.start ? () => t3.start(o3) : () => {
+          }, i2 = void 0 !== t3.pull ? () => t3.pull(o3) : () => c(void 0), a2 = void 0 !== t3.cancel ? (e4) => t3.cancel(e4) : () => c(void 0);
+          const s2 = t3.autoAllocateChunkSize;
+          if (0 === s2) throw new TypeError("autoAllocateChunkSize must be greater than 0");
+          rt(e3, o3, n2, i2, a2, r3, s2);
+        })(this, o2, mt(r2, 0));
+      } else {
+        const e3 = pt(r2);
+        !(function(e4, t3, r3, o3) {
+          const n2 = Object.create(ReadableStreamDefaultController.prototype);
+          let i2, a2, s2;
+          i2 = void 0 !== t3.start ? () => t3.start(n2) : () => {
+          }, a2 = void 0 !== t3.pull ? () => t3.pull(n2) : () => c(void 0), s2 = void 0 !== t3.cancel ? (e5) => t3.cancel(e5) : () => c(void 0), qr(e4, n2, i2, a2, s2, r3, o3);
+        })(this, o2, mt(r2, 1), e3);
+      }
+    }
+    get locked() {
+      if (!Ir(this)) throw Qr("locked");
+      return $r(this);
+    }
+    cancel(e2 = void 0) {
+      return Ir(this) ? $r(this) ? d(new TypeError("Cannot cancel a stream that already has a reader")) : Mr(this, e2) : d(Qr("cancel"));
+    }
+    getReader(e2 = void 0) {
+      if (!Ir(this)) throw Qr("getReader");
+      return void 0 === (function(e3, t2) {
+        L(e3, t2);
+        const r2 = null == e3 ? void 0 : e3.mode;
+        return { mode: void 0 === r2 ? void 0 : it(r2, `${t2} has member 'mode' that`) };
+      })(e2, "First parameter").mode ? V(this) : at(this);
+    }
+    pipeThrough(e2, t2 = {}) {
+      if (!Ir(this)) throw Qr("pipeThrough");
+      M(e2, 1, "pipeThrough");
+      const r2 = (function(e3, t3) {
+        L(e3, t3);
+        const r3 = null == e3 ? void 0 : e3.readable;
+        Y(r3, "readable", "ReadableWritablePair"), H(r3, `${t3} has member 'readable' that`);
+        const o3 = null == e3 ? void 0 : e3.writable;
+        return Y(o3, "writable", "ReadableWritablePair"), Tt(o3, `${t3} has member 'writable' that`), { readable: r3, writable: o3 };
+      })(e2, "First parameter"), o2 = zr(t2, "Second parameter");
+      if ($r(this)) throw new TypeError("ReadableStream.prototype.pipeThrough cannot be used on a locked ReadableStream");
+      if (Et(r2.writable)) throw new TypeError("ReadableStream.prototype.pipeThrough cannot be used on a locked WritableStream");
+      return p(hr(this, r2.writable, o2.preventClose, o2.preventAbort, o2.preventCancel, o2.signal)), r2.readable;
+    }
+    pipeTo(e2, t2 = {}) {
+      if (!Ir(this)) return d(Qr("pipeTo"));
+      if (void 0 === e2) return d("Parameter 1 is required in 'pipeTo'.");
+      if (!qt(e2)) return d(new TypeError("ReadableStream.prototype.pipeTo's first argument must be a WritableStream"));
+      let r2;
+      try {
+        r2 = zr(t2, "Second parameter");
+      } catch (e3) {
+        return d(e3);
+      }
+      return $r(this) ? d(new TypeError("ReadableStream.prototype.pipeTo cannot be used on a locked ReadableStream")) : Et(e2) ? d(new TypeError("ReadableStream.prototype.pipeTo cannot be used on a locked WritableStream")) : hr(this, e2, r2.preventClose, r2.preventAbort, r2.preventCancel, r2.signal);
+    }
+    tee() {
+      if (!Ir(this)) throw Qr("tee");
+      return le(Wr(this));
+    }
+    values(e2 = void 0) {
+      if (!Ir(this)) throw Qr("values");
+      return (function(e3, t2) {
+        const r2 = V(e3), o2 = new ye(r2, t2), n2 = Object.create(ge);
+        return n2._asyncIteratorImpl = o2, n2;
+      })(this, (function(e3, t2) {
+        L(e3, t2);
+        const r2 = null == e3 ? void 0 : e3.preventCancel;
+        return { preventCancel: Boolean(r2) };
+      })(e2, "First parameter").preventCancel);
+    }
+    [_e](e2) {
+      return this.values(e2);
+    }
+    static from(e2) {
+      return Or(e2);
+    }
+  };
+  function Dr(e2, t2, r2, o2 = 1, n2 = () => 1) {
+    const i2 = Object.create(ReadableStream2.prototype);
+    Lr(i2);
+    return qr(i2, Object.create(ReadableStreamDefaultController.prototype), e2, t2, r2, o2, n2), i2;
+  }
+  function Fr(e2, t2, r2) {
+    const o2 = Object.create(ReadableStream2.prototype);
+    Lr(o2);
+    return rt(o2, Object.create(ReadableByteStreamController.prototype), e2, t2, r2, 0, void 0), o2;
+  }
+  function Lr(e2) {
+    e2._state = "readable", e2._reader = void 0, e2._storedError = void 0, e2._disturbed = false;
+  }
+  function Ir(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_readableStreamController") && e2 instanceof ReadableStream2);
+  }
+  function $r(e2) {
+    return void 0 !== e2._reader;
+  }
+  function Mr(t2, r2) {
+    if (t2._disturbed = true, "closed" === t2._state) return c(void 0);
+    if ("errored" === t2._state) return d(t2._storedError);
+    Yr(t2);
+    const o2 = t2._reader;
+    if (void 0 !== o2 && ft(o2)) {
+      const e2 = o2._readIntoRequests;
+      o2._readIntoRequests = new v(), e2.forEach((e3) => {
+        e3._closeSteps(void 0);
+      });
+    }
+    return m(t2._readableStreamController[T](r2), e);
+  }
+  function Yr(e2) {
+    e2._state = "closed";
+    const t2 = e2._reader;
+    if (void 0 !== t2 && (z(t2), ee(t2))) {
+      const e3 = t2._readRequests;
+      t2._readRequests = new v(), e3.forEach((e4) => {
+        e4._closeSteps();
+      });
+    }
+  }
+  function xr(e2, t2) {
+    e2._state = "errored", e2._storedError = t2;
+    const r2 = e2._reader;
+    void 0 !== r2 && (A(r2, t2), ee(r2) ? oe(r2, t2) : bt(r2, t2));
+  }
+  function Qr(e2) {
+    return new TypeError(`ReadableStream.prototype.${e2} can only be used on a ReadableStream`);
+  }
+  function Nr(e2, t2) {
+    L(e2, t2);
+    const r2 = null == e2 ? void 0 : e2.highWaterMark;
+    return Y(r2, "highWaterMark", "QueuingStrategyInit"), { highWaterMark: x(r2) };
+  }
+  Object.defineProperties(ReadableStream2, { from: { enumerable: true } }), Object.defineProperties(ReadableStream2.prototype, { cancel: { enumerable: true }, getReader: { enumerable: true }, pipeThrough: { enumerable: true }, pipeTo: { enumerable: true }, tee: { enumerable: true }, values: { enumerable: true }, locked: { enumerable: true } }), o(ReadableStream2.from, "from"), o(ReadableStream2.prototype.cancel, "cancel"), o(ReadableStream2.prototype.getReader, "getReader"), o(ReadableStream2.prototype.pipeThrough, "pipeThrough"), o(ReadableStream2.prototype.pipeTo, "pipeTo"), o(ReadableStream2.prototype.tee, "tee"), o(ReadableStream2.prototype.values, "values"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(ReadableStream2.prototype, Symbol.toStringTag, { value: "ReadableStream", configurable: true }), Object.defineProperty(ReadableStream2.prototype, _e, { value: ReadableStream2.prototype.values, writable: true, configurable: true });
+  var Hr = (e2) => e2.byteLength;
+  o(Hr, "size");
+  var ByteLengthQueuingStrategy = class {
+    constructor(e2) {
+      M(e2, 1, "ByteLengthQueuingStrategy"), e2 = Nr(e2, "First parameter"), this._byteLengthQueuingStrategyHighWaterMark = e2.highWaterMark;
+    }
+    get highWaterMark() {
+      if (!Ur(this)) throw Vr("highWaterMark");
+      return this._byteLengthQueuingStrategyHighWaterMark;
+    }
+    get size() {
+      if (!Ur(this)) throw Vr("size");
+      return Hr;
+    }
+  };
+  function Vr(e2) {
+    return new TypeError(`ByteLengthQueuingStrategy.prototype.${e2} can only be used on a ByteLengthQueuingStrategy`);
+  }
+  function Ur(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_byteLengthQueuingStrategyHighWaterMark") && e2 instanceof ByteLengthQueuingStrategy);
+  }
+  Object.defineProperties(ByteLengthQueuingStrategy.prototype, { highWaterMark: { enumerable: true }, size: { enumerable: true } }), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(ByteLengthQueuingStrategy.prototype, Symbol.toStringTag, { value: "ByteLengthQueuingStrategy", configurable: true });
+  var Gr = () => 1;
+  o(Gr, "size");
+  var CountQueuingStrategy = class {
+    constructor(e2) {
+      M(e2, 1, "CountQueuingStrategy"), e2 = Nr(e2, "First parameter"), this._countQueuingStrategyHighWaterMark = e2.highWaterMark;
+    }
+    get highWaterMark() {
+      if (!Jr(this)) throw Xr("highWaterMark");
+      return this._countQueuingStrategyHighWaterMark;
+    }
+    get size() {
+      if (!Jr(this)) throw Xr("size");
+      return Gr;
+    }
+  };
+  function Xr(e2) {
+    return new TypeError(`CountQueuingStrategy.prototype.${e2} can only be used on a CountQueuingStrategy`);
+  }
+  function Jr(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_countQueuingStrategyHighWaterMark") && e2 instanceof CountQueuingStrategy);
+  }
+  function Kr(e2, t2, r2) {
+    return I(e2, r2), (r3) => g(e2, t2, [r3]);
+  }
+  function Zr(e2, t2, r2) {
+    return I(e2, r2), (r3) => S(e2, t2, [r3]);
+  }
+  function eo(e2, t2, r2) {
+    return I(e2, r2), (r3, o2) => g(e2, t2, [r3, o2]);
+  }
+  function to(e2, t2, r2) {
+    return I(e2, r2), (r3) => g(e2, t2, [r3]);
+  }
+  Object.defineProperties(CountQueuingStrategy.prototype, { highWaterMark: { enumerable: true }, size: { enumerable: true } }), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(CountQueuingStrategy.prototype, Symbol.toStringTag, { value: "CountQueuingStrategy", configurable: true });
+  var TransformStream = class {
+    constructor(e2 = {}, t2 = {}, r2 = {}) {
+      void 0 === e2 && (e2 = null);
+      const o2 = yt(t2, "Second parameter"), n2 = yt(r2, "Third parameter"), i2 = (function(e3, t3) {
+        L(e3, t3);
+        const r3 = null == e3 ? void 0 : e3.cancel, o3 = null == e3 ? void 0 : e3.flush, n3 = null == e3 ? void 0 : e3.readableType, i3 = null == e3 ? void 0 : e3.start, a3 = null == e3 ? void 0 : e3.transform, s3 = null == e3 ? void 0 : e3.writableType;
+        return { cancel: void 0 === r3 ? void 0 : to(r3, e3, `${t3} has member 'cancel' that`), flush: void 0 === o3 ? void 0 : Kr(o3, e3, `${t3} has member 'flush' that`), readableType: n3, start: void 0 === i3 ? void 0 : Zr(i3, e3, `${t3} has member 'start' that`), transform: void 0 === a3 ? void 0 : eo(a3, e3, `${t3} has member 'transform' that`), writableType: s3 };
+      })(e2, "First parameter");
+      if (void 0 !== i2.readableType) throw new RangeError("Invalid readableType specified");
+      if (void 0 !== i2.writableType) throw new RangeError("Invalid writableType specified");
+      const a2 = mt(n2, 0), s2 = pt(n2), l2 = mt(o2, 1), f2 = pt(o2);
+      let b2;
+      !(function(e3, t3, r3, o3, n3, i3) {
+        function a3() {
+          return t3;
+        }
+        function s3(t4) {
+          return (function(e4, t5) {
+            const r4 = e4._transformStreamController;
+            if (e4._backpressure) {
+              return m(e4._backpressureChangePromise, () => {
+                const o4 = e4._writable;
+                if ("erroring" === o4._state) throw o4._storedError;
+                return co(r4, t5);
+              });
+            }
+            return co(r4, t5);
+          })(e3, t4);
+        }
+        function l3(t4) {
+          return (function(e4, t5) {
+            const r4 = e4._transformStreamController;
+            if (void 0 !== r4._finishPromise) return r4._finishPromise;
+            const o4 = e4._readable;
+            r4._finishPromise = u((e5, t6) => {
+              r4._finishPromise_resolve = e5, r4._finishPromise_reject = t6;
+            });
+            const n4 = r4._cancelAlgorithm(t5);
+            return lo(r4), h(n4, () => ("errored" === o4._state ? bo(r4, o4._storedError) : (Tr(o4._readableStreamController, t5), ho(r4)), null), (e5) => (Tr(o4._readableStreamController, e5), bo(r4, e5), null)), r4._finishPromise;
+          })(e3, t4);
+        }
+        function c2() {
+          return (function(e4) {
+            const t4 = e4._transformStreamController;
+            if (void 0 !== t4._finishPromise) return t4._finishPromise;
+            const r4 = e4._readable;
+            t4._finishPromise = u((e5, r5) => {
+              t4._finishPromise_resolve = e5, t4._finishPromise_reject = r5;
+            });
+            const o4 = t4._flushAlgorithm();
+            return lo(t4), h(o4, () => ("errored" === r4._state ? bo(t4, r4._storedError) : (wr(r4._readableStreamController), ho(t4)), null), (e5) => (Tr(r4._readableStreamController, e5), bo(t4, e5), null)), t4._finishPromise;
+          })(e3);
+        }
+        function d2() {
+          return (function(e4) {
+            return ao(e4, false), e4._backpressureChangePromise;
+          })(e3);
+        }
+        function f3(t4) {
+          return (function(e4, t5) {
+            const r4 = e4._transformStreamController;
+            if (void 0 !== r4._finishPromise) return r4._finishPromise;
+            const o4 = e4._writable;
+            r4._finishPromise = u((e5, t6) => {
+              r4._finishPromise_resolve = e5, r4._finishPromise_reject = t6;
+            });
+            const n4 = r4._cancelAlgorithm(t5);
+            return lo(r4), h(n4, () => ("errored" === o4._state ? bo(r4, o4._storedError) : (Gt(o4._writableStreamController, t5), io(e4), ho(r4)), null), (t6) => (Gt(o4._writableStreamController, t6), io(e4), bo(r4, t6), null)), r4._finishPromise;
+          })(e3, t4);
+        }
+        e3._writable = (function(e4, t4, r4, o4, n4 = 1, i4 = () => 1) {
+          const a4 = Object.create(WritableStream.prototype);
+          return Ct(a4), Nt(a4, Object.create(WritableStreamDefaultController.prototype), e4, t4, r4, o4, n4, i4), a4;
+        })(a3, s3, c2, l3, r3, o3), e3._readable = Dr(a3, d2, f3, n3, i3), e3._backpressure = void 0, e3._backpressureChangePromise = void 0, e3._backpressureChangePromise_resolve = void 0, ao(e3, true), e3._transformStreamController = void 0;
+      })(this, u((e3) => {
+        b2 = e3;
+      }), l2, f2, a2, s2), (function(e3, t3) {
+        const r3 = Object.create(TransformStreamDefaultController.prototype);
+        let o3, n3, i3;
+        o3 = void 0 !== t3.transform ? (e4) => t3.transform(e4, r3) : (e4) => {
+          try {
+            return uo(r3, e4), c(void 0);
+          } catch (e5) {
+            return d(e5);
+          }
+        };
+        n3 = void 0 !== t3.flush ? () => t3.flush(r3) : () => c(void 0);
+        i3 = void 0 !== t3.cancel ? (e4) => t3.cancel(e4) : () => c(void 0);
+        !(function(e4, t4, r4, o4, n4) {
+          t4._controlledTransformStream = e4, e4._transformStreamController = t4, t4._transformAlgorithm = r4, t4._flushAlgorithm = o4, t4._cancelAlgorithm = n4, t4._finishPromise = void 0, t4._finishPromise_resolve = void 0, t4._finishPromise_reject = void 0;
+        })(e3, r3, o3, n3, i3);
+      })(this, i2), void 0 !== i2.start ? b2(i2.start(this._transformStreamController)) : b2(void 0);
+    }
+    get readable() {
+      if (!ro(this)) throw _o("readable");
+      return this._readable;
+    }
+    get writable() {
+      if (!ro(this)) throw _o("writable");
+      return this._writable;
+    }
+  };
+  function ro(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_transformStreamController") && e2 instanceof TransformStream);
+  }
+  function oo(e2, t2) {
+    Tr(e2._readable._readableStreamController, t2), no(e2, t2);
+  }
+  function no(e2, t2) {
+    lo(e2._transformStreamController), Gt(e2._writable._writableStreamController, t2), io(e2);
+  }
+  function io(e2) {
+    e2._backpressure && ao(e2, false);
+  }
+  function ao(e2, t2) {
+    void 0 !== e2._backpressureChangePromise && e2._backpressureChangePromise_resolve(), e2._backpressureChangePromise = u((t3) => {
+      e2._backpressureChangePromise_resolve = t3;
+    }), e2._backpressure = t2;
+  }
+  Object.defineProperties(TransformStream.prototype, { readable: { enumerable: true }, writable: { enumerable: true } }), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(TransformStream.prototype, Symbol.toStringTag, { value: "TransformStream", configurable: true });
+  var TransformStreamDefaultController = class {
+    constructor() {
+      throw new TypeError("Illegal constructor");
+    }
+    get desiredSize() {
+      if (!so(this)) throw fo("desiredSize");
+      return Pr(this._controlledTransformStream._readable._readableStreamController);
+    }
+    enqueue(e2 = void 0) {
+      if (!so(this)) throw fo("enqueue");
+      uo(this, e2);
+    }
+    error(e2 = void 0) {
+      if (!so(this)) throw fo("error");
+      var t2;
+      t2 = e2, oo(this._controlledTransformStream, t2);
+    }
+    terminate() {
+      if (!so(this)) throw fo("terminate");
+      !(function(e2) {
+        const t2 = e2._controlledTransformStream;
+        wr(t2._readable._readableStreamController);
+        const r2 = new TypeError("TransformStream terminated");
+        no(t2, r2);
+      })(this);
+    }
+  };
+  function so(e2) {
+    return !!t(e2) && (!!Object.prototype.hasOwnProperty.call(e2, "_controlledTransformStream") && e2 instanceof TransformStreamDefaultController);
+  }
+  function lo(e2) {
+    e2._transformAlgorithm = void 0, e2._flushAlgorithm = void 0, e2._cancelAlgorithm = void 0;
+  }
+  function uo(e2, t2) {
+    const r2 = e2._controlledTransformStream, o2 = r2._readable._readableStreamController;
+    if (!Cr(o2)) throw new TypeError("Readable side is not in a state that permits enqueue");
+    try {
+      Rr(o2, t2);
+    } catch (e3) {
+      throw no(r2, e3), r2._readable._storedError;
+    }
+    const n2 = (function(e3) {
+      return !gr(e3);
+    })(o2);
+    n2 !== r2._backpressure && ao(r2, true);
+  }
+  function co(e2, t2) {
+    return m(e2._transformAlgorithm(t2), void 0, (t3) => {
+      throw oo(e2._controlledTransformStream, t3), t3;
+    });
+  }
+  function fo(e2) {
+    return new TypeError(`TransformStreamDefaultController.prototype.${e2} can only be used on a TransformStreamDefaultController`);
+  }
+  function ho(e2) {
+    void 0 !== e2._finishPromise_resolve && (e2._finishPromise_resolve(), e2._finishPromise_resolve = void 0, e2._finishPromise_reject = void 0);
+  }
+  function bo(e2, t2) {
+    void 0 !== e2._finishPromise_reject && (p(e2._finishPromise), e2._finishPromise_reject(t2), e2._finishPromise_resolve = void 0, e2._finishPromise_reject = void 0);
+  }
+  function _o(e2) {
+    return new TypeError(`TransformStream.prototype.${e2} can only be used on a TransformStream`);
+  }
+  Object.defineProperties(TransformStreamDefaultController.prototype, { enqueue: { enumerable: true }, error: { enumerable: true }, terminate: { enumerable: true }, desiredSize: { enumerable: true } }), o(TransformStreamDefaultController.prototype.enqueue, "enqueue"), o(TransformStreamDefaultController.prototype.error, "error"), o(TransformStreamDefaultController.prototype.terminate, "terminate"), "symbol" == typeof Symbol.toStringTag && Object.defineProperty(TransformStreamDefaultController.prototype, Symbol.toStringTag, { value: "TransformStreamDefaultController", configurable: true });
+
   // js/host-environment.js
+  globalThis.ReadableStream = ReadableStream2;
+  var QuickTextEncoder = class {
+    get encoding() {
+      return "utf-8";
+    }
+    encode(input = "") {
+      const source2 = String(input);
+      const bytes = [];
+      for (let index = 0; index < source2.length; index++) {
+        let codePoint = source2.charCodeAt(index);
+        if (codePoint >= 55296 && codePoint <= 56319) {
+          const low = source2.charCodeAt(index + 1);
+          if (low >= 56320 && low <= 57343) {
+            codePoint = 65536 + (codePoint - 55296 << 10) + low - 56320;
+            index++;
+          } else {
+            codePoint = 65533;
+          }
+        } else if (codePoint >= 56320 && codePoint <= 57343) {
+          codePoint = 65533;
+        }
+        if (codePoint <= 127) bytes.push(codePoint);
+        else if (codePoint <= 2047) bytes.push(192 | codePoint >> 6, 128 | codePoint & 63);
+        else if (codePoint <= 65535) bytes.push(224 | codePoint >> 12, 128 | codePoint >> 6 & 63, 128 | codePoint & 63);
+        else bytes.push(240 | codePoint >> 18, 128 | codePoint >> 12 & 63, 128 | codePoint >> 6 & 63, 128 | codePoint & 63);
+      }
+      return Uint8Array.from(bytes);
+    }
+    encodeInto(source2, destination) {
+      const input = String(source2);
+      let read = 0;
+      let written = 0;
+      while (read < input.length) {
+        let next = read + 1;
+        const high = input.charCodeAt(read);
+        if (high >= 55296 && high <= 56319 && input.charCodeAt(next) >= 56320 && input.charCodeAt(next) <= 57343) next++;
+        const encoded = this.encode(input.slice(read, next));
+        if (written + encoded.length > destination.length) break;
+        destination.set(encoded, written);
+        written += encoded.length;
+        read = next;
+      }
+      return { read, written };
+    }
+  };
+  var QuickTextDecoder = class {
+    constructor(label = "utf-8", options = {}) {
+      if (String(label).toLowerCase() !== "utf-8" && String(label).toLowerCase() !== "utf8") throw new RangeError(`Unsupported encoding: ${label}`);
+      this.fatal = Boolean(options.fatal);
+      this.ignoreBOM = Boolean(options.ignoreBOM);
+    }
+    get encoding() {
+      return "utf-8";
+    }
+    decode(input = new Uint8Array()) {
+      const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+      let output = "";
+      for (let index = 0; index < bytes.length; ) {
+        const first2 = bytes[index++];
+        let codePoint;
+        let width;
+        if (first2 <= 127) {
+          codePoint = first2;
+          width = 0;
+        } else if (first2 >= 194 && first2 <= 223) {
+          codePoint = first2 & 31;
+          width = 1;
+        } else if (first2 >= 224 && first2 <= 239) {
+          codePoint = first2 & 15;
+          width = 2;
+        } else if (first2 >= 240 && first2 <= 244) {
+          codePoint = first2 & 7;
+          width = 3;
+        } else {
+          output += this.invalid();
+          continue;
+        }
+        if (width) {
+          const start = index;
+          let valid = index + width <= bytes.length;
+          for (let offset = 0; valid && offset < width; offset++) valid = bytes[index + offset] >= 128 && bytes[index + offset] <= 191;
+          if (valid) {
+            for (let offset = 0; offset < width; offset++) codePoint = codePoint << 6 | bytes[index++] & 63;
+            valid = width === 1 && codePoint >= 128 || width === 2 && codePoint >= 2048 && !(codePoint >= 55296 && codePoint <= 57343) || width === 3 && codePoint >= 65536 && codePoint <= 1114111;
+          }
+          if (!valid) {
+            index = start;
+            index++;
+            output += this.invalid();
+            continue;
+          }
+        }
+        if (codePoint <= 65535) output += String.fromCharCode(codePoint);
+        else {
+          codePoint -= 65536;
+          output += String.fromCharCode(55296 | codePoint >> 10, 56320 | codePoint & 1023);
+        }
+      }
+      if (!this.ignoreBOM && output.charCodeAt(0) === 65279) output = output.slice(1);
+      return output;
+    }
+    invalid() {
+      if (this.fatal) throw new TypeError("The encoded data was not valid UTF-8");
+      return "\uFFFD";
+    }
+  };
+  if (typeof globalThis.TextEncoder === "undefined") globalThis.TextEncoder = QuickTextEncoder;
+  if (typeof globalThis.TextDecoder === "undefined") globalThis.TextDecoder = QuickTextDecoder;
   var nextTimer = 0;
   var timers = /* @__PURE__ */ new Map();
   globalThis.setTimeout = (fn, milliseconds = 0, ...args2) => {
@@ -34546,7 +36722,7 @@ ${sourceUrlComment}
         this.plugins.push(plugin);
       };
       for (const name of configurations.keys()) add(name);
-      this.plugins.sort((a, b) => Number(a.requirements.has("runLast")) - Number(b.requirements.has("runLast")));
+      this.plugins.sort((a2, b2) => Number(a2.requirements.has("runLast")) - Number(b2.requirements.has("runLast")));
       for (const plugin of this.plugins) await plugin.onPluginRegistered?.();
       if (mode === "launch") this.options = { args: [], headless: true, ...this.options };
       for (const plugin of this.plugins) {
@@ -34663,8 +36839,8 @@ ${sourceUrlComment}
       if (inner) dispose = function() {
         try {
           inner.call(this);
-        } catch (e) {
-          return Promise.reject(e);
+        } catch (e2) {
+          return Promise.reject(e2);
         }
       };
       env.stack.push({ value: value2, dispose, async: async2 });
@@ -34675,34 +36851,34 @@ ${sourceUrlComment}
   };
   var __disposeResources10 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
-      function fail(e) {
-        env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+      function fail(e2) {
+        env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
         env.hasError = true;
       }
-      var r, s = 0;
+      var r2, s2 = 0;
       function next() {
-        while (r = env.stack.pop()) {
+        while (r2 = env.stack.pop()) {
           try {
-            if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-            if (r.dispose) {
-              var result = r.dispose.call(r.value);
-              if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                fail(e);
+            if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+            if (r2.dispose) {
+              var result = r2.dispose.call(r2.value);
+              if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                fail(e2);
                 return next();
               });
-            } else s |= 1;
-          } catch (e) {
-            fail(e);
+            } else s2 |= 1;
+          } catch (e2) {
+            fail(e2);
           }
         }
-        if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+        if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
         if (env.hasError) throw env.error;
       }
       return next();
     };
   })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    var e2 = new Error(message);
+    return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
   });
   var Binding = class {
     #name;
@@ -35070,8 +37246,8 @@ ${sourceUrlComment}
      */
     async onMessage(message) {
       if (this.#delay) {
-        await new Promise((r) => {
-          return setTimeout(r, this.#delay);
+        await new Promise((r2) => {
+          return setTimeout(r2, this.#delay);
         });
       }
       debugProtocolReceive(message);
@@ -35637,38 +37813,38 @@ ${sourceUrlComment}
   // node_modules/puppeteer-core/lib/esm/puppeteer/cdp/ElementHandle.js
   var __runInitializers6 = function(thisArg, initializers, value2) {
     var useValue = arguments.length > 2;
-    for (var i = 0; i < initializers.length; i++) {
-      value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+    for (var i2 = 0; i2 < initializers.length; i2++) {
+      value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
     }
     return useValue ? value2 : void 0;
   };
   var __esDecorate6 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-    function accept(f) {
-      if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-      return f;
+    function accept(f2) {
+      if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+      return f2;
     }
     var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
     var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
     var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-    var _, done = false;
-    for (var i = decorators.length - 1; i >= 0; i--) {
+    var _2, done = false;
+    for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
       var context2 = {};
-      for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-      for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-      context2.addInitializer = function(f) {
+      for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+      for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+      context2.addInitializer = function(f2) {
         if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-        extraInitializers.push(accept(f || null));
+        extraInitializers.push(accept(f2 || null));
       };
-      var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+      var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
       if (kind === "accessor") {
         if (result === void 0) continue;
         if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-        if (_ = accept(result.get)) descriptor.get = _;
-        if (_ = accept(result.set)) descriptor.set = _;
-        if (_ = accept(result.init)) initializers.unshift(_);
-      } else if (_ = accept(result)) {
-        if (kind === "field") initializers.unshift(_);
-        else descriptor[key2] = _;
+        if (_2 = accept(result.get)) descriptor.get = _2;
+        if (_2 = accept(result.set)) descriptor.set = _2;
+        if (_2 = accept(result.init)) initializers.unshift(_2);
+      } else if (_2 = accept(result)) {
+        if (kind === "field") initializers.unshift(_2);
+        else descriptor[key2] = _2;
       }
     }
     if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -35831,8 +38007,8 @@ ${sourceUrlComment}
       if (inner) dispose = function() {
         try {
           inner.call(this);
-        } catch (e) {
-          return Promise.reject(e);
+        } catch (e2) {
+          return Promise.reject(e2);
         }
       };
       env.stack.push({ value: value2, dispose, async: async2 });
@@ -35843,34 +38019,34 @@ ${sourceUrlComment}
   };
   var __disposeResources11 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
-      function fail(e) {
-        env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+      function fail(e2) {
+        env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
         env.hasError = true;
       }
-      var r, s = 0;
+      var r2, s2 = 0;
       function next() {
-        while (r = env.stack.pop()) {
+        while (r2 = env.stack.pop()) {
           try {
-            if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-            if (r.dispose) {
-              var result = r.dispose.call(r.value);
-              if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                fail(e);
+            if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+            if (r2.dispose) {
+              var result = r2.dispose.call(r2.value);
+              if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                fail(e2);
                 return next();
               });
-            } else s |= 1;
-          } catch (e) {
-            fail(e);
+            } else s2 |= 1;
+          } catch (e2) {
+            fail(e2);
           }
         }
-        if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+        if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
         if (env.hasError) throw env.error;
       }
       return next();
     };
   })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    var e2 = new Error(message);
+    return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
   });
   var ariaQuerySelectorBinding = new Binding("__ariaQuerySelector", ARIAQueryHandler.queryOne, "");
   var ariaQuerySelectorAllBinding = new Binding("__ariaQuerySelectorAll", (async (element, selector) => {
@@ -35919,7 +38095,7 @@ ${sourceUrlComment}
         if (this.#bindings.has(binding.name)) {
           return;
         }
-        const _ = __addDisposableResource11(env_1, await this.#mutex.acquire(), false);
+        const _2 = __addDisposableResource11(env_1, await this.#mutex.acquire(), false);
         try {
           await this.#client.send("Runtime.addBinding", this.#name ? {
             name: CDP_BINDING_PREFIX + binding.name,
@@ -36550,38 +38726,38 @@ ${sourceUrlComment}
   // node_modules/puppeteer-core/lib/esm/puppeteer/cdp/Frame.js
   var __runInitializers7 = function(thisArg, initializers, value2) {
     var useValue = arguments.length > 2;
-    for (var i = 0; i < initializers.length; i++) {
-      value2 = useValue ? initializers[i].call(thisArg, value2) : initializers[i].call(thisArg);
+    for (var i2 = 0; i2 < initializers.length; i2++) {
+      value2 = useValue ? initializers[i2].call(thisArg, value2) : initializers[i2].call(thisArg);
     }
     return useValue ? value2 : void 0;
   };
   var __esDecorate7 = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-    function accept(f) {
-      if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
-      return f;
+    function accept(f2) {
+      if (f2 !== void 0 && typeof f2 !== "function") throw new TypeError("Function expected");
+      return f2;
     }
     var kind = contextIn.kind, key2 = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
     var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
     var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-    var _, done = false;
-    for (var i = decorators.length - 1; i >= 0; i--) {
+    var _2, done = false;
+    for (var i2 = decorators.length - 1; i2 >= 0; i2--) {
       var context2 = {};
-      for (var p in contextIn) context2[p] = p === "access" ? {} : contextIn[p];
-      for (var p in contextIn.access) context2.access[p] = contextIn.access[p];
-      context2.addInitializer = function(f) {
+      for (var p2 in contextIn) context2[p2] = p2 === "access" ? {} : contextIn[p2];
+      for (var p2 in contextIn.access) context2.access[p2] = contextIn.access[p2];
+      context2.addInitializer = function(f2) {
         if (done) throw new TypeError("Cannot add initializers after decoration has completed");
-        extraInitializers.push(accept(f || null));
+        extraInitializers.push(accept(f2 || null));
       };
-      var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
+      var result = (0, decorators[i2])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key2], context2);
       if (kind === "accessor") {
         if (result === void 0) continue;
         if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-        if (_ = accept(result.get)) descriptor.get = _;
-        if (_ = accept(result.set)) descriptor.set = _;
-        if (_ = accept(result.init)) initializers.unshift(_);
-      } else if (_ = accept(result)) {
-        if (kind === "field") initializers.unshift(_);
-        else descriptor[key2] = _;
+        if (_2 = accept(result.get)) descriptor.get = _2;
+        if (_2 = accept(result.set)) descriptor.set = _2;
+        if (_2 = accept(result.init)) initializers.unshift(_2);
+      } else if (_2 = accept(result)) {
+        if (kind === "field") initializers.unshift(_2);
+        else descriptor[key2] = _2;
       }
     }
     if (target) Object.defineProperty(target, contextIn.name, descriptor);
@@ -38775,8 +40951,8 @@ ${sourceUrlComment}
           await this.press(char, { delay });
         } else {
           if (delay) {
-            await new Promise((f) => {
-              return setTimeout(f, delay);
+            await new Promise((f2) => {
+              return setTimeout(f2, delay);
             });
           }
           await this.sendCharacter(char);
@@ -38787,8 +40963,8 @@ ${sourceUrlComment}
       const { delay = null } = options;
       await this.down(key2, options);
       if (delay) {
-        await new Promise((f) => {
-          return setTimeout(f, options.delay);
+        await new Promise((f2) => {
+          return setTimeout(f2, options.delay);
         });
       }
       await this.up(key2);
@@ -38891,16 +41067,16 @@ ${sourceUrlComment}
       }
       await Promise.all(actions);
     }
-    async move(x, y, options = {}) {
+    async move(x2, y2, options = {}) {
       const { steps = 1 } = options;
       const from2 = this.#state.position;
-      const to = { x, y };
-      for (let i = 1; i <= steps; i++) {
+      const to2 = { x: x2, y: y2 };
+      for (let i2 = 1; i2 <= steps; i2++) {
         await this.#withTransaction((updateState) => {
           updateState({
             position: {
-              x: from2.x + (to.x - from2.x) * (i / steps),
-              y: from2.y + (to.y - from2.y) * (i / steps)
+              x: from2.x + (to2.x - from2.x) * (i2 / steps),
+              y: from2.y + (to2.y - from2.y) * (i2 / steps)
             }
           });
           const { buttons, position } = this.#state;
@@ -38962,15 +41138,15 @@ ${sourceUrlComment}
         });
       });
     }
-    async click(x, y, options = {}) {
+    async click(x2, y2, options = {}) {
       const { delay, count = 1, clickCount = count } = options;
       if (count < 1) {
         throw new Error("Click must occur a positive number of times.");
       }
-      const actions = [this.move(x, y)];
+      const actions = [this.move(x2, y2)];
       if (clickCount === count) {
-        for (let i = 1; i < count; ++i) {
-          actions.push(this.down({ ...options, clickCount: i }), this.up({ ...options, clickCount: i }));
+        for (let i2 = 1; i2 < count; ++i2) {
+          actions.push(this.down({ ...options, clickCount: i2 }), this.up({ ...options, clickCount: i2 }));
         }
       }
       actions.push(this.down({ ...options, clickCount }));
@@ -39075,9 +41251,9 @@ ${sourceUrlComment}
       });
       this.#started = true;
     }
-    move(x, y) {
-      this.#touchPoint.x = Math.round(x);
-      this.#touchPoint.y = Math.round(y);
+    move(x2, y2) {
+      this.#touchPoint.x = Math.round(x2);
+      this.#touchPoint.y = Math.round(y2);
       return this.#client.send("Input.dispatchTouchEvent", {
         type: "touchMove",
         touchPoints: [this.#touchPoint],
@@ -39103,15 +41279,15 @@ ${sourceUrlComment}
     }
     updateClient(client) {
       this.#client = client;
-      this.touches.forEach((t) => {
-        t.updateClient(client);
+      this.touches.forEach((t2) => {
+        t2.updateClient(client);
       });
     }
-    async touchStart(x, y) {
+    async touchStart(x2, y2) {
       const id = this.idGenerator();
       const touchPoint = {
-        x: Math.round(x),
-        y: Math.round(y),
+        x: Math.round(x2),
+        y: Math.round(y2),
         radiusX: 0.5,
         radiusY: 0.5,
         force: 0.5,
@@ -39210,8 +41386,8 @@ ${sourceUrlComment}
       if (inner) dispose = function() {
         try {
           inner.call(this);
-        } catch (e) {
-          return Promise.reject(e);
+        } catch (e2) {
+          return Promise.reject(e2);
         }
       };
       env.stack.push({ value: value2, dispose, async: async2 });
@@ -39222,34 +41398,34 @@ ${sourceUrlComment}
   };
   var __disposeResources12 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
-      function fail(e) {
-        env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+      function fail(e2) {
+        env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
         env.hasError = true;
       }
-      var r, s = 0;
+      var r2, s2 = 0;
       function next() {
-        while (r = env.stack.pop()) {
+        while (r2 = env.stack.pop()) {
           try {
-            if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-            if (r.dispose) {
-              var result = r.dispose.call(r.value);
-              if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                fail(e);
+            if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+            if (r2.dispose) {
+              var result = r2.dispose.call(r2.value);
+              if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                fail(e2);
                 return next();
               });
-            } else s |= 1;
-          } catch (e) {
-            fail(e);
+            } else s2 |= 1;
+          } catch (e2) {
+            fail(e2);
           }
         }
-        if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+        if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
         if (env.hasError) throw env.error;
       }
       return next();
     };
   })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    var e2 = new Error(message);
+    return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
   });
   function convertConsoleMessageLevel(method) {
     switch (method) {
@@ -39924,8 +42100,8 @@ ${sourceUrlComment}
         let clip = userClip;
         if (clip && !captureBeyondViewport) {
           const viewport = await this.mainFrame().isolatedRealm().evaluate(() => {
-            const { height, pageLeft: x, pageTop: y, width } = window.visualViewport;
-            return { x, y, height, width };
+            const { height, pageLeft: x2, pageTop: y2, width } = window.visualViewport;
+            return { x: x2, y: y2, height, width };
           });
           clip = getIntersectionRect(clip, viewport);
         }
@@ -40065,13 +42241,13 @@ ${sourceUrlComment}
     "JSHeapTotalSize"
   ]);
   function getIntersectionRect(clip, viewport) {
-    const x = Math.max(clip.x, viewport.x);
-    const y = Math.max(clip.y, viewport.y);
+    const x2 = Math.max(clip.x, viewport.x);
+    const y2 = Math.max(clip.y, viewport.y);
     return {
-      x,
-      y,
-      width: Math.max(Math.min(clip.x + clip.width, viewport.x + viewport.width) - x, 0),
-      height: Math.max(Math.min(clip.y + clip.height, viewport.y + viewport.height) - y, 0)
+      x: x2,
+      y: y2,
+      width: Math.max(Math.min(clip.x + clip.width, viewport.x + viewport.width) - x2, 0),
+      height: Math.max(Math.min(clip.y + clip.height, viewport.y + viewport.height) - y2, 0)
     };
   }
   function convertCookiesPartitionKeyFromPuppeteerToCdp(partitionKey) {
@@ -40108,8 +42284,8 @@ ${sourceUrlComment}
       if (inner) dispose = function() {
         try {
           inner.call(this);
-        } catch (e) {
-          return Promise.reject(e);
+        } catch (e2) {
+          return Promise.reject(e2);
         }
       };
       env.stack.push({ value: value2, dispose, async: async2 });
@@ -40120,34 +42296,34 @@ ${sourceUrlComment}
   };
   var __disposeResources13 = /* @__PURE__ */ (function(SuppressedError3) {
     return function(env) {
-      function fail(e) {
-        env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+      function fail(e2) {
+        env.error = env.hasError ? new SuppressedError3(e2, env.error, "An error was suppressed during disposal.") : e2;
         env.hasError = true;
       }
-      var r, s = 0;
+      var r2, s2 = 0;
       function next() {
-        while (r = env.stack.pop()) {
+        while (r2 = env.stack.pop()) {
           try {
-            if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-            if (r.dispose) {
-              var result = r.dispose.call(r.value);
-              if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-                fail(e);
+            if (!r2.async && s2 === 1) return s2 = 0, env.stack.push(r2), Promise.resolve().then(next);
+            if (r2.dispose) {
+              var result = r2.dispose.call(r2.value);
+              if (r2.async) return s2 |= 2, Promise.resolve(result).then(next, function(e2) {
+                fail(e2);
                 return next();
               });
-            } else s |= 1;
-          } catch (e) {
-            fail(e);
+            } else s2 |= 1;
+          } catch (e2) {
+            fail(e2);
           }
         }
-        if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+        if (s2 === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
         if (env.hasError) throw env.error;
       }
       return next();
     };
   })(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    var e2 = new Error(message);
+    return e2.name = "SuppressedError", e2.error = error, e2.suppressed = suppressed, e2;
   });
   var CdpBrowserContext = class extends BrowserContext {
     #connection;
@@ -40914,8 +43090,8 @@ ${sourceUrlComment}
       return await this.#defaultContext.newPage(options);
     }
     async _createPageInContext(contextId, options) {
-      const hasTargets = this.targets().filter((t) => {
-        return t.browserContext().id === contextId;
+      const hasTargets = this.targets().filter((t2) => {
+        return t2.browserContext().id === contextId;
       }).length > 0;
       const windowBounds = options?.type === "window" ? options.windowBounds : void 0;
       const { targetId } = await this.#connection.send("Target.createTarget", {
@@ -40930,8 +43106,8 @@ ${sourceUrlComment}
         newWindow: hasTargets && options?.type === "window" ? true : void 0,
         background: options?.background
       });
-      const target = await this.waitForTarget((t) => {
-        return t._targetId === targetId;
+      const target = await this.waitForTarget((t2) => {
+        return t2._targetId === targetId;
       });
       if (!target) {
         throw new Error(`Missing target for page (id = ${targetId})`);
@@ -40950,8 +43126,8 @@ ${sourceUrlComment}
       const openDevToolsResponse = await this.#connection.send("Target.openDevTools", {
         targetId: pageTargetId
       });
-      const target = await this.waitForTarget((t) => {
-        return t._targetId === openDevToolsResponse.targetId;
+      const target = await this.waitForTarget((t2) => {
+        return t2._targetId === openDevToolsResponse.targetId;
       });
       if (!target) {
         throw new Error(`Missing target for DevTools page (id = ${pageTargetId})`);
@@ -42747,9 +44923,9 @@ ${sourceUrlComment}
           }
         };
       }
-    } catch (e) {
-      if (!(e instanceof ProtocolError)) {
-        throw e;
+    } catch (e2) {
+      if (!(e2 instanceof ProtocolError)) {
+        throw e2;
       }
     }
     pureBidiConnection.unbind();
@@ -43184,6 +45360,10 @@ ${sourceUrlComment}
       return;
     }
     const request = payload;
+    if (kind === "releaseFunction") {
+      decodedFunctions.delete(`function:${request.id}`);
+      return;
+    }
     if (kind === "release") {
       clearEvents(request.id);
       objects.delete(request.id);
@@ -43448,6 +45628,15 @@ puppeteer-core/lib/esm/puppeteer/cdp/Target.js:
    * @license
    * Copyright 2019 Google Inc.
    * SPDX-License-Identifier: Apache-2.0
+   *)
+
+web-streams-polyfill/dist/ponyfill.mjs:
+  (**
+   * @license
+   * web-streams-polyfill v4.3.0
+   * Copyright 2026 Mattias Buelens, Diwank Singh Tomer and other contributors.
+   * This code is released under the MIT license.
+   * SPDX-License-Identifier: MIT
    *)
 
 puppeteer-core/lib/esm/puppeteer/cdp/PredefinedNetworkConditions.js:

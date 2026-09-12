@@ -8,7 +8,7 @@
     "entry": "lib/types.d.ts",
     "declarationSha256": "14e80a1988e66556246539f351025ec5a1f6f15230fa4afb52ba2247771159aa"
   },
-  "npmLockSha256": "d99c3487f26243485327e0195294953526f6d58b27f6dda1402d98a18d0c7b9b",
+  "npmLockSha256": "3dea681ecb04ef90b30831acecf30bf2831a1164d0ebca08757173186b81e687",
   "tools": {
     "@puppeteer/browsers": {
       "version": "2.11.2",
@@ -33,6 +33,10 @@
     "typescript": {
       "version": "5.9.3",
       "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="
+    },
+    "web-streams-polyfill": {
+      "version": "4.3.0",
+      "integrity": "sha512-/Gnggvj9oSrEvJbDyyPtAnxBt5fGQM2iWOKQNu7ie1OxDgK40iZpyV3TKaRiEzVj1oA1UxKnEy9XPXh6PW3eVw=="
     }
   },
   "tests": {

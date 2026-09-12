@@ -20,6 +20,7 @@
     "puppeteer-core": "24.36.1",
     "puppeteer-extra-plugin": "3.2.3",
     "puppeteer-extra-plugin-stealth": "2.11.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "web-streams-polyfill": "4.3.0"
   }
 }

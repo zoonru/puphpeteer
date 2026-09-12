@@ -5,6 +5,7 @@ namespace Nesk\Puphpeteer\Tests\Integration;
 
 use Amp\DeferredCancellation;
 use Nesk\Puphpeteer\Client;
+use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\RemoteObject;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,13 @@ final class RuntimeLifecycleTest extends TestCase
         $file = tempnam(sys_get_temp_dir(), 'quickjs-runtime-');
         if ($file === false) { throw new \RuntimeException('Cannot create fixture'); }
         file_put_contents($file, <<<'JS'
+        const functions = new Set();
         globalThis.__quickjsDispatch = (kind, payload) => {
+          if (kind === 'releaseFunction') { functions.delete(payload.id); return; }
+          if (kind === 'call' && payload.method === 'functionCount') {
+            __quickjsEmit('result', {id: payload.id, value: functions.size}); return;
+          }
+          if (kind === 'call' && payload.args[0]?.$quickjs === 'function') functions.add(payload.args[0].id);
           if (kind !== 'call' || payload.method === 'pending') return;
           __quickjsEmit('result', {id: payload.id, value: payload.args[0] ?? 42});
         };
@@ -69,6 +76,25 @@ final class RuntimeLifecycleTest extends TestCase
         $data = ['$quickjs' => 'object', 'id' => 123, 'nested' => ['$quickjs' => 'undefined']];
         try { self::assertSame($data, $client->call(1, 'echo', [$data])->await()); }
         finally { $client->close(); }
+    }
+
+    public function testTransientJsFunctionsReleaseTheirGuestIdentity(): void
+    {
+        $client = $this->client();
+        try {
+            $live = new JsFunction('() => 1');
+            $client->call(1, 'echo', [$live])->await();
+            $client->call(1, 'echo', [$live])->await();
+            self::assertSame(1, $client->call(1, 'functionCount', [])->await());
+            for ($i = 0; $i < 100; ++$i) {
+                $client->call(1, 'echo', [new JsFunction('() => 2')])->await();
+            }
+            \Amp\delay(0);
+            self::assertSame(1, $client->call(1, 'functionCount', [])->await());
+            unset($live);
+            \Amp\delay(0);
+            self::assertSame(0, $client->call(1, 'functionCount', [])->await());
+        } finally { $client->close(); }
     }
 
     public function testCyclicInputFailsWithoutClosingTransport(): void

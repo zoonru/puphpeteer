@@ -171,6 +171,7 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   }
   if (kind === 'timer') { fireTimer(Number(payload)); return; }
   const request = payload;
+  if (kind === 'releaseFunction') { decodedFunctions.delete(`function:${request.id}`); return; }
   if (kind === 'release') { clearEvents(request.id); objects.delete(request.id); return; }
   if (kind === 'callbackResult') {
     const pending = callbacks.get(request.id);
