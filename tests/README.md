@@ -15,24 +15,27 @@ against the release build from the fork, not a separately patched prototype:
 ```sh
 php -n -d "extension=$QUICKJS_EXTENSION" vendor/bin/phpunit tests/Integration
 ```
-`composer test-browser` runs the PHP smoke and runtime lifecycle suites and the three examples. It
-requires the optimized extension (`QUICKJS_EXTENSION`), the built JavaScript bundle
-and the project Chrome installed under `node_modules`. The runner starts Chrome
-and a local HTTP fixture itself. `PUPPETEER_EXECUTABLE_PATH` can explicitly override
-the browser; system installations are never selected automatically. See the
-[installation instructions](../README.md#requirements-and-installation).
+`composer test-browser` runs the PHP smoke and runtime lifecycle suites and the local examples. It
+requires the optimized extension (`QUICKJS_EXTENSION`), the built JavaScript bundle and the project
+Chrome installed under `node_modules`. Each browser script starts Chrome through the public
+`launch()` API and uses the static fixtures in `examples/pages`; no HTTP fixture server is started.
+`PUPPETEER_EXECUTABLE_PATH` can explicitly override the browser; system installations are never
+selected automatically. See the [installation instructions](../README.md#requirements-and-installation).
 Missing prerequisites must not be treated as an integration pass.
 
-`composer benchmark` also uses a PHP runner. On macOS it measures a separate PHP
-process with `/usr/bin/time -l` and `ps`; runner and Chrome resource usage are
-excluded. `BENCH_TRIALS` defaults to 5 and `BENCH_ITERATIONS` to 1000.
-`PHP_BIN` overrides the PHP executable used by either runner.
+`composer test-release` adds repeated browser workloads and resource-retention
+checks to the PHP suites; see [release validation](../docs/release.md).
+
+`composer benchmark` launches Chrome through the public `launch()` API and measures a separate PHP
+process with `/usr/bin/time` and `ps`; the parent Chrome process is excluded. `BENCH_TRIALS` defaults
+to 5 and `BENCH_ITERATIONS` to 1000.
+`PHP_BIN` overrides the PHP executable used by isolated test and benchmark processes.
 
 `composer test-generator` runs PHP generator fixtures: signatures, omitted and
 explicit-null arguments, variadics, full regeneration and removal of obsolete methods.
 These fixtures also run as part of the default PHPUnit suite. `npm run test-generator`
 checks extraction/type mapping and upstream method/class removal, including read-only checks; `composer verify-php` checks generated artifacts.
 
-`composer psalm` checks `src/`, `tools/php/`, `tests/Generator/`, `tests/Unit/`
-and `tests/Integration/`, plus the shared `tests/Browser/BrowserRunner.php`, at level 3 without a baseline. The browser smoke script
+`composer psalm` checks `src/`, `tools/php/`, `tests/Generator/`, `tests/Unit/`,
+`tests/Integration/` and `tests/Support/` at level 3 without a baseline. The browser smoke script
 is executed separately and is not included in static analysis.

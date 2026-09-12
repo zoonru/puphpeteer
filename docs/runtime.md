@@ -46,6 +46,10 @@ browser cleanup. `Browser::close()` also cleans up the process and temporary
 profile owned by local `launch()`, including when the remote call fails.
 `disconnect()` leaves the browser running.
 
+The guest's function cache also follows PHP `JsFunction` lifetime. Once a
+function object is collected, its cache entry is removed on the event loop;
+JavaScript code that still holds the function keeps its own reference.
+
 ## Values and errors
 
 Ordinary data containing a `$quickjs` key is escaped by the codec and round trips
