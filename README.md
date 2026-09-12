@@ -276,7 +276,7 @@ On macOS the extension may use `.dylib`. `PHP_BIN` overrides the runner's PHP ex
 
 1. **Foundation:** remove old backends; configure Composer, PHPUnit, Psalm, reproducible bundle and CI. Completed.
 2. **Generator:** real methods, properties, PHP types, PHPDoc and compatibility aliases. Implemented; API coverage remains partial.
-3. **Extension:** stabilize the direct bridge, `dispatch`, type contract, queue limits, resource release and Fiber safety.
+3. **Extension:** direct bridge, `dispatch`, type contract, queue limits, callback/handle release and Fiber boundaries are implemented and covered by [contract tests](docs/extension-contract.md). Cross-platform release validation remains in step 6.
 4. **Runtime:** harden cancellation, timeouts, events, transport and object/browser lifecycle.
 5. **Plugins:** adapt and test puppeteer-extra/stealth hooks, evasions, pages, frames and popups before fixing the architecture.
 6. **Release:** compatibility, failure and long-running tests, leak checks, repeatable benchmarks and real workloads.

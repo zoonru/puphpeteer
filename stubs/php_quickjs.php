@@ -4,9 +4,8 @@ namespace {
 
 // Stubs for the php-quickjs extension (IDE / static-analysis aid only).
 // These declarations describe the native classes; they are not loaded at
-// runtime. Copied from the php-quickjs fork stubs, with the optimized
-// dispatch API from quickjs-audit/v2/extension.patch. Keep in sync with
-// the extension when its public signatures change.
+// runtime. Contract: docs/extension-contract.md. Keep in sync with the
+// hardened https://github.com/xtrime-ru/php-quickjs fork.
 
 /**
  * An embedded QuickJS sandbox with a typed, bidirectional PHP bridge.
@@ -40,7 +39,7 @@ class QuickJS
     /** Whether Promise jobs are ready (shared mode only). Does not include host I/O. */
     public function hasPendingJobs(): bool {}
 
-    /** Execute at most maxJobs ready jobs without waiting for I/O; returns the count. */
+    /** Execute at most maxJobs (> 0) ready jobs without waiting for I/O; returns the count. */
     public function executePendingJobs(int $maxJobs = 100): int {}
 
     /** Generate a TypeScript `.d.ts` declaration for the `php` global. */
@@ -71,9 +70,14 @@ namespace Js {
         public function call(mixed ...$args): mixed {}
 
         /**
-         * Optimized transport API from quickjs-audit/v2/extension.patch.
+         * Shared-mode direct dispatch; callback return values are ignored.
+         * Null drains jobs only; [] invokes with no arguments. The positive job
+         * budget does not bound synchronous JS (the engine timeout does).
+         * Failures discard partial messages. No host I/O is performed here.
+         * Throws on nested dispatch or Fiber switching inside native JS.
+         * See docs/extension-contract.md for conversion and queue limits.
          * @param list<mixed>|null $args
-         * @return array{messages: list<array{0: string, 1: mixed}>, pending: bool, jobs: int}
+         * @return array{messages: list<array{0: string, 1: mixed}>, pending: bool, jobs: non-negative-int}
          */
         public function dispatch(?array $args, int $maxJobs = 100): array {}
     }

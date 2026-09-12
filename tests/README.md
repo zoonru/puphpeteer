@@ -7,7 +7,14 @@ never loaded as runtime substitutes.
 Client codec/lifecycle tests construct a client without its constructor to isolate
 PHP behavior; they do not claim to verify dispatch, Promise pumping or the
 browser transport. `composer test-integration` checks the native batch bridge
-with the optimized extension loaded; missing extension support is an error.
+with the compatible extension loaded; missing extension support is an error.
+The [extension contract](../docs/extension-contract.md) defines supported values,
+batch limits, error recovery, callback ownership and Fiber boundaries. Run it
+against the release build from the fork, not a separately patched prototype:
+
+```sh
+php -n -d "extension=$QUICKJS_EXTENSION" vendor/bin/phpunit tests/Integration
+```
 `composer test-browser` runs the PHP smoke runner and the three examples. It
 requires the optimized extension (`QUICKJS_EXTENSION`), the built JavaScript bundle
 and the project Chrome installed under `node_modules`. The runner starts Chrome
