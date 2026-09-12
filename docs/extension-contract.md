@@ -1,6 +1,6 @@
 # PHP–QuickJS extension contract
 
-PuPHPeteer requires the hardened [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs) described in the [installation instructions](../README.md). The reviewed source revision is `3513e24acc1a8a0797e903f6637879580551e417` on `async-jobs-fibers` (not yet pushed). Upstream php-quickjs and older experimental builds are not interchangeable with this dependency. The extension currently has no capability/version marker for its safety guarantees: the presence of `Js\Callback::dispatch()` alone is insufficient. Run the integration suite against the extension binary being deployed.
+PuPHPeteer requires the hardened [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs) described in the [installation instructions](../README.md). The reviewed source revision is `73da3b1da9da9f90aa5731c90321864756c236fc` on `async-jobs-fibers` (not yet pushed). Upstream php-quickjs and older experimental builds are not interchangeable with this dependency. The extension currently has no capability/version marker for its safety guarantees: the presence of `Js\Callback::dispatch()` alone is insufficient. Run the integration suite against the extension binary being deployed.
 
 ```sh
 php -n -d extension=/absolute/path/to/libphp_quickjs.so vendor/bin/phpunit tests/Integration
@@ -15,7 +15,7 @@ The client owns a shared-mode `QuickJS` instance and a `Js\Callback` dispatcher.
 1. Invokes the saved JS function when `$args` is a positional list. `[]` means call without arguments; `null` means do not call it.
 2. Ignores the function's return value. JS sends messages with `__quickjsEmit(stringKind, data)` instead.
 3. Executes at most `$maxJobs` ready Promise jobs; the budget must be positive.
-4. Returns `['messages' => list<[string, mixed]>, 'jobs' => int, 'pending' => bool]`. Messages retain emission order. `pending` describes ready JS jobs only, not PHP timers, sockets or unresolved Promises waiting for external input.
+4. Returns `['messages' => list<[string, mixed]>, 'jobs' => int, 'pending' => bool]`. Messages retain emission order. `pending` describes ready JS jobs only, not PHP timers, sockets or unresolved Promises waiting for external input. The argument list is data-only; closures and saved JS callbacks must be passed through `call()` instead.
 
 A drain consumes its messages. Further `dispatch(null)` calls resume pending jobs. Neither dispatch nor `executePendingJobs()` waits for host I/O. The PHP event loop performs that I/O and schedules another bounded batch. The client currently uses 100 jobs per batch.
 
@@ -47,8 +47,8 @@ The extension enforces the following native bounds:
 
 - At most 4,096 queued messages per batch.
 - At most 32 MiB of accounted queue data, including kind and structural overhead.
-- A 16 MiB conversion budget per JS output value, including a 64-byte charge per visited node and the bytes of keys/string/binary content. A 16 MiB binary payload therefore exceeds the budget.
-- Nesting depth at most 64 in both conversion directions. PHP inputs do not have the JS-output byte budget; do not interpret output limits as a total PHP-input memory bound.
+- A 16 MiB conversion budget per emitted JS value and per complete PHP argument list, including a 64-byte charge per visited node and the bytes of keys/string/binary content. A 16 MiB binary payload therefore exceeds the budget.
+- Nesting depth at most 64 in both conversion directions. Generic `eval()`, `call()` and `roundtrip()` retain the depth guard without this direct-transport byte cap.
 
 Over-limit or invalid values, getter errors, native timeouts and dispatch exceptions fail the batch. Partial output is discarded and the collection state resets so a later valid batch can succeed. This is not transaction rollback: JS mutations and queued jobs may survive an error. The client closes a failed transport instead of retrying a partially executed operation. Emission outside `dispatch()` is rejected.
 
