@@ -39,4 +39,24 @@ final class PuppeteerTest extends TestCase
         self::assertSame(['--custom', 'about:blank'], $puppeteer->defaultArgs(['ignoreDefaultArgs'=>true, 'args'=>['--custom']]));
         self::assertNotContains('--no-first-run', $puppeteer->defaultArgs(['ignoreDefaultArgs'=>['--no-first-run']]));
     }
+
+    public function testNoPluginsUseTheCoreBundleByDefault(): void
+    {
+        $bundle = (new \ReflectionMethod(Puppeteer::class, 'bundle'))->invoke(new Puppeteer());
+        self::assertSame(dirname(__DIR__, 2) . '/resources/puppeteer-core.js', $bundle);
+    }
+
+    public function testPluginsUseTheFullBundleByDefault(): void
+    {
+        $puppeteer = (new Puppeteer())->use('stealth');
+        $bundle = (new \ReflectionMethod(Puppeteer::class, 'bundle'))->invoke($puppeteer);
+        self::assertSame(dirname(__DIR__, 2) . '/resources/puppeteer.js', $bundle);
+    }
+
+    public function testExplicitBundleTakesPrecedenceOverAutomaticSelection(): void
+    {
+        $path = '/tmp/custom-puppeteer.js';
+        $bundle = (new \ReflectionMethod(Puppeteer::class, 'bundle'))->invoke(new Puppeteer(['bundle' => $path]));
+        self::assertSame($path, $bundle);
+    }
 }

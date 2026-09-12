@@ -3,20 +3,35 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const check = process.argv.includes('--check');
+const debug = process.argv.includes('--debug');
 const pluginArgument = process.argv.find(arg => arg.startsWith('--plugins='));
 const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--plugins='.length)) : null;
 (async () => {
-  const result = await esbuild.build({
-    absWorkingDir: root,
-    entryPoints: ['js/guest.js'],
-    outfile: 'resources/puppeteer.js',
-    bundle: true, platform: 'browser', format: 'iife', target: 'esnext',
-    minify: false, sourcemap: false, write: false,
-    external: ['crypto', 'node:*', '@puppeteer/browsers', '../node/NodeWebSocketTransport.js'],
-    logLevel: 'info',
-    plugins: [require('./plugin-build.cjs')(pluginFile)],
-  });
-  const outputs = result.outputFiles.map(file => ({path: file.path, contents: Buffer.from(file.contents)}));
+  const buildBundle = async (outfile, core) => {
+    const plugins = [require('./plugin-build.cjs')(pluginFile), require('./plugin-cdp-only.cjs')()];
+    if (core) plugins.push(require('./plugin-core.cjs')());
+    const result = await esbuild.build({
+      absWorkingDir: root,
+      entryPoints: ['js/guest.js'],
+      outfile,
+      bundle: true, platform: 'browser', format: 'iife', target: 'esnext',
+      minify: !debug, legalComments: debug ? 'eof' : 'none', sourcemap: false, write: false,
+      metafile: core,
+      external: ['crypto', 'node:*', '@puppeteer/browsers', '../node/NodeWebSocketTransport.js'],
+      logLevel: 'info', plugins,
+    });
+    if (core) {
+      const inputs = Object.keys(result.metafile?.inputs ?? {});
+      if (inputs.some(input => input.includes('/bidi/') || input.includes('chromium-bidi'))) {
+        throw new Error('Core bundle unexpectedly contains WebDriver BiDi modules');
+      }
+    }
+    return result.outputFiles.map(file => ({path: file.path, contents: Buffer.from(file.contents)}));
+  };
+  const outputs = [
+    ...(await buildBundle('resources/puppeteer.js', false)),
+    ...(await buildBundle('resources/puppeteer-core.js', true)),
+  ];
   outputs.push({path: path.join(root, 'resources/manifest.json'), contents: Buffer.from(JSON.stringify({
     puppeteer: require('puppeteer-core/package.json').version,
     chrome: require('puppeteer-core').PUPPETEER_REVISIONS.chrome,
@@ -39,5 +54,5 @@ const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--p
       fs.writeFileSync(file.path, file.contents);
     }
   }
-  console.log(check ? 'Bundle and manifest are up to date.' : 'Bundle and manifest written to resources/.');
+  console.log(check ? 'Bundle and manifest are up to date.' : `Bundle and manifest written to resources/ (${debug ? 'debug' : 'production'} build).`);
 })().catch(error => { console.error(error); process.exitCode = 1; });

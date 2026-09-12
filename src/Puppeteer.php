@@ -38,6 +38,13 @@ final class Puppeteer
         return $prepared;
     }
 
+    /** @psalm-mutation-free */
+    private function bundle(): string
+    {
+        if (isset($this->options['bundle'])) return $this->options['bundle'];
+        return dirname(__DIR__) . '/resources/' . ($this->plugins === [] ? 'puppeteer-core.js' : 'puppeteer.js');
+    }
+
     /**
      * @param array{bundle?:string,read_timeout?:int|float} $options
      * @psalm-mutation-free
@@ -57,7 +64,7 @@ final class Puppeteer
     private function connectClient(array $options, ?Client $client = null): array
     {
         if ($client === null && $this->plugins !== []) {
-            $client = new Client($this->options['bundle'] ?? null);
+            $client = new Client($this->bundle());
             try { $options = $this->preparePlugins($client, $options, 'connect'); }
             catch (\Throwable $error) { $client->close(); throw $error; }
         }
@@ -82,7 +89,7 @@ final class Puppeteer
                 unset($options['ignoreHTTPSErrors']);
             }
             if (isset($this->options['read_timeout'])) { $options['protocolTimeout'] ??= (float) $this->options['read_timeout'] * 1000.0; }
-            $client ??= new Client($this->options['bundle'] ?? null);
+            $client ??= new Client($this->bundle());
             $browser = $client->connect($endpoint, $options)->await();
             return [$client, $browser];
         } catch (\Throwable $error) { $client?->close(); throw $error; }
@@ -96,7 +103,7 @@ final class Puppeteer
         $process = null;
         try {
             if ($this->plugins !== []) {
-                $client = new Client($this->options['bundle'] ?? null);
+                $client = new Client($this->bundle());
                 $options = $this->preparePlugins($client, $options, 'launch');
                 self::validateOptions($options, ['executablePath', 'headless', 'args', 'ignoreDefaultArgs', 'userDataDir', 'env', 'dumpio', 'devtools', 'timeout', 'defaultViewport', 'protocolTimeout', 'slowMo', 'acceptInsecureCerts', 'ignoreHTTPSErrors']);
             }

@@ -8,7 +8,20 @@ class QuickTextEncoder {
   get encoding() { return 'utf-8'; }
   encode(input = '') {
     const source = String(input);
-    const bytes = [];
+    let ascii = true;
+    for (let index = 0; index < source.length; index++) {
+      if (source.charCodeAt(index) > 0x7f) {
+        ascii = false;
+        break;
+      }
+    }
+    if (ascii) {
+      const bytes = new Uint8Array(source.length);
+      for (let index = 0; index < source.length; index++) bytes[index] = source.charCodeAt(index);
+      return bytes;
+    }
+    const bytes = new Uint8Array(source.length * 4);
+    let written = 0;
     for (let index = 0; index < source.length; index++) {
       let codePoint = source.charCodeAt(index);
       if (codePoint >= 0xd800 && codePoint <= 0xdbff) {
@@ -22,12 +35,22 @@ class QuickTextEncoder {
       } else if (codePoint >= 0xdc00 && codePoint <= 0xdfff) {
         codePoint = 0xfffd;
       }
-      if (codePoint <= 0x7f) bytes.push(codePoint);
-      else if (codePoint <= 0x7ff) bytes.push(0xc0 | (codePoint >> 6), 0x80 | (codePoint & 0x3f));
-      else if (codePoint <= 0xffff) bytes.push(0xe0 | (codePoint >> 12), 0x80 | ((codePoint >> 6) & 0x3f), 0x80 | (codePoint & 0x3f));
-      else bytes.push(0xf0 | (codePoint >> 18), 0x80 | ((codePoint >> 12) & 0x3f), 0x80 | ((codePoint >> 6) & 0x3f), 0x80 | (codePoint & 0x3f));
+      if (codePoint <= 0x7f) bytes[written++] = codePoint;
+      else if (codePoint <= 0x7ff) {
+        bytes[written++] = 0xc0 | (codePoint >> 6);
+        bytes[written++] = 0x80 | (codePoint & 0x3f);
+      } else if (codePoint <= 0xffff) {
+        bytes[written++] = 0xe0 | (codePoint >> 12);
+        bytes[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
+        bytes[written++] = 0x80 | (codePoint & 0x3f);
+      } else {
+        bytes[written++] = 0xf0 | (codePoint >> 18);
+        bytes[written++] = 0x80 | ((codePoint >> 12) & 0x3f);
+        bytes[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
+        bytes[written++] = 0x80 | (codePoint & 0x3f);
+      }
     }
-    return Uint8Array.from(bytes);
+    return bytes.subarray(0, written);
   }
   encodeInto(source, destination) {
     const input = String(source);
@@ -35,12 +58,34 @@ class QuickTextEncoder {
     let written = 0;
     while (read < input.length) {
       let next = read + 1;
-      const high = input.charCodeAt(read);
-      if (high >= 0xd800 && high <= 0xdbff && input.charCodeAt(next) >= 0xdc00 && input.charCodeAt(next) <= 0xdfff) next++;
-      const encoded = this.encode(input.slice(read, next));
-      if (written + encoded.length > destination.length) break;
-      destination.set(encoded, written);
-      written += encoded.length;
+      let codePoint = input.charCodeAt(read);
+      if (codePoint >= 0xd800 && codePoint <= 0xdbff) {
+        const low = input.charCodeAt(next);
+        if (low >= 0xdc00 && low <= 0xdfff) {
+          codePoint = 0x10000 + ((codePoint - 0xd800) << 10) + low - 0xdc00;
+          next++;
+        } else {
+          codePoint = 0xfffd;
+        }
+      } else if (codePoint >= 0xdc00 && codePoint <= 0xdfff) {
+        codePoint = 0xfffd;
+      }
+      const length = codePoint <= 0x7f ? 1 : codePoint <= 0x7ff ? 2 : codePoint <= 0xffff ? 3 : 4;
+      if (written + length > destination.length) break;
+      if (length === 1) destination[written++] = codePoint;
+      else if (length === 2) {
+        destination[written++] = 0xc0 | (codePoint >> 6);
+        destination[written++] = 0x80 | (codePoint & 0x3f);
+      } else if (length === 3) {
+        destination[written++] = 0xe0 | (codePoint >> 12);
+        destination[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
+        destination[written++] = 0x80 | (codePoint & 0x3f);
+      } else {
+        destination[written++] = 0xf0 | (codePoint >> 18);
+        destination[written++] = 0x80 | ((codePoint >> 12) & 0x3f);
+        destination[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
+        destination[written++] = 0x80 | (codePoint & 0x3f);
+      }
       read = next;
     }
     // Encoding Web API reports UTF-16 code units consumed, not UTF-8 bytes.
@@ -57,6 +102,22 @@ class QuickTextDecoder {
   get encoding() { return 'utf-8'; }
   decode(input = new Uint8Array()) {
     const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+    let ascii = true;
+    for (let index = 0; index < bytes.length; index++) {
+      if (bytes[index] > 0x7f) {
+        ascii = false;
+        break;
+      }
+    }
+    if (ascii) {
+      const chunks = [];
+      for (let index = 0; index < bytes.length; index += 32768) {
+        chunks.push(String.fromCharCode.apply(null, bytes.subarray(index, index + 32768)));
+      }
+      let output = chunks.join('');
+      if (!this.ignoreBOM && output.charCodeAt(0) === 0xfeff) output = output.slice(1);
+      return output;
+    }
     let output = '';
     for (let index = 0; index < bytes.length;) {
       const first = bytes[index++];

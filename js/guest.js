@@ -13,12 +13,18 @@ const publicTypes = new Map(Object.entries({
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
   Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
 }).map(([name, type]) => [type.prototype, name]));
+const remoteClasses = new WeakMap();
 function remoteClass(value) {
+  const cached = remoteClasses.get(value);
+  if (cached !== undefined) return cached;
+  let name;
   for (let prototype = Object.getPrototypeOf(value); prototype; prototype = Object.getPrototypeOf(prototype)) {
-    const name = publicTypes.get(prototype);
-    if (name) return name;
+    name = publicTypes.get(prototype);
+    if (name) break;
   }
-  return value.constructor?.name ?? 'Object';
+  name ??= value.constructor?.name ?? 'Object';
+  remoteClasses.set(value, name);
+  return name;
 }
 
 const objects = new Map();
@@ -52,63 +58,87 @@ function clearEvents(objectId, event) {
 }
 const emit = (kind, value) => __quickjsEmit(kind, value);
 const errorData = error => ({name: error?.name ?? 'Error', message: error?.message ?? String(error), stack: error?.stack ?? ''});
-function encode(value, ancestors = new Set()) {
+function encodeRecord(value, ancestors) {
+  const entries = Object.entries(value);
+  const record = {};
+  for (const [key, item] of entries) {
+    const encoded = encode(item, ancestors);
+    // Assignment to __proto__ has legacy setter semantics on ordinary objects,
+    // while Object.fromEntries creates an own data property.
+    if (key === '__proto__') Object.defineProperty(record, key, {value: encoded, enumerable: true, configurable: true, writable: true});
+    else record[key] = encoded;
+  }
+  return Object.hasOwn(record, '$quickjs') ? {$quickjs: 'record', value: record} : record;
+}
+function encode(value, ancestors) {
   if (value === undefined) return {$quickjs: 'undefined'};
-  if (typeof value === 'bigint') return {$quickjs: 'bigint', value: String(value)};
-  if (typeof value === 'number' && !Number.isFinite(value)) return {$quickjs: 'number', value: String(value)};
-  if (Object.is(value, -0)) return {$quickjs: 'number', value: '-0'};
+  const type = typeof value;
+  if (type === 'bigint') return {$quickjs: 'bigint', value: String(value)};
+  if (type === 'number') {
+    if (!Number.isFinite(value)) return {$quickjs: 'number', value: String(value)};
+    if (Object.is(value, -0)) return {$quickjs: 'number', value: '-0'};
+    return value;
+  }
+  if (type !== 'object' || value === null) return value;
   if (value instanceof Uint8Array) return {$quickjs: 'bytes', value};
-  if (value && typeof value === 'object' && (Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)) {
+  const prototype = Object.getPrototypeOf(value);
+  if (Array.isArray(value) || prototype === Object.prototype || prototype === null) {
+    ancestors ??= new Set();
     if (ancestors.has(value)) throw new TypeError('Cannot transfer cyclic data');
     ancestors.add(value);
     try {
       if (Array.isArray(value)) return value.map(item => encode(item, ancestors));
-      const record = Object.fromEntries(Object.entries(value).map(([key, item]) => [key, encode(item, ancestors)]));
-      return Object.hasOwn(record, '$quickjs') ? {$quickjs: 'record', value: record} : record;
+      return encodeRecord(value, ancestors);
     } finally { ancestors.delete(value); }
   }
-  if (value && typeof value === 'object') {
-    if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) {
-      let id = identities.get(value);
-      if (!id) { id = ++nextObject; identities.set(value, id); }
-      objects.set(id, value);
-      return {$quickjs: 'object', id, class: remoteClass(value)};
-    }
-    return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, encode(val)]));
+  let id = identities.get(value);
+  if (id === undefined) {
+    id = ++nextObject;
+    identities.set(value, id);
   }
-  return value;
+  // A released object can be encoded again. Re-pin it only in that case.
+  if (!objects.has(id)) objects.set(id, value);
+  return {$quickjs: 'object', id, class: remoteClass(value)};
+}
+function decodeRecord(value, pin, temporary) {
+  const entries = Object.entries(value);
+  const record = {};
+  for (const [key, item] of entries) {
+    const decoded = decode(item, pin, temporary);
+    if (key === '__proto__') Object.defineProperty(record, key, {value: decoded, enumerable: true, configurable: true, writable: true});
+    else record[key] = decoded;
+  }
+  return record;
 }
 function decode(value, pin = true, temporary = null) {
+  if (value === null || typeof value !== 'object') return value;
   if (Array.isArray(value)) return value.map(item => decode(item, pin, temporary));
-  if (value && typeof value === 'object') {
-    if (value.$quickjs === 'record') return Object.fromEntries(Object.entries(value.value).map(([key, item]) => [key, decode(item, pin, temporary)]));
-    if (value.$quickjs === 'object') {
-      if (!objects.has(value.id)) throw new Error(`Unknown remote object ${value.id}`);
-      return objects.get(value.id);
-    }
-    if (value.$quickjs === 'function') {
-      const key = `function:${value.id}`;
-      if (!decodedFunctions.has(key)) decodedFunctions.set(key, (0, eval)(`(${value.source})`));
-      return decodedFunctions.get(key);
-    }
-    if (value.$quickjs === 'callback') {
-      if (pin) pinnedCallbacks.add(value.id);
-      else temporary?.add(value.id);
-      const key = `callback:${value.id}`;
-      if (decodedFunctions.has(key)) return decodedFunctions.get(key);
-      const fn = (...args) => new Promise((resolve, reject) => {
-      const id = ++nextCallback;
-      callbacks.set(id, {resolve, reject});
-      emit('callback', {id, callback: value.id, args: args.map(item => encode(item))});
-      });
-      decodedFunctions.set(key, fn);
-      return fn;
-    }
-    if (value.$quickjs === 'undefined') return undefined;
-    if (value.$quickjs === 'bigint') return BigInt(value.value);
-    return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, decode(val, pin, temporary)]));
+  if (value.$quickjs === 'record') return decodeRecord(value.value, pin, temporary);
+  if (value.$quickjs === 'object') {
+    if (!objects.has(value.id)) throw new Error(`Unknown remote object ${value.id}`);
+    return objects.get(value.id);
   }
-  return value;
+  if (value.$quickjs === 'function') {
+    const key = `function:${value.id}`;
+    if (!decodedFunctions.has(key)) decodedFunctions.set(key, (0, eval)(`(${value.source})`));
+    return decodedFunctions.get(key);
+  }
+  if (value.$quickjs === 'callback') {
+    if (pin) pinnedCallbacks.add(value.id);
+    else temporary?.add(value.id);
+    const key = `callback:${value.id}`;
+    if (decodedFunctions.has(key)) return decodedFunctions.get(key);
+    const fn = (...args) => new Promise((resolve, reject) => {
+    const id = ++nextCallback;
+    callbacks.set(id, {resolve, reject});
+    emit('callback', {id, callback: value.id, args: args.map(item => encode(item))});
+    });
+    decodedFunctions.set(key, fn);
+    return fn;
+  }
+  if (value.$quickjs === 'undefined') return undefined;
+  if (value.$quickjs === 'bigint') return BigInt(value.value);
+  return decodeRecord(value, pin, temporary);
 }
 const transport = {
   send: message => __quickjsEmit('send', message),
@@ -116,23 +146,24 @@ const transport = {
 };
 const plugins = new PluginAdapter();
 async function call(request) {
-  if (request.method === 'preparePlugins' && request.object === 0) return plugins.prepare(...request.args.map(item => decode(item)));
-  if (!['close', 'disconnect'].includes(request.method)) plugins.check();
-  if (request.method === 'connect' && request.object === 0) {
+  const method = request.method;
+  if (method === 'preparePlugins' && request.object === 0) return plugins.prepare(...request.args.map(item => decode(item)));
+  if (method !== 'close' && method !== 'disconnect') plugins.check();
+  if (method === 'connect' && request.object === 0) {
     return plugins.connect(puppeteer, decode(request.args[0] || {}), transport);
   }
   const object = objects.get(request.object);
   if (!object) throw new Error(`Unknown remote object ${request.object}`);
-  if (request.operation === 'get') return object[request.method];
-  const fn = object[request.method];
+  if (request.operation === 'get') return object[method];
+  const fn = object[method];
   if (typeof fn !== 'function') throw new Error(`Not a method: ${request.method}`);
   const [event, handler] = request.args;
-  if ((request.method === 'on' || request.method === 'once') && handler?.$quickjs === 'callback') {
+  if ((method === 'on' || method === 'once') && handler?.$quickjs === 'callback') {
     const callback = decode(handler, false);
     const entry = {objectId: request.object, object, event, callbackId: handler.id, wrapper: null};
     entry.wrapper = (...args) => {
       const result = callback(...args);
-      if (request.method === 'once') dropEvent(entry);
+      if (method === 'once') dropEvent(entry);
       result.catch(error => emit('log', `PHP event callback failed: ${error.message}`));
     };
     object.on(event, entry.wrapper);
@@ -141,19 +172,19 @@ async function call(request) {
     eventCallbacks.set(handler.id, (eventCallbacks.get(handler.id) ?? 0) + 1);
     return object;
   }
-  if (request.method === 'off' && handler?.$quickjs === 'callback') {
+  if (method === 'off' && handler?.$quickjs === 'callback') {
     const entries = [...(eventListeners.get(request.object) ?? [])];
     const entry = entries.findLast(entry => entry.event === event && entry.callbackId === handler.id);
     if (entry) dropEvent(entry);
     else if (!eventCallbacks.has(handler.id) && !pinnedCallbacks.has(handler.id)) emit('releaseCallback', handler.id);
     return object;
   }
-  if (request.method === 'removeAllListeners' || (request.method === 'off' && handler === undefined)) clearEvents(request.object, event);
-  const persistent = ['exposeFunction', 'on', 'once'].includes(request.method);
+  if (method === 'removeAllListeners' || (method === 'off' && handler === undefined)) clearEvents(request.object, event);
+  const persistent = method === 'exposeFunction' || method === 'on' || method === 'once';
   const temporary = new Set();
   try {
     const result = await Reflect.apply(fn, object, request.args.map(item => decode(item, persistent, temporary)));
-    if (request.method === 'close') clearEvents(request.object);
+    if (method === 'close') clearEvents(request.object);
     if (result instanceof Page) await plugins.page(result);
     return result;
   } finally {
