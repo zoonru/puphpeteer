@@ -25,6 +25,14 @@
     "Tracing"
   ],
   "types": {
+    "ReadableStream<Uint8Array>": {
+      "native": "\\Amp\\ByteStream\\ReadableStream",
+      "psalm": "\\Amp\\ByteStream\\ReadableStream"
+    },
+    "ReadableStream<Uint8Array<ArrayBufferLike>>": {
+      "native": "\\Amp\\ByteStream\\ReadableStream",
+      "psalm": "\\Amp\\ByteStream\\ReadableStream"
+    },
     "Uint8Array<ArrayBufferLike>": {
       "native": "string",
       "psalm": "string"

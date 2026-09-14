@@ -1,4 +1,5 @@
 import {fireTimer, clearTimers} from './host-environment.js';
+import {GuestReadableStreams} from './readable-streams.js';
 import {installFilesystem} from './filesystem.js';
 import {PluginAdapter} from './plugins/adapter.js';
 import puppeteer, {
@@ -57,6 +58,7 @@ function clearEvents(objectId, event) {
     if (event === undefined || entry.event === event) dropEvent(entry);
   }
 }
+const streams = new GuestReadableStreams();
 const emit = (kind, value) => __quickjsEmit(kind, value);
 const errorData = error => ({name: error?.name ?? 'Error', message: error?.message ?? String(error), stack: error?.stack ?? ''});
 installFilesystem((operation, args) => new Promise((resolve, reject) => {
@@ -87,6 +89,7 @@ function encode(value, ancestors) {
   }
   if (type !== 'object' || value === null) return value;
   if (value instanceof Uint8Array) return {$quickjs: 'bytes', value};
+  if (value instanceof ReadableStream) return streams.encode(value);
   const prototype = Object.getPrototypeOf(value);
   if (Array.isArray(value) || prototype === Object.prototype || prototype === null) {
     ancestors ??= new Set();
@@ -153,6 +156,11 @@ const transport = {
 const plugins = new PluginAdapter();
 async function call(request) {
   const method = request.method;
+  if (request.operation === 'stream') {
+    if (method === 'read') return streams.read(request.object);
+    if (method === 'cancel') return streams.cancel(request.object);
+    throw new Error('Unknown stream operation');
+  }
   if (method === 'preparePlugins' && request.object === 0) return plugins.prepare(...request.args.map(item => decode(item)));
   if (method !== 'close' && method !== 'disconnect') plugins.check();
   if (method === 'connect' && request.object === 0) {
@@ -206,6 +214,7 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   if (kind === 'message') { transport.onmessage?.(payload); return; }
   if (kind === 'closed') {
     transport.onclose?.();
+    streams.close();
     for (const pending of callbacks.values()) pending.reject(new Error('PHP transport closed'));
     clearTimers();
     callbacks.clear();

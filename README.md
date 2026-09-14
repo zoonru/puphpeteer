@@ -218,6 +218,23 @@ try {
 }
 ```
 
+### Reading streams
+
+`createPDFStream()` returns an `Amp\ByteStream\ReadableStream`. The stream stays in QuickJS; PHP requests at most 64 KiB per read and yields to the event loop between reads. No complete-file buffer is added by the bridge. The source may have its own buffer; synchronous JS production and each chunk transfer still take CPU time.
+
+```php
+$stream = $page->createPDFStream();
+try {
+    while (($chunk = $stream->read()) !== null) {
+        // Write to an asynchronous file or HTTP output stream.
+    }
+} finally {
+    $stream->close();
+}
+```
+
+Amp `pipe()` and `buffer()` work with this stream (`buffer()` intentionally collects everything). `read($cancellation)` cancels and closes only that stream. Early close also releases the PDF's CDP handle. Node.js writable streams are a separate interface and are not provided by this adapter.
+
 ## Puppeteer plugins
 
 Register bundled plugins before launching or connecting:

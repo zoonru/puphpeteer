@@ -37,6 +37,8 @@ final class Client
     private ?Internal\BrowserProcess $browserProcess = null;
     private array $timers = [];
     private array $objects = [];
+    /** @var array<int, \WeakReference<Internal\ReadableStream>> */
+    private array $streams = [];
     private ?Internal\HostFilesystem $filesystem = null;
 
     public function __construct(?string $bundle = null)
@@ -103,11 +105,11 @@ final class Client
         $automaticTimeout = $cancellation === null && $this->protocolTimeout !== null;
         $cancellation ??= $automaticTimeout ? new TimeoutCancellation($this->protocolTimeout / 1000.0) : null;
         if ($cancellation === null) { return $deferred->getFuture(); }
-        return async(function () use ($deferred, $cancellation, $id, $automaticTimeout): mixed {
+        return async(function () use ($deferred, $cancellation, $id, $automaticTimeout, $operation): mixed {
             try { return $deferred->getFuture()->await($cancellation); }
             catch (\Amp\CancelledException $error) {
                 if (($this->pending[$id] ?? null) === $deferred) { unset($this->pending[$id]); }
-                if (!$automaticTimeout) { $this->stop($error); }
+                if (!$automaticTimeout && $operation !== 'stream') { $this->stop($error); }
                 throw $error;
             }
         });
@@ -234,6 +236,15 @@ final class Client
     {
         if (!is_array($value)) { return $value; }
         if (($value['$quickjs'] ?? null) === 'record') { return array_map($this->decode(...), $value['value']); }
+        if (($value['$quickjs'] ?? null) === 'stream') {
+            $id = $value['id'];
+            $stream = ($this->streams[$id] ?? null)?->get();
+            if ($stream === null) {
+                $stream = new Internal\ReadableStream($this, $id);
+                $this->streams[$id] = \WeakReference::create($stream);
+            }
+            return $stream;
+        }
         if (($value['$quickjs'] ?? null) === 'object') {
             $id = $value['id'];
             $object = ($this->objects[$id] ?? null)?->get();
@@ -266,6 +277,22 @@ final class Client
             if (($this->objects[$id] ?? null)?->get() === null) { $this->release($id); }
         });
     }
+    /**
+     * @internal
+     * @psalm-external-mutation-free
+     */
+    public function forgetStream(int $id): void { unset($this->streams[$id]); }
+
+    /** @internal Stream finalizers must not re-enter QuickJS. */
+    public function cancelStreamLater(int $id, bool $onlyIfUnreferenced = false): void
+    {
+        if ($this->closed) { return; }
+        EventLoop::queue(function () use ($id, $onlyIfUnreferenced): void {
+            if ($onlyIfUnreferenced && ($this->streams[$id] ?? null)?->get() !== null) { return; }
+            $this->call($id, 'cancel', [], 'stream')->ignore();
+        });
+    }
+
     public function release(int $id): void
     {
         unset($this->objects[$id]);
@@ -307,6 +334,8 @@ final class Client
         $this->functionIds = null;
         $this->functionReferences = null;
         $this->objects = [];
+        foreach ($this->streams as $stream) { $stream->get()?->transportClosed($error); }
+        $this->streams = [];
         foreach ($this->pending as $future) { $future->error($error ?? new \RuntimeException('QuickJS client closed')); }
         $this->pending = [];
         $this->socket?->close();

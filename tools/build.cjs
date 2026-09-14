@@ -8,7 +8,7 @@ const pluginArgument = process.argv.find(arg => arg.startsWith('--plugins='));
 const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--plugins='.length)) : null;
 (async () => {
   const buildBundle = async (outfile, core) => {
-    const plugins = [require('./plugin-build.cjs')(pluginFile), require('./plugin-cdp-only.cjs')()];
+    const plugins = [require('./plugin-build.cjs')(pluginFile), require('./plugin-cdp-only.cjs')(), require('./plugin-protocol-stream.cjs')()];
     if (core) plugins.push(require('./plugin-core.cjs')());
     const result = await esbuild.build({
       absWorkingDir: root,

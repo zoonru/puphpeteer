@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "note": "Declaration coverage only; does not imply runtime or test coverage.",
   "total": 688,
-  "generated": 333,
+  "generated": 334,
   "members": [
     {
       "id": "Accessibility.constructor",
@@ -3054,16 +3054,8 @@
     },
     {
       "id": "Page.createPDFStream",
-      "status": "unsupported",
-      "diagnostics": [
-        {
-          "code": "type.unsupported",
-          "componentId": "QuickJsModel",
-          "symbolId": "Page.createPDFStream",
-          "expected": "Explicit native/Psalm representation",
-          "actual": "ReadableStream<Uint8Array<ArrayBufferLike>>"
-        }
-      ]
+      "status": "generated",
+      "diagnostics": []
     },
     {
       "id": "Page.deleteCookie",
@@ -9148,13 +9140,6 @@
       "symbolId": "Page.bluetooth",
       "expected": "Explicit native/Psalm representation",
       "actual": "BluetoothEmulation"
-    },
-    {
-      "code": "type.unsupported",
-      "componentId": "QuickJsModel",
-      "symbolId": "Page.createPDFStream",
-      "expected": "Explicit native/Psalm representation",
-      "actual": "ReadableStream<Uint8Array<ArrayBufferLike>>"
     },
     {
       "code": "type.unsupported",

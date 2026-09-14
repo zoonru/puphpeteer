@@ -146,6 +146,14 @@ class Page extends \Nesk\Puphpeteer\RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
     /**
+     * @param (array{displayHeaderFooter?: bool, footerTemplate?: string, format?: "letter"|"legal"|"tabloid"|"ledger"|"a0"|"a1"|"a2"|"a3"|"a4"|"a5"|"a6"|"LETTER"|"LEGAL"|"TABLOID"|"LEDGER"|"A0"|"A1"|"A2"|"A3"|"A4"|"A5"|"A6"|"Letter"|"Legal"|"Tabloid"|"Ledger", headerTemplate?: string, height?: string|int|float, landscape?: bool, margin?: array{bottom?: string|int|float, left?: string|int|float, right?: string|int|float, top?: string|int|float}, omitBackground?: bool, outline?: bool, pageRanges?: string, path?: string, preferCSSPageSize?: bool, printBackground?: bool, scale?: int|float, tagged?: bool, timeout?: int|float, waitForFonts?: bool, width?: string|int|float})|null $options
+     * @return \Amp\ByteStream\ReadableStream
+     */
+    public function createPDFStream(array|null $options = NULL): \Amp\ByteStream\ReadableStream
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+    /**
      * @param array{domain?: string, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, url?: string} ...$cookies
      * @return void
      */
