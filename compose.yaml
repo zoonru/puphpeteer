@@ -7,8 +7,6 @@ services:
     init: true
     volumes:
       - .:/app
-      - vendor:/app/vendor
-      - node_modules:/app/node_modules
     environment:
       BROWSER_WS: ws://browserless:3000?token=local-tests
   chrome:
@@ -23,8 +21,6 @@ services:
     init: true
     volumes:
       - .:/app
-      - vendor:/app/vendor
-      - node_modules:/app/node_modules
     shm_size: 1gb
     cap_add:
       - SYS_ADMIN
@@ -35,7 +31,3 @@ services:
     environment:
       TOKEN: local-tests
       TIMEOUT: 300000 # Maximum Browserless session duration in milliseconds.
-
-volumes:
-  vendor:
-  node_modules:

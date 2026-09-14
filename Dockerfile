@@ -30,7 +30,7 @@ RUN echo 'extension=/usr/local/lib/php_quickjs.so' > /usr/local/etc/php/conf.d/q
     && useradd --create-home --uid 1000 app
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 WORKDIR /app
-RUN mkdir /app/vendor /app/node_modules && chown -R app:app /app
+RUN chown app:app /app
 USER app
 ENTRYPOINT []
 CMD []

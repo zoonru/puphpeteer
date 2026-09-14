@@ -111,7 +111,7 @@ docker compose run --rm php npm ci
 docker compose run --rm chrome php examples/01_page_open.php
 ```
 
-`Dockerfile` provides PHP, QuickJS, Composer and Node.js without a browser. `Dockerfile-chrome` installs Chrome from `upstream/lock.json` into `/opt/chrome` using the same PHP installer and sets `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. Neither image contains application code or project dependencies, and neither starts a command automatically. Compose mounts the checkout at `/app` and dependencies in shared `vendor`/`node_modules` volumes. `npm ci` installs development tooling only. Rebuild after Dockerfile, extension or locked Chrome changes.
+`Dockerfile` provides PHP, QuickJS, Composer and Node.js without a browser. `Dockerfile-chrome` installs Chrome from `upstream/lock.json` into `/opt/chrome` using the same PHP installer and sets `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. Neither image contains application code or project dependencies, and neither starts a command automatically. Both images include Node.js and npm for development. Compose mounts the entire checkout at `/app`, including `vendor` and `node_modules`; dependency installation writes directly to the host directory. `npm ci` installs development tooling only. When switching between macOS and Linux, rerun `npm ci` in the target environment: native npm binaries depend on the OS as well as the CPU architecture. Rebuild after Dockerfile, extension or locked Chrome changes.
 
 Images use the host architecture; Chrome availability depends on the locked version. The Chrome service uses `SYS_ADMIN` for its sandbox. The image has no graphical display.
 
