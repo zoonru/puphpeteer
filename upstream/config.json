@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "namespace": "Nesk\\Puphpeteer",
+  "namespace": "Nesk\\Puphpeteer\\Puppeteer",
   "wrapperClasses": [
     "Browser",
     "BrowserContext",
@@ -79,8 +79,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\JSHandle",
-        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle"
       }
     },
     "Frame.evaluate": {
@@ -111,8 +111,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\JSHandle",
-        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle"
       }
     },
     "JSHandle.evaluate": {
@@ -143,8 +143,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\JSHandle",
-        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle"
       }
     },
     "ElementHandle.evaluate": {
@@ -175,8 +175,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\JSHandle",
-        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle"
       }
     },
     "WebWorker.evaluate": {
@@ -207,22 +207,22 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\JSHandle",
-        "psalm": "\\Nesk\\Puphpeteer\\JSHandle"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle"
       }
     },
     "Page.$": {
       "name": "querySelector",
       "returnType": {
         "native": "mixed",
-        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle|null"
       }
     },
     "Page.$$": {
       "name": "querySelectorAll",
       "returnType": {
         "native": "mixed",
-        "psalm": "list<\\Nesk\\Puphpeteer\\ElementHandle>"
+        "psalm": "list<\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle>"
       }
     },
     "Page.$eval": {
@@ -264,21 +264,21 @@
     "Page.waitForSelector": {
       "returnType": {
         "native": "mixed",
-        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle|null"
       }
     },
     "Frame.$": {
       "name": "querySelector",
       "returnType": {
         "native": "mixed",
-        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle|null"
       }
     },
     "Frame.$$": {
       "name": "querySelectorAll",
       "returnType": {
         "native": "mixed",
-        "psalm": "list<\\Nesk\\Puphpeteer\\ElementHandle>"
+        "psalm": "list<\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle>"
       }
     },
     "Frame.$eval": {
@@ -320,21 +320,21 @@
     "Frame.waitForSelector": {
       "returnType": {
         "native": "mixed",
-        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle|null"
       }
     },
     "ElementHandle.$": {
       "name": "querySelector",
       "returnType": {
         "native": "mixed",
-        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle|null"
       }
     },
     "ElementHandle.$$": {
       "name": "querySelectorAll",
       "returnType": {
         "native": "mixed",
-        "psalm": "list<\\Nesk\\Puphpeteer\\ElementHandle>"
+        "psalm": "list<\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle>"
       }
     },
     "ElementHandle.$eval": {
@@ -376,7 +376,7 @@
     "ElementHandle.waitForSelector": {
       "returnType": {
         "native": "mixed",
-        "psalm": "\\Nesk\\Puphpeteer\\ElementHandle|null"
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\ElementHandle|null"
       }
     },
     "Page.screenshot": {
@@ -432,8 +432,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Browser",
-        "psalm": "\\Nesk\\Puphpeteer\\Browser"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
       }
     },
     "Browser.once": {
@@ -448,8 +448,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Browser",
-        "psalm": "\\Nesk\\Puphpeteer\\Browser"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
       }
     },
     "Browser.off": {
@@ -464,8 +464,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Browser",
-        "psalm": "\\Nesk\\Puphpeteer\\Browser"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
       }
     },
     "Browser.listenerCount": {
@@ -496,8 +496,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\BrowserContext",
-        "psalm": "\\Nesk\\Puphpeteer\\BrowserContext"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\BrowserContext",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\BrowserContext"
       }
     },
     "BrowserContext.once": {
@@ -512,8 +512,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\BrowserContext",
-        "psalm": "\\Nesk\\Puphpeteer\\BrowserContext"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\BrowserContext",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\BrowserContext"
       }
     },
     "BrowserContext.off": {
@@ -528,8 +528,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\BrowserContext",
-        "psalm": "\\Nesk\\Puphpeteer\\BrowserContext"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\BrowserContext",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\BrowserContext"
       }
     },
     "BrowserContext.listenerCount": {
@@ -560,8 +560,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Page",
-        "psalm": "\\Nesk\\Puphpeteer\\Page"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Page",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Page"
       }
     },
     "Page.once": {
@@ -576,8 +576,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Page",
-        "psalm": "\\Nesk\\Puphpeteer\\Page"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Page",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Page"
       }
     },
     "Page.off": {
@@ -592,8 +592,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Page",
-        "psalm": "\\Nesk\\Puphpeteer\\Page"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Page",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Page"
       }
     },
     "Page.listenerCount": {
@@ -624,8 +624,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Frame",
-        "psalm": "\\Nesk\\Puphpeteer\\Frame"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Frame",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Frame"
       }
     },
     "Frame.once": {
@@ -640,8 +640,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Frame",
-        "psalm": "\\Nesk\\Puphpeteer\\Frame"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Frame",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Frame"
       }
     },
     "Frame.off": {
@@ -656,8 +656,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\Frame",
-        "psalm": "\\Nesk\\Puphpeteer\\Frame"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Frame",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Frame"
       }
     },
     "Frame.listenerCount": {
@@ -688,8 +688,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\CDPSession",
-        "psalm": "\\Nesk\\Puphpeteer\\CDPSession"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\CDPSession",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\CDPSession"
       }
     },
     "CDPSession.once": {
@@ -704,8 +704,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\CDPSession",
-        "psalm": "\\Nesk\\Puphpeteer\\CDPSession"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\CDPSession",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\CDPSession"
       }
     },
     "CDPSession.off": {
@@ -720,8 +720,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\CDPSession",
-        "psalm": "\\Nesk\\Puphpeteer\\CDPSession"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\CDPSession",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\CDPSession"
       }
     },
     "CDPSession.listenerCount": {
@@ -752,8 +752,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\WebWorker",
-        "psalm": "\\Nesk\\Puphpeteer\\WebWorker"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\WebWorker",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\WebWorker"
       }
     },
     "WebWorker.once": {
@@ -768,8 +768,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\WebWorker",
-        "psalm": "\\Nesk\\Puphpeteer\\WebWorker"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\WebWorker",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\WebWorker"
       }
     },
     "WebWorker.off": {
@@ -784,8 +784,8 @@
         }
       ],
       "returnType": {
-        "native": "\\Nesk\\Puphpeteer\\WebWorker",
-        "psalm": "\\Nesk\\Puphpeteer\\WebWorker"
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\WebWorker",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\WebWorker"
       }
     },
     "WebWorker.listenerCount": {

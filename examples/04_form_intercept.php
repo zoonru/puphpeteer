@@ -5,8 +5,8 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 use Amp\TimeoutCancellation;
-use Nesk\Puphpeteer\HTTPRequest;
-use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Puppeteer\HTTPRequest;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use function Amp\async;
 
 $url = 'file://' . __DIR__ . '/pages/form.html';

@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 namespace Nesk\Puphpeteer;
+
+use Nesk\Puphpeteer\Puppeteer\Browser;
 class RemoteObject
 {
     private bool $released = false;

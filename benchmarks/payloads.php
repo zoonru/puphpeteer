@@ -5,7 +5,7 @@ ini_set('display_errors', 'stderr');
 
 use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\Puppeteer;
-use Nesk\Puphpeteer\Tests\Support\LargePayload;
+use Nesk\Puphpeteer\Tests\Support\Puppeteer\LargePayload;
 use Revolt\EventLoop;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\ConsoleOutput;

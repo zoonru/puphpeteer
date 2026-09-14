@@ -6,7 +6,7 @@ use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 use Amp\Process\Process;
 use Nesk\Puphpeteer\Puppeteer;
-use Nesk\Puphpeteer\Tests\Support\ProcessRunner;
+use Nesk\Puphpeteer\Tests\Support\Shared\ProcessRunner;
 use function Amp\async;
 use function Amp\delay;
 use function Amp\ByteStream\buffer;

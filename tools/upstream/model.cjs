@@ -25,7 +25,7 @@ function inside(root, relative) {
 function validateConfig(config) {
     fields(config, ['schemaVersion', 'namespace', 'wrapperClasses', 'members', 'types'], 'config');
     if (config.schemaVersion !== 1) throw new Error('Unsupported config schema');
-    if (config.namespace !== 'Nesk\\Puphpeteer') throw new Error('Invalid PHP namespace');
+    if (config.namespace !== 'Nesk\\Puphpeteer\\Puppeteer') throw new Error('Invalid PHP namespace');
     if (!Array.isArray(config.wrapperClasses) || !config.wrapperClasses.every(name => /^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) || new Set(config.wrapperClasses).size !== config.wrapperClasses.length) throw new Error('Invalid wrapperClasses');
     for (const key of ['members', 'types']) object(config[key] || {}, `config.${key}`);
     for (const [name, value] of Object.entries(config.types || {})) {

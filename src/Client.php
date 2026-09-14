@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Nesk\Puphpeteer;
 
+use Nesk\Puphpeteer\Puppeteer\Browser;
+
 use Amp\Cancellation;
 use Amp\DeferredFuture;
 use Amp\TimeoutCancellation;

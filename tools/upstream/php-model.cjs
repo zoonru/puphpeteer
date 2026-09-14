@@ -10,7 +10,7 @@ function buildPhpModel({api, config}) {
     const ids = new Set(api.classes.flatMap(c => c.members.map(m => m.id)));
     for (const name of selected) if (!api.classes.some(c => c.name === name)) report('class.removed', name, 'Upstream class', 'No longer exported; wrapper will be removed');
     for (const id of Object.keys(config.members || {})) if (!ids.has(id)) report('member.removed', id, 'Upstream member', 'No longer present; mapping ignored');
-    const classMap = new Map(api.classes.filter(c => selected.has(c.name)).map(c => [c.name, {fqcn: `${config.namespace}\\${c.name}`, file: `src/${c.name}.php`}]));
+    const classMap = new Map(api.classes.filter(c => selected.has(c.name)).map(c => [c.name, {fqcn: `${config.namespace}\\${c.name}`, file: `src/Puppeteer/${c.name}.php`}]));
     const mapper = createTypeMapper({types: api.types, config, classMap, report, requireClass: () => {}});
     const classes = [], coverage = [];
     for (const item of api.classes) {

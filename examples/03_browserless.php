@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use Nesk\Rialto\Data\JsFunction;
 
 // Start Browserless separately and provide its complete endpoint, including token.
