@@ -33,7 +33,7 @@ requires the extension loaded through PHP ini, the built JavaScript bundle and t
 Chrome from `PUPPETEER_EXECUTABLE_PATH` (set by the Chrome image), or the managed installation in `.chrome` or `PUPPETEER_CACHE_DIR` outside Docker. Each browser script starts Chrome through the public
 `launch()` API and uses the static fixtures in `examples/pages`; no HTTP fixture server is started.
 `PUPPETEER_EXECUTABLE_PATH` can explicitly override the browser; system installations are never
-selected automatically. See the [installation instructions](../README.md#requirements-and-installation).
+selected automatically. See the [installation instructions](../README.md#installation).
 Missing prerequisites must not be treated as an integration pass.
 
 `composer test-release` adds repeated browser workloads and resource-retention

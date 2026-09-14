@@ -9,14 +9,13 @@
 
 Клиент [Puppeteer](https://github.com/puppeteer/puppeteer) для PHP. Оригинальный Puppeteer выполняется внутри PHP-процесса через **php-quickjs**; Amp обслуживает WebSocket, таймеры и PHP callbacks. Для работы с браузером процесс Node.js не нужен.
 
-Эта версия **находится в разработке и ещё не выпущена**. Сгенерированные обёртки покрывают часть API Puppeteer; встроенный stealth и пользовательские плагины доступны в пределах, описанных в документации совместимости.
+Сгенерированные обёртки покрывают часть API Puppeteer; встроенный stealth и пользовательские плагины доступны в пределах, описанных в документации совместимости.
 
 ## Содержание
 
 - [Использование](#использование)
-- [Требования и установка](#требования-и-установка)
-- [Установка браузера в приложении](#установка-браузера-в-приложении)
-- [Сборка и установка php-quickjs](#сборка-и-установка-php-quickjs)
+- [Требования](#требования)
+- [Установка](#установка)
 - [Использование с browserless](#использование-с-browserless)
 - [Основные отличия от Puppeteer](#основные-отличия-от-puppeteer)
 - [Плагины Puppeteer](#плагины-puppeteer)
@@ -50,41 +49,32 @@ try {
 }
 ```
 
-## Требования и установка
+## Требования
 
-Нужны PHP **8.4+**, Composer, [форк php-quickjs](https://github.com/xtrime-ru/php-quickjs) и Chrome. Для production используйте Browserless или `Dockerfile-chrome`. Node.js **22+** и npm нужны только для разработки: генерации, сборки и JS-тестов. Готовые bundle включены в `resources/`.
+- PHP **8.4+** и Composer.
+- Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs). [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
+- Локальный Chrome или подключение к Browserless.
+- Для скачивания локального Chrome: HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`.
 
-Версия ещё не опубликована: используйте checkout. Для локальной установки [соберите расширение](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md), подключите его через PHP ini и выполните:
+Для работы пакета и установки браузера Node.js и npm не нужны. Готовые JS-bundle входят в пакет.
+
+## Установка
+
+В корне вашего приложения выполните:
 
 ```sh
-composer install
-# Повторная установка:
-composer browser:install
+composer require zoon/puphpeteer
 ```
 
-`composer install` и `composer update` запускают PHP-установщик автоматически через hooks. Он скачивает закреплённый в `upstream/lock.json` Chrome for Testing напрямую с серверов Google. Нужны HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`. Node.js и `node_modules` не нужны; `npm ci` браузер не устанавливает. Повторный запуск использует уже установленную версию.
-
-Установка и `launch()` используют один каталог: `PUPPETEER_CACHE_DIR` или `.chrome` в корне приложения (ближайший родительский `composer.json`, иначе корень пакета). Относительный путь в ENV считается от этого корня. Внутри хранятся отдельные каталоги для платформы и версии; запускается только версия из lock-файла. `launch()` сам ничего не скачивает и не ищет системный Chrome.
-
-| Параметр | Назначение |
-| --- | --- |
-| `launch(['executablePath' => '/path/to/chrome'])` | Явный путь, высший приоритет |
-| `PUPPETEER_EXECUTABLE_PATH` | Путь, если нет явной опции |
-| `PUPPETEER_CACHE_DIR` | Каталог установки и поиска закреплённого Chrome |
-| `PUPPETEER_SKIP_DOWNLOAD=true` | Пропустить скачивание браузера |
-| `PUPPETEER_CHROME_SKIP_DOWNLOAD=true` | Пропустить Chrome; также принимается `PUPPETEER_SKIP_CHROME_DOWNLOAD` |
-
-## Установка браузера в приложении
-
-Composer не запускает scripts зависимостей. Для локального Chrome выполните из приложения:
+Если нужен локальный Chrome, установите совместимую версию:
 
 ```sh
 php vendor/bin/console browser:install
-# Общий каталог установки и запуска (сохраните ENV и для приложения):
-PUPPETEER_CACHE_DIR=/absolute/path/to/chrome php vendor/bin/console browser:install
 ```
 
-Для автоматической установки добавьте hooks в `composer.json` приложения:
+Команда скачивает закреплённую версию Chrome в `.chrome` в корне приложения. Повторный запуск использует уже установленный браузер. Добавьте `/.chrome/` в `.gitignore` приложения. Для Browserless или готового Chrome из `Dockerfile-chrome` этот шаг не нужен.
+
+Composer не запускает scripts зависимостей. Для автоматической установки добавьте hooks в `composer.json` приложения:
 
 ```json
 {
@@ -96,57 +86,21 @@ PUPPETEER_CACHE_DIR=/absolute/path/to/chrome php vendor/bin/console browser:inst
 }
 ```
 
-Если hooks уже есть, добавьте команду в их массивы. Для автоматического запуска не используйте `--no-scripts`; явная PHP-команда работает и без hooks. Разрешения npm и Composer `allow-plugins` не требуются. Добавьте `/.chrome/` в `.gitignore` приложения.
+Если hooks уже есть, добавьте команду в их массивы. Для автоматического запуска не используйте `--no-scripts`; явная PHP-команда работает и без hooks. Разрешения npm и Composer `allow-plugins` не требуются.
 
 Для Browserless задайте `PUPPETEER_SKIP_DOWNLOAD=true`. В `Dockerfile-chrome` уже заданы этот флаг и `PUPPETEER_EXECUTABLE_PATH`. Непустой `PUPPETEER_EXECUTABLE_PATH` также отключает скачивание. Эти ENV должны быть доступны и при установке зависимостей.
 
-## Сборка и установка php-quickjs
+### Путь к браузеру
 
-Нужны Docker и Compose **2.17+**. Образ собирает закреплённый SHA форка и подключает расширение через PHP ini; PHP/Rust на хосте не нужны.
+Установщик и `launch()` используют один каталог: `.chrome` в корне приложения или `PUPPETEER_CACHE_DIR`. Относительный путь в ENV считается от корня приложения. `launch()` сам ничего не скачивает и не ищет системный Chrome.
 
-```sh
-docker compose build php chrome
-docker compose run --rm php composer install
-docker compose run --rm php npm ci
-docker compose run --rm chrome php examples/01_page_open.php
-```
-
-`Dockerfile` содержит PHP, QuickJS, Composer и Node.js без браузера. `Dockerfile-chrome` устанавливает Chrome из `upstream/lock.json` тем же PHP-установщиком в `/opt/chrome` и задаёт `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. В образах нет кода приложения и его зависимостей; автоматически ничего не запускается. В обоих образах есть Node.js и npm для разработки. Compose монтирует весь checkout в `/app`, включая `vendor` и `node_modules`; зависимости устанавливаются прямо в каталог на хосте. `npm ci` устанавливает только инструменты разработки. При переключении между macOS и Linux повторите `npm ci` в целевом окружении: нативные npm-бинарники зависят не только от архитектуры, но и от ОС. После изменения Dockerfile, расширения или закреплённого Chrome пересоберите образ.
-
-Архитектура соответствует хосту; доступность Chrome зависит от закреплённой версии. Chrome-сервис использует `SYS_ADMIN` для sandbox. Графического дисплея в образе нет.
-
-### Примеры
-
-Запуск: `docker compose run --rm chrome php examples/<имя файла>`.
-
-| Файл | Что показывает |
+| Параметр | Назначение |
 | --- | --- |
-| [01_page_open.php](examples/01_page_open.php) | Опции launch, viewport, таймаут и evaluate |
-| [02_page_screenshot.php](examples/02_page_screenshot.php) | Stealth, User-Agent, язык, масштаб viewport и screenshot |
-| [04_form_intercept.php](examples/04_form_intercept.php) | Ожидание POST до клика, вывод данных и отмена запроса |
-
-Используются локальные HTML без HTTP-сервера; скриншот сохраняется на хосте. Для видимого браузера на хосте с PHP/QuickJS и графическим дисплеем: `php examples/01_page_open.php --headful` (`headless => false`).
-
-### Обновление через Docker
-
-Обновить PHP-зависимости и установить JS-зависимости из lock-файла:
-
-```sh
-docker compose run --rm php composer update
-docker compose run --rm php npm ci
-```
-
-Обновить Puppeteer и поддерживаемый Chrome:
-
-```sh
-docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@latest
-docker compose run --rm php php bin/console generate
-docker compose run --rm php npm run build
-docker compose build chrome
-docker compose run --rm chrome php bin/console test all --no-interaction
-```
-
-После обновления `upstream/lock.json` командой `generate` пересоберите `chrome`: путь из ENV выбирает браузер внутри образа. Генерация API и сборка bundle — отдельные команды. Изменения `package.json`, `package-lock.json`, `upstream/` и `resources/` будут видны в Git на хосте. Composer lock сохраняется на хосте, но в этом пакете не коммитится.
+| `launch(['executablePath' => '/path/to/chrome'])` | Явный путь, высший приоритет |
+| `PUPPETEER_EXECUTABLE_PATH` | Путь, если нет явной опции |
+| `PUPPETEER_CACHE_DIR` | Каталог установки и поиска закреплённого Chrome |
+| `PUPPETEER_SKIP_DOWNLOAD=true` | Пропустить скачивание браузера |
+| `PUPPETEER_CHROME_SKIP_DOWNLOAD=true` | Пропустить Chrome; также принимается `PUPPETEER_SKIP_CHROME_DOWNLOAD` |
 
 ## Использование с browserless
 
@@ -395,6 +349,57 @@ $function = new JsFunction('(element) => element.textContent');
 - Firefox, pipe transport, Node.js writable streams, запись видео и `followSymlinks: false` не поддерживаются.
 
 ## Разработка
+
+### Docker для разработки
+
+Команды ниже выполняются из checkout репозитория и предназначены для разработки пакета. Для генерации, сборки и JS-тестов нужны Node.js **22+** и npm; они включены в образы.
+
+Нужны Docker и Compose **2.17+**. Образ собирает закреплённый SHA форка и подключает расширение через PHP ini; PHP/Rust на хосте не нужны.
+
+```sh
+docker compose build php chrome
+docker compose run --rm php composer install
+docker compose run --rm php npm ci
+docker compose run --rm chrome php examples/01_page_open.php
+```
+
+`Dockerfile` содержит PHP, QuickJS, Composer и Node.js без браузера. `Dockerfile-chrome` устанавливает Chrome из `upstream/lock.json` тем же PHP-установщиком в `/opt/chrome` и задаёт `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. В образах нет кода приложения и его зависимостей; автоматически ничего не запускается. В обоих образах есть Node.js и npm для разработки. Compose монтирует весь checkout в `/app`, включая `vendor` и `node_modules`; зависимости устанавливаются прямо в каталог на хосте. `npm ci` устанавливает только инструменты разработки. При переключении между macOS и Linux повторите `npm ci` в целевом окружении: нативные npm-бинарники зависят не только от архитектуры, но и от ОС. После изменения Dockerfile, расширения или закреплённого Chrome пересоберите образ.
+
+Архитектура соответствует хосту; доступность Chrome зависит от закреплённой версии. Chrome-сервис использует `SYS_ADMIN` для sandbox. Графического дисплея в образе нет.
+
+#### Примеры
+
+Запуск: `docker compose run --rm chrome php examples/<имя файла>`.
+
+| Файл | Что показывает |
+| --- | --- |
+| [01_page_open.php](examples/01_page_open.php) | Опции launch, viewport, таймаут и evaluate |
+| [02_page_screenshot.php](examples/02_page_screenshot.php) | Stealth, User-Agent, язык, масштаб viewport и screenshot |
+| [04_form_intercept.php](examples/04_form_intercept.php) | Ожидание POST до клика, вывод данных и отмена запроса |
+
+Используются локальные HTML без HTTP-сервера; скриншот сохраняется на хосте. Для видимого браузера на хосте с PHP/QuickJS и графическим дисплеем: `php examples/01_page_open.php --headful` (`headless => false`).
+
+#### Обновление через Docker
+
+Обновить PHP-зависимости и установить JS-зависимости из lock-файла:
+
+```sh
+docker compose run --rm php composer update
+docker compose run --rm php npm ci
+```
+
+Обновить Puppeteer и поддерживаемый Chrome:
+
+```sh
+docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@latest
+docker compose run --rm php php bin/console generate
+docker compose run --rm php npm run build
+docker compose build chrome
+docker compose run --rm chrome php bin/console test all --no-interaction
+```
+
+После обновления `upstream/lock.json` командой `generate` пересоберите `chrome`: путь из ENV выбирает браузер внутри образа. Генерация API и сборка bundle — отдельные команды. Изменения `package.json`, `package-lock.json`, `upstream/` и `resources/` будут видны в Git на хосте. Composer lock сохраняется на хосте, но в этом пакете не коммитится.
+
 
 После установки Docker-окружения запускайте функциональные и статические проверки:
 
