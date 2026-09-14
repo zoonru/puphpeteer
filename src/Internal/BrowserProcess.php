@@ -3,6 +3,7 @@
 declare(strict_types=1);
 namespace Nesk\Puphpeteer\Internal;
 
+use Amp\CancelledException;
 use Amp\Process\Process;
 use Amp\TimeoutCancellation;
 use function Amp\async;
@@ -91,8 +92,13 @@ final class BrowserProcess
     {
         try {
             if ($this->process !== null) {
-                if ($this->process->isRunning()) { $this->process->kill(); }
-                $this->process->join(new TimeoutCancellation(5));
+                // Browser.close responds before Chrome finishes shutting down its children.
+                // Let it finish before removing the profile; kill only an unresponsive process.
+                try { $this->process->join(new TimeoutCancellation(5)); }
+                catch (CancelledException) {
+                    if ($this->process->isRunning()) { $this->process->kill(); }
+                    $this->process->join(new TimeoutCancellation(5));
+                }
             }
         } finally {
             $this->process = null;
