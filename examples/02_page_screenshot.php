@@ -23,6 +23,9 @@ $browser = $puppeteer->launch([
 $page = $browser->newPage();
 echo 'User-Agent: ', $page->evaluate(new JsFunction('() => navigator.userAgent')), PHP_EOL;
 $page->goto('file://' . __DIR__ . '/pages/index.html');
-$page->screenshot(['path' => 'example.png']);
+$start = microtime(true);
+$path = 'example.png';
+$page->screenshot(['path' => $path]);
+printf('Screenshot saved. Path: %s; Size: %s bytes; Duration: %s ms; %s', realpath($path), filesize($path), round((microtime(true) - $start) * 1000, 3),  PHP_EOL);
 
 $browser->close();
