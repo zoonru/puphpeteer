@@ -1,0 +1,28 @@
+services:
+  php:
+    image: puphpeteer-base
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    environment:
+      BROWSER_WS: ws://browserless:3000?token=local-tests
+  chrome:
+    image: puphpeteer-chrome
+    build:
+      context: .
+      dockerfile: Dockerfile-chrome
+      additional_contexts:
+        base: service:php
+      args:
+        BASE_IMAGE: base
+    init: true
+    shm_size: 1gb
+    cap_add:
+      - SYS_ADMIN
+  browserless:
+    image: ghcr.io/browserless/chromium:latest
+    init: true
+    shm_size: 1gb
+    environment:
+      TOKEN: local-tests

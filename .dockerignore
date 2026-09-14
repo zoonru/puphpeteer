@@ -1,0 +1,10 @@
+.git
+.build
+node_modules
+vendor
+.extension
+.idea
+.phpunit.cache
+.psalm-cache
+*.log
+composer.lock
