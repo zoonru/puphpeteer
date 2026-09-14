@@ -37,19 +37,19 @@ final class BrowserProcess
             $stdout = $this->process->getStdout();
             $dump = $options['dumpio'] ?? false;
             async(static function () use ($stdout, $dump): void {
-                while (($chunk = $stdout->read()) !== null) { if ($dump) { fwrite(STDOUT, $chunk); } }
+                while (($chunk = $stdout->read()) !== null) { if ($dump) { \Amp\ByteStream\getStdout()->write($chunk); } }
             })->ignore();
             $timeout = $options['timeout'] ?? 30000;
             $cancellation = $timeout > 0 ? new TimeoutCancellation($timeout / 1000) : null;
             $stderr = $this->process->getStderr();
             $buffer = '';
             while (($chunk = $stderr->read($cancellation)) !== null) {
-                if ($dump) { fwrite(STDERR, $chunk); }
+                if ($dump) { \Amp\ByteStream\getStderr()->write($chunk); }
                 $buffer .= $chunk;
                 if (preg_match('~DevTools listening on (ws://[^\s]+)~', $buffer, $match)) {
                     $this->endpoint = $match[1];
                     async(static function () use ($stderr, $dump): void {
-                        while (($chunk = $stderr->read()) !== null) { if ($dump) { fwrite(STDERR, $chunk); } }
+                        while (($chunk = $stderr->read()) !== null) { if ($dump) { \Amp\ByteStream\getStderr()->write($chunk); } }
                     })->ignore();
                     return;
                 }

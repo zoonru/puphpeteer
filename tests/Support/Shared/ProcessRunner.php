@@ -24,14 +24,14 @@ final class ProcessRunner
         $readOut = async(static function () use ($child, &$stdout, $onStdout, $stream): void {
             while (($chunk = $child->getStdout()->read()) !== null) {
                 $stdout .= $chunk;
-                if ($stream) { fwrite(STDOUT, $chunk); }
+                if ($stream) { \Amp\ByteStream\getStdout()->write($chunk); }
                 $onStdout?->__invoke($chunk);
             }
         });
         $readErr = async(static function () use ($child, &$stderr, $stream): void {
             while (($chunk = $child->getStderr()->read()) !== null) {
                 $stderr .= $chunk;
-                if ($stream) { fwrite(STDERR, $chunk); }
+                if ($stream) { \Amp\ByteStream\getStderr()->write($chunk); }
             }
         });
         try {

@@ -24,6 +24,11 @@ final class Client
     private \Js\Callback $dispatch;
     private ?WebsocketConnection $socket = null;
     private array $writes = [];
+    /** @var array<int, Future<void>> */
+    private array $logs = [];
+    private int $logSequence = 0;
+    private int $logBytes = 0;
+    private int $droppedLogs = 0;
     private bool $writing = false;
     private ?string $pumpWatcher = null;
     private bool $connecting = false;
@@ -163,7 +168,20 @@ final class Client
         foreach ($messages as [$kind, $payload]) {
             if ($kind === 'send') { $this->writes[] = $payload; continue; }
             if ($kind === 'releaseCallback') { unset($this->callbacks[(int) $payload]); continue; }
-            if ($kind === 'log') { fwrite(STDERR, "[QuickJS] $payload\n"); continue; }
+            if ($kind === 'log') {
+                // A slow log consumer must not suspend processing the rest of this native batch.
+                $line = '[QuickJS] ' . substr($payload, 0, 65536) . "\n";
+                $bytes = strlen($line);
+                // Diagnostics must not retain unlimited memory when stderr is stalled.
+                if (count($this->logs) >= 64 || $this->logBytes + $bytes > 1048576) { ++$this->droppedLogs; continue; }
+                $log = ++$this->logSequence;
+                $this->logBytes += $bytes;
+                $this->logs[$log] = async(function () use ($log, $line, $bytes): void {
+                    try { \Amp\ByteStream\getStderr()->write($line); }
+                    finally { unset($this->logs[$log]); $this->logBytes -= $bytes; }
+                })->ignore();
+                continue;
+            }
             if ($kind === 'clearTimer') {
                 $id = (int) $payload;
                 if (isset($this->timers[$id])) { EventLoop::cancel($this->timers[$id]); unset($this->timers[$id]); }
@@ -344,13 +362,20 @@ final class Client
     public function browserClosed(): void
     {
         try { $this->browserProcess?->close(); }
-        finally { $this->browserProcess = null; $this->stop(); }
+        finally { $this->browserProcess = null; $this->close(); }
     }
     /** @internal
      * @psalm-mutation-free
      */
     public function isClosed(): bool { return $this->closed; }
-    public function close(): void { $this->stop(); }
+    public function close(): void
+    {
+        $this->stop();
+        // Flush queued diagnostics on explicit close without letting a stuck reader prevent shutdown.
+        if ($this->logs === []) { return; }
+        try { \Amp\Future\awaitAll($this->logs, new TimeoutCancellation(1)); }
+        catch (\Amp\CancelledException) {}
+    }
     private function stop(?\Throwable $error = null): void
     {
         if ($this->closed) { return; }

@@ -18,11 +18,13 @@ class RemoteObject
         if ($this instanceof Browser && $method === 'wsEndpoint') { return $this->client->endpoint(); }
         if ($this instanceof Browser && $this->client->isClosed() && in_array($method, ['close', 'disconnect'], true)) {
             if ($method === 'close') { $this->client->browserClosed(); }
+            else { $this->client->close(); }
             return null;
         }
         try { $result = $this->client->call($this->id, $method, $arguments)->await(); }
         finally {
             if ($this instanceof Browser && $method === 'close') { $this->client->browserClosed(); }
+            elseif ($this instanceof Browser && $method === 'disconnect') { $this->client->close(); }
         }
         return $result;
     }
