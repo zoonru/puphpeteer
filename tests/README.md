@@ -30,7 +30,7 @@ docker compose run --rm php php vendor/bin/phpunit tests/Integration
 ```
 `php bin/console test browser` runs the PHP smoke and runtime lifecycle suites and the local examples. It
 requires the extension loaded through PHP ini, the built JavaScript bundle and the project
-Chrome from `PUPPETEER_EXECUTABLE_PATH` (set by the Chrome image), or the managed installation under `node_modules` outside Docker. Each browser script starts Chrome through the public
+Chrome from `PUPPETEER_EXECUTABLE_PATH` (set by the Chrome image), or the managed installation in `.chrome` or `PUPPETEER_CACHE_DIR` outside Docker. Each browser script starts Chrome through the public
 `launch()` API and uses the static fixtures in `examples/pages`; no HTTP fixture server is started.
 `PUPPETEER_EXECUTABLE_PATH` can explicitly override the browser; system installations are never
 selected automatically. See the [installation instructions](../README.md#requirements-and-installation).
@@ -94,9 +94,10 @@ remains unchanged for historical comparisons.
 The browser suite checks launch options, slowMo, WebSocket loss with concurrent requests,
 Chrome crashes, and preservation of a supplied user profile. Unit tests exercise forced
 process-tree shutdown; logging integration tests cover a slow, absent and closed stderr reader.
-JS installation tests create an isolated Composer consumer with production dependencies only,
-verify its autoloader and vendor CLI, and test installer skip flags and the locked Chrome CLI arguments.
-The download is replaced by a recording CLI fixture; these checks do not download another Chrome.
+The PHP integration test `Puppeteer/InstallationTest.php` creates an isolated Composer consumer
+without dev dependencies. It checks application install/update hooks, the autoloader, vendor CLI
+and the exact browser path under the application root. An executable fixture replaces an already
+installed Chrome; the test does not download or launch a browser. ENV handling is covered by unit tests.
 
 Browserless authentication and server session expiry are checked separately (also in CI):
 

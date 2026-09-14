@@ -70,7 +70,9 @@
     "test-release": "@php tests/Release/Puppeteer/run.php",
     "benchmark": "@php bin/console benchmark",
     "update-php": "node tools/upstream/update.cjs",
-    "verify-php": "node tools/upstream/update.cjs --check"
+    "verify-php": "node tools/upstream/update.cjs --check",
+    "post-install-cmd": "@php tools/install-browser.php",
+    "post-update-cmd": "@php tools/install-browser.php"
   },
   "scripts-descriptions": {
     "test": "Run all PHP/JS functional tests, local browser examples, Psalm, generated API and bundle checks. Requires QuickJS, Chrome and npm; no load test or benchmark.",
@@ -78,7 +80,7 @@
     "psalm": "Static PHP type analysis only; no tests, QuickJS extension or Chrome required.",
     "benchmark": "Measure browser-call latency, client CPU and RSS; defaults: --trials=5 --iterations=1000. Requires QuickJS and Chrome.",
     "build": "Rebuild the committed QuickJS JavaScript bundles from installed npm dependencies.",
-    "browser:install": "Install the Chrome version pinned in upstream/lock.json; requires npm dependencies and respects download-skip flags.",
+    "browser:install": "Install the Chrome version pinned in upstream/lock.json; requires PHP HTTPS streams and unzip; respects PUPPETEER_CACHE_DIR and download-skip flags.",
     "update-php": "Regenerate PHP API wrappers, compatibility aliases and README version badges from installed Puppeteer.",
     "verify-php": "Check generated PHP API, aliases and version badges without changing files."
   },

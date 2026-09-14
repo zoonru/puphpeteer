@@ -21,8 +21,6 @@ final class DoctorCommand extends ProcessCommand
         $checks = [
             ['PHP', PHP_VERSION, version_compare(PHP_VERSION, '8.4.0', '>=')],
             ['php-quickjs', $extensionReady ? 'загружен в PHP' : 'не загружен', $extensionReady],
-            ['Node.js', $this->binaryPath('node'), $this->binaryPath('node') !== null],
-            ['npm', $this->binaryPath('npm'), $this->binaryPath('npm') !== null],
             ['bundle', $this->root . '/resources/puppeteer.js', is_file($this->root . '/resources/puppeteer.js')],
         ];
         $failed = count(array_filter($checks, static fn(array $check): bool => !$check[2]));
@@ -37,13 +35,4 @@ final class DoctorCommand extends ProcessCommand
         return 0;
     }
 
-    private function binaryPath(string $binary): ?string
-    {
-        $path = getenv('PATH');
-        foreach (explode(PATH_SEPARATOR, is_string($path) ? $path : '') as $directory) {
-            $candidate = $directory . DIRECTORY_SEPARATOR . $binary;
-            if (is_file($candidate) && is_executable($candidate)) { return $candidate; }
-        }
-        return null;
-    }
 }

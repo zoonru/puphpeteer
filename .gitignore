@@ -4,3 +4,4 @@
 .*
 composer.lock
 yarn.lock
+/.chrome/

@@ -52,16 +52,25 @@ try {
 
 ## Requirements and installation
 
-Requires PHP **8.4+**, Composer, the [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs), and local or remote Chrome. Node.js **22+** and npm are needed for browser installation and development; the PHP client does not run Node.js.
+Requires PHP **8.4+**, Composer, the [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs), and Chrome. For production, use Browserless or `Dockerfile-chrome`. Node.js **22+** and npm are only needed for development: generation, builds and JS tests. Ready-to-use bundles are committed in `resources/`.
 
-This version is not published yet: use a checkout. For a host installation, [build the extension](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md), enable it through PHP ini, then run `composer install` and `npm ci`. Ready-to-use bundles are committed in `resources/`.
+This version is not published yet: use a checkout. For local installation, [build the extension](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md), enable it through PHP ini, then run:
 
-`npm ci` installs locked Chrome via `@puppeteer/browsers` into `node_modules/.puphpeteer`. Repeat with `composer browser:install`. `launch()` never downloads Chrome or searches for a system browser.
+```sh
+composer install
+# Repeat installation:
+composer browser:install
+```
+
+`composer install` and `composer update` run the PHP installer automatically through hooks. It downloads Chrome for Testing pinned in `upstream/lock.json` directly from Google. It requires PHP HTTPS streams (`allow_url_fopen=1`, OpenSSL) and the `unzip` command. Node.js and `node_modules` are not required; `npm ci` does not install a browser. Repeated installation reuses the installed version.
+
+Installation and `launch()` share one directory: `PUPPETEER_CACHE_DIR` or `.chrome` in the application root (the nearest parent `composer.json`, otherwise the package root). Relative ENV paths are resolved against that root. Separate platform/version directories are kept inside; only the locked version is selected. `launch()` never downloads Chrome or searches for a system browser.
 
 | Setting | Effect |
 | --- | --- |
 | `launch(['executablePath' => '/path/to/chrome'])` | Explicit path; highest priority |
 | `PUPPETEER_EXECUTABLE_PATH` | Browser path when no explicit option is supplied |
+| `PUPPETEER_CACHE_DIR` | Directory for installing and locating locked Chrome |
 | `PUPPETEER_SKIP_DOWNLOAD=true` | Skip browser download |
 | `PUPPETEER_CHROME_SKIP_DOWNLOAD=true` | Skip Chrome; `PUPPETEER_SKIP_CHROME_DOWNLOAD` is also accepted |
 
@@ -70,12 +79,26 @@ This version is not published yet: use a checkout. For a host installation, [bui
 Composer does not run dependency scripts. For local Chrome, run from your application:
 
 ```sh
-npm ci --prefix vendor/zoon/puphpeteer
-# Repeat browser installation:
 php vendor/bin/console browser:install
+# Shared installation/runtime directory (keep this ENV for the application too):
+PUPPETEER_CACHE_DIR=/absolute/path/to/chrome php vendor/bin/console browser:install
 ```
 
-Skip this npm setup for browserless. Optionally add `"browser:install": "@php vendor/bin/console browser:install"` to application scripts.
+For automatic installation, add hooks to your application's `composer.json`:
+
+```json
+{
+  "scripts": {
+    "browser:install": "@php vendor/bin/console browser:install",
+    "post-install-cmd": "@browser:install",
+    "post-update-cmd": "@browser:install"
+  }
+}
+```
+
+If hooks already exist, append the command to their arrays. Do not use `--no-scripts` for automatic execution; the explicit PHP command also works without hooks. npm approvals and Composer `allow-plugins` are not required. Add `/.chrome/` to the application's `.gitignore`.
+
+For Browserless, set `PUPPETEER_SKIP_DOWNLOAD=true`. `Dockerfile-chrome` already sets this flag and `PUPPETEER_EXECUTABLE_PATH`. A nonempty `PUPPETEER_EXECUTABLE_PATH` also disables downloading. These ENV variables must be available during dependency installation too.
 
 ## Build and install php-quickjs
 
@@ -88,7 +111,7 @@ docker compose run --rm php npm ci
 docker compose run --rm chrome php examples/01_page_open.php
 ```
 
-`Dockerfile` provides PHP, QuickJS, Composer and Node.js without a browser. `Dockerfile-chrome` installs Chrome from `upstream/lock.json` into `/opt/chrome` using `@puppeteer/browsers` and sets `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. Neither image contains application code or project dependencies, and neither starts a command automatically. Compose mounts the checkout at `/app` and dependencies in shared `vendor`/`node_modules` volumes. Browser downloads during `npm ci` are skipped in both images. Rebuild after Dockerfile, extension or locked Chrome changes.
+`Dockerfile` provides PHP, QuickJS, Composer and Node.js without a browser. `Dockerfile-chrome` installs Chrome from `upstream/lock.json` into `/opt/chrome` using the same PHP installer and sets `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. Neither image contains application code or project dependencies, and neither starts a command automatically. Compose mounts the checkout at `/app` and dependencies in shared `vendor`/`node_modules` volumes. `npm ci` installs development tooling only. Rebuild after Dockerfile, extension or locked Chrome changes.
 
 Images use the host architecture; Chrome availability depends on the locked version. The Chrome service uses `SYS_ADMIN` for its sandbox. The image has no graphical display.
 
@@ -321,7 +344,7 @@ The first command regenerates wrappers and compatibility aliases; the second che
 
 ## Upgrade from v2
 
-Install PHP 8.4+, the compatible QuickJS extension and the npm dependencies as described above. Node.js is used for installation/builds, not as the browser transport.
+Install PHP 8.4+, the compatible QuickJS extension and Chrome as described above. Node.js is only needed for development.
 
 Composer loads **best-effort aliases**, so existing imports can remain. For new code use:
 
@@ -412,7 +435,7 @@ docker compose run --rm chrome composer test
 
 `npm run build` creates minified CDP bundles: `resources/puppeteer-core.js` without plugins and `resources/puppeteer.js` with plugins. `--debug` produces readable JS. Commit resources with source and lock-file changes. `package-lock.json` pins JS dependencies; `composer.lock` stays local, and applications resolve PHP dependency ranges.
 
-Without the extension, only unit tests/Psalm are available: `composer install --ignore-platform-req=ext-php_quickjs`, then `php vendor/bin/phpunit` and `composer psalm`.
+Without the extension, only unit tests/Psalm are available: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, then `php vendor/bin/phpunit` and `composer psalm`.
 
 For a single suite, use `php bin/console test unit` (or `integration` / `browser`); use `php vendor/bin/phpunit --filter=...` for individual tests. `composer test` includes PHP/JS tests, Psalm, API generation and bundle checks; `composer test-release` adds load cycles; `composer benchmark` measures performance separately.
 

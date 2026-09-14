@@ -20,10 +20,9 @@ final class BrowserInstallCommand extends ProcessCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        if (!$this->jsonOutput) { $io->note('Браузер будет установлен в node_modules/.puphpeteer.'); }
-        $result = $this->runProcess($io, ['npm', 'run', 'browser:install'], message: 'Загружается Chrome…');
+        $result = $this->runProcess($io, [$this->phpBinary, 'tools/install-browser.php'], message: 'Загружается Chrome…');
         if ($this->jsonOutput) { $this->writeJson($output, ['command' => 'browser:install', 'status' => $result['code'] === 0 ? 'ok' : 'error', 'code' => $result['code'], 'elapsed' => $result['elapsed']]); }
-        elseif ($result['code'] === 0) { $io->success('Chrome готов к запуску.'); }
+        elseif ($result['code'] === 0) { $io->success(trim($result['stdout'])); }
         return $result['code'];
     }
 }

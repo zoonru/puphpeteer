@@ -3,3 +3,9 @@
 !Dockerfile-chrome
 !upstream/
 !upstream/lock.json
+
+!src/
+!src/Internal/
+!src/Internal/BrowserInstallation.php
+!tools/
+!tools/install-browser.php

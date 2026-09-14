@@ -52,16 +52,25 @@ try {
 
 ## Требования и установка
 
-Нужны PHP **8.4+**, Composer, [форк php-quickjs](https://github.com/xtrime-ru/php-quickjs) и локальный или удалённый Chrome. Node.js **22+** и npm нужны для установки браузера и разработки; PHP-клиент не запускает Node.js.
+Нужны PHP **8.4+**, Composer, [форк php-quickjs](https://github.com/xtrime-ru/php-quickjs) и Chrome. Для production используйте Browserless или `Dockerfile-chrome`. Node.js **22+** и npm нужны только для разработки: генерации, сборки и JS-тестов. Готовые bundle включены в `resources/`.
 
-Версия ещё не опубликована: используйте checkout. Для установки на хост [соберите расширение](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md), подключите через PHP ini, затем выполните `composer install` и `npm ci`. Готовые bundle включены в `resources/`.
+Версия ещё не опубликована: используйте checkout. Для локальной установки [соберите расширение](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md), подключите его через PHP ini и выполните:
 
-`npm ci` устанавливает закреплённый Chrome через `@puppeteer/browsers` в `node_modules/.puphpeteer`. Повторная установка: `composer browser:install`. `launch()` сам ничего не скачивает и не ищет системный Chrome.
+```sh
+composer install
+# Повторная установка:
+composer browser:install
+```
+
+`composer install` и `composer update` запускают PHP-установщик автоматически через hooks. Он скачивает закреплённый в `upstream/lock.json` Chrome for Testing напрямую с серверов Google. Нужны HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`. Node.js и `node_modules` не нужны; `npm ci` браузер не устанавливает. Повторный запуск использует уже установленную версию.
+
+Установка и `launch()` используют один каталог: `PUPPETEER_CACHE_DIR` или `.chrome` в корне приложения (ближайший родительский `composer.json`, иначе корень пакета). Относительный путь в ENV считается от этого корня. Внутри хранятся отдельные каталоги для платформы и версии; запускается только версия из lock-файла. `launch()` сам ничего не скачивает и не ищет системный Chrome.
 
 | Параметр | Назначение |
 | --- | --- |
 | `launch(['executablePath' => '/path/to/chrome'])` | Явный путь, высший приоритет |
 | `PUPPETEER_EXECUTABLE_PATH` | Путь, если нет явной опции |
+| `PUPPETEER_CACHE_DIR` | Каталог установки и поиска закреплённого Chrome |
 | `PUPPETEER_SKIP_DOWNLOAD=true` | Пропустить скачивание браузера |
 | `PUPPETEER_CHROME_SKIP_DOWNLOAD=true` | Пропустить Chrome; также принимается `PUPPETEER_SKIP_CHROME_DOWNLOAD` |
 
@@ -70,12 +79,26 @@ try {
 Composer не запускает scripts зависимостей. Для локального Chrome выполните из приложения:
 
 ```sh
-npm ci --prefix vendor/zoon/puphpeteer
-# Повторная установка браузера:
 php vendor/bin/console browser:install
+# Общий каталог установки и запуска (сохраните ENV и для приложения):
+PUPPETEER_CACHE_DIR=/absolute/path/to/chrome php vendor/bin/console browser:install
 ```
 
-Для browserless этот npm setup не нужен. При желании добавьте в scripts приложения `"browser:install": "@php vendor/bin/console browser:install"`.
+Для автоматической установки добавьте hooks в `composer.json` приложения:
+
+```json
+{
+  "scripts": {
+    "browser:install": "@php vendor/bin/console browser:install",
+    "post-install-cmd": "@browser:install",
+    "post-update-cmd": "@browser:install"
+  }
+}
+```
+
+Если hooks уже есть, добавьте команду в их массивы. Для автоматического запуска не используйте `--no-scripts`; явная PHP-команда работает и без hooks. Разрешения npm и Composer `allow-plugins` не требуются. Добавьте `/.chrome/` в `.gitignore` приложения.
+
+Для Browserless задайте `PUPPETEER_SKIP_DOWNLOAD=true`. В `Dockerfile-chrome` уже заданы этот флаг и `PUPPETEER_EXECUTABLE_PATH`. Непустой `PUPPETEER_EXECUTABLE_PATH` также отключает скачивание. Эти ENV должны быть доступны и при установке зависимостей.
 
 ## Сборка и установка php-quickjs
 
@@ -88,7 +111,7 @@ docker compose run --rm php npm ci
 docker compose run --rm chrome php examples/01_page_open.php
 ```
 
-`Dockerfile` содержит PHP, QuickJS, Composer и Node.js без браузера. `Dockerfile-chrome` устанавливает Chrome из `upstream/lock.json` через `@puppeteer/browsers` в `/opt/chrome` и задаёт `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. В образах нет кода приложения и его зависимостей; автоматически ничего не запускается. Compose монтирует checkout в `/app`, зависимости — в общие `vendor`/`node_modules` volumes. Скачивание браузера при `npm ci` отключено в обоих образах. После изменения Dockerfile, расширения или закреплённого Chrome пересоберите образ.
+`Dockerfile` содержит PHP, QuickJS, Composer и Node.js без браузера. `Dockerfile-chrome` устанавливает Chrome из `upstream/lock.json` тем же PHP-установщиком в `/opt/chrome` и задаёт `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. В образах нет кода приложения и его зависимостей; автоматически ничего не запускается. Compose монтирует checkout в `/app`, зависимости — в общие `vendor`/`node_modules` volumes. `npm ci` устанавливает только инструменты разработки. После изменения Dockerfile, расширения или закреплённого Chrome пересоберите образ.
 
 Архитектура соответствует хосту; доступность Chrome зависит от закреплённой версии. Chrome-сервис использует `SYS_ADMIN` для sandbox. Графического дисплея в образе нет.
 
@@ -290,7 +313,7 @@ docker compose run --rm php composer verify-php
 
 ## Обновление с v2
 
-Установите PHP 8.4+, совместимое расширение QuickJS и npm-зависимости по инструкции выше. Node.js используется для установки и сборки, а не как транспорт браузера.
+Установите PHP 8.4+, совместимое расширение QuickJS и Chrome по инструкции выше. Node.js нужен только для разработки.
 
 Composer подключает алиасы по принципу **best effort**, поэтому прежние импорты можно оставить. В новом коде используйте:
 
@@ -381,7 +404,7 @@ docker compose run --rm chrome composer test
 
 `npm run build` собирает минифицированные CDP bundle: `resources/puppeteer-core.js` без плагинов и `resources/puppeteer.js` с плагинами. `--debug` создаёт читаемый JS. Коммитьте ресурсы вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости; `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
 
-Без расширения доступны только unit-тесты и Psalm: `composer install --ignore-platform-req=ext-php_quickjs`, затем `php vendor/bin/phpunit` и `composer psalm`.
+Без расширения доступны только unit-тесты и Psalm: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, затем `php vendor/bin/phpunit` и `composer psalm`.
 
 Отдельный набор: `php bin/console test unit` (или `integration` / `browser`); отдельные тесты: `php vendor/bin/phpunit --filter=...`. `composer test` включает PHP/JS-тесты, Psalm, проверку генерации API и bundle; `composer test-release` добавляет нагрузочные циклы; `composer benchmark` измеряет производительность отдельно.
 

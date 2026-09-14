@@ -9,7 +9,7 @@
     "entry": "lib/types.d.ts",
     "declarationSha256": "e1e7f5542b6ecb631777b1bcc1d7088b5ded5c031980f1180f8ac7f807387122"
   },
-  "npmLockSha256": "ec101e38d76008f806f9e8d2070dcbea4aea26f6306321c034045e53e444953e",
+  "npmLockSha256": "c54b667fba97ce34ef09ad5bbf374225c13ff252e160685ffa4bb09682700589",
   "tools": {
     "@puppeteer/browsers": {
       "version": "3.2.2",

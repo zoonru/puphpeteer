@@ -6,7 +6,7 @@ root README for the implementation plan and current limitations.
 From the repository root:
 
 ```sh
-composer update --prefer-stable --ignore-platform-req=ext-php_quickjs
+PUPPETEER_SKIP_DOWNLOAD=true composer update --prefer-stable --ignore-platform-req=ext-php_quickjs
 npm ci
 npm run build
 php vendor/bin/phpunit
