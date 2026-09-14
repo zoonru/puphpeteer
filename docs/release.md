@@ -3,16 +3,13 @@
 The automated gate is available locally:
 
 ```sh
-QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.dylib composer test-release
-QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.dylib BENCH_TRIALS=5 composer benchmark
+docker compose run --rm chrome composer test-release
+docker compose run --rm chrome composer benchmark -- --trials=5
 ```
 
-Use `.so` on Linux. If another task is rebuilding the extension, copy the library
-to a stable temporary path first and point `QUICKJS_EXTENSION` at that snapshot. Run `composer install` and `npm ci` first, following the
-[extension installation instructions](../README.md#build-and-install-php-quickjs).
-Chrome comes from the package-managed installation. No system Chrome fallback is
-used. The extension path is required; a missing or incompatible extension fails
-validation instead of skipping its tests.
+Build the prepared environment with `docker compose build php chrome`.
+The extension is enabled through PHP ini. A missing or incompatible extension fails validation.
+The Chrome image pins the browser and extension source; rebuild the image after code changes.
 
 The PHP runner executes unit/generator tests, the native extension contract,
 browser compatibility smoke tests and all three legacy examples, then 50 repeated
@@ -29,7 +26,7 @@ native leaks, and no machine-dependent absolute RSS threshold is asserted.
 For extended soak testing:
 
 ```sh
-QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so RELEASE_CYCLES=1000 RELEASE_TIMEOUT=3600 composer test-release
+docker compose run --rm chrome composer test-release -- --cycles=1000 --timeout=3600
 ```
 
 The timeout bounds the repeated workload and terminates its child process tree.
@@ -45,11 +42,10 @@ function identity is preserved. A release also requires
 Linux needs GNU time). Each trial starts an independent managed Chrome and uses
 the same local fixture. The default is five trials of 1,000 evaluates, 100 string
 returns of 64 KiB, 20 concurrent waits of 25 ms and 20 navigations. Override
-`BENCH_TRIALS` and `BENCH_ITERATIONS` with positive integers.
+`--trials` and `--iterations` with positive integers.
 
-Bundle and extension SHA-256 hashes are checked for each trial; changing the
-extension or bundle during a trial fails
-the benchmark. The runner prints JSON measurements to the process output. Compare
+The bundle SHA-256 is checked for each trial; changing it during a trial fails
+the benchmark. Keep the Docker image fixed to use the same extension build. The runner prints JSON measurements to the process output. Compare
 medians from several trials
 on the same hardware, Chrome, PHP, extension revision and dependency set. CPU
 and sampled RSS exclude Chrome; the 25 ms sampler can miss short peaks. Sampler
@@ -58,30 +54,32 @@ Resource figures are diagnostic observations, not portable performance budgets.
 
 ## CI and remaining release blockers
 
-Unit/type/generation checks run on every push and pull request for PHP 8.4/8.5.
-The extension/browser job builds the fork for Linux/macOS and both PHP versions,
-runs the release gate and stores three-trial benchmark artifacts.
+Every push, pull request and manual dispatch runs the functional suite:
 
-**The compatible extension branch has not been published.** At the time of this
-change, `git ls-remote` returns no `async-jobs-fibers` branch. The runtime job now
-fails closed until the repository variable `PHP_QUICKJS_REF` contains a
-published, compatible full commit SHA. Alternatively, trigger the workflow
-manually with the `extension-ref` input pointing at such a SHA. The job always
-runs the contract tests; merely loading an older extension is insufficient.
-Publishing/configuring that revision and obtaining green Linux/macOS runs is a
-release prerequisite, not something local macOS validation establishes.
+- `unit-and-types`: PHPUnit and Psalm directly on GitHub runners for PHP 8.4 and 8.5, with Composer download caching.
+- `javascript`: bundle reproducibility, JS generator tests, plugin tests and generated PHP drift checks. Chrome downloading is disabled in this job.
+- `docker`: PHP 8.4 and 8.5 images, unit/generator tests, extension contract tests, browser tests, local examples and the browserless example.
 
-**Browser downloader dependencies need updating before release.** The current
-`@puppeteer/browsers` 2.11.2 / `puppeteer-core` 24.36.1 dependency chain uses
-`extract-zip` 2.0.1. `npm audit` reports three high-severity affected packages for
-symlink archive path traversal ([GHSA-jmr9-qjv8-65gv](https://github.com/advisories/GHSA-jmr9-qjv8-65gv),
-[GHSA-7pqw-9j4j-h8q3](https://github.com/advisories/GHSA-7pqw-9j4j-h8q3)). This affects
-browser archive extraction during installation, including malicious archives;
-it does not execute in the PHP client. The available audit remediation requires
-upgrading the Puppeteer/browser installer major versions. Do that together with
-the planned Puppeteer/Chrome update, regenerate the API/bundle, rerun this gate
-and `npm audit`. Do not suppress the finding or treat a passing functional gate
-as security approval.
+Jobs are independent and matrix failures do not cancel other versions. Runtime
+coverage here is Linux amd64; macOS compatibility still requires a separate native run.
+
+BuildKit caches intermediate layers separately for each image and PHP version.
+The extension's Rust and PHP tests run when its build layer is rebuilt; project
+functional tests run on every workflow execution, including image cache hits.
+The published extension SHA is pinned in `Dockerfile`; no repository variable
+or secret is needed. Update that build argument when adopting a newer fork revision.
+
+Publishing a GitHub Release (`release: published`, including prereleases) runs
+the full release gate with 50 workload cycles and a 600-second workload timeout,
+then five benchmark trials of 1,000 evaluations on each PHP version. These extra
+checks do not run on push, PR or manual dispatch. The release event occurs after
+publication; this workflow does not block publication itself.
+Benchmark has no performance thresholds on shared runners; use a controlled
+host for performance comparisons.
+
+Before release, obtain green image builds and runtime checks on the target
+platforms and review the current dependency audit. Cached image builds do not
+replace dependency or platform validation.
 
 ## Local validation — 2026-09-12
 

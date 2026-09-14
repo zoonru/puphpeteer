@@ -13,10 +13,10 @@ batch limits, error recovery, callback ownership and Fiber boundaries. Run it
 against the release build from the fork, not a separately patched prototype:
 
 ```sh
-php -n -d "extension=$QUICKJS_EXTENSION" vendor/bin/phpunit tests/Integration
+docker compose run --rm php php vendor/bin/phpunit tests/Integration
 ```
 `composer test-browser` runs the PHP smoke and runtime lifecycle suites and the local examples. It
-requires the optimized extension (`QUICKJS_EXTENSION`), the built JavaScript bundle and the project
+requires the extension loaded through PHP ini, the built JavaScript bundle and the project
 Chrome installed under `node_modules`. Each browser script starts Chrome through the public
 `launch()` API and uses the static fixtures in `examples/pages`; no HTTP fixture server is started.
 `PUPPETEER_EXECUTABLE_PATH` can explicitly override the browser; system installations are never
@@ -27,9 +27,9 @@ Missing prerequisites must not be treated as an integration pass.
 checks to the PHP suites; see [release validation](../docs/release.md).
 
 `composer benchmark` launches Chrome through the public `launch()` API and measures a separate PHP
-process with `/usr/bin/time` and `ps`; the parent Chrome process is excluded. `BENCH_TRIALS` defaults
-to 5 and `BENCH_ITERATIONS` to 1000.
-`PHP_BIN` overrides the PHP executable used by isolated test and benchmark processes.
+process with `/usr/bin/time` and `ps`; the parent Chrome process is excluded. `--trials` defaults
+to 5 and `--iterations` to 1000.
+Child processes use the same PHP binary and ini configuration as the runner.
 
 `composer test-generator` runs PHP generator fixtures: signatures, omitted and
 explicit-null arguments, variadics, full regeneration and removal of obsolete methods.

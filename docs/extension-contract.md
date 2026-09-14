@@ -1,12 +1,12 @@
 # PHP–QuickJS extension contract
 
-PuPHPeteer requires the hardened [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs) described in the [installation instructions](../README.md). The reviewed source revision is `73da3b1da9da9f90aa5731c90321864756c236fc` on `async-jobs-fibers` (not yet pushed). Upstream php-quickjs and older experimental builds are not interchangeable with this dependency. The extension currently has no capability/version marker for its safety guarantees: the presence of `Js\Callback::dispatch()` alone is insufficient. Run the integration suite against the extension binary being deployed.
+PuPHPeteer requires the hardened [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs) described in the [installation instructions](../README.md). The reviewed source revision is the SHA pinned in the root Dockerfile on `async-jobs-fibers`. Upstream php-quickjs and older experimental builds are not interchangeable with this dependency. The extension currently has no capability/version marker for its safety guarantees: the presence of `Js\Callback::dispatch()` alone is insufficient. Run the integration suite against the extension binary being deployed.
 
 ```sh
-php -n -d extension=/absolute/path/to/libphp_quickjs.so vendor/bin/phpunit tests/Integration
+docker compose run --rm php php vendor/bin/phpunit tests/Integration
 ```
 
-Use `.dylib` on macOS. This suite fails when the extension is absent or incompatible; it does not silently skip tests. It requires no Chrome or Node.js. Platform validation remains separate: local tests on macOS arm64 / PHP 8.5 NTS do not establish Linux, ZTS or other PHP-version support.
+This suite fails when the extension is absent or incompatible; it does not silently skip tests. It requires no Chrome or Node.js. Platform validation remains separate: local tests on macOS arm64 / PHP 8.5 NTS do not establish Linux, ZTS or other PHP-version support.
 
 ## Dispatch and scheduling
 

@@ -12,7 +12,8 @@ This version is **under development and has not been released**. Generated wrapp
 
 - [Usage](#usage)
 - [Requirements and installation](#requirements-and-installation)
-- [Build and install php-quickjs](#build-and-install-php-quickjs)
+- [Browser installation in an application](#browser-installation-in-an-application)
+- [Docker and php-quickjs installation](#build-and-install-php-quickjs)
 - [Use with browserless](#use-with-browserless)
 - [Notable differences from Puppeteer](#notable-differences-from-puppeteer)
 - [Puppeteer plugins](#puppeteer-plugins)
@@ -79,7 +80,7 @@ npm ci
 
 Load the compatible extension in your PHP configuration before running the client. Composer checks the extension's presence; the client checks the required bridge methods. The JS bundle is committed in `resources/`, so normal use does not require rebuilding it. If you use this checkout as a Composer dependency of another application, run the npm setup in the package directory; PHP also finds the managed browser there.
 
-`npm ci` downloads the locked Chrome for Testing build with `@puppeteer/browsers` through its postinstall script into `node_modules/.puphpeteer/`. Run `npm run browser:install` to repeat the installation.
+`npm ci` downloads the locked Chrome for Testing build with `@puppeteer/browsers` through its postinstall script into `node_modules/.puphpeteer/`. Run `composer browser:install` to repeat the installation.
 
 To skip the local browser download (for example, when using browserless), set
 `PUPPETEER_SKIP_DOWNLOAD=true` or the Chrome-specific
@@ -93,59 +94,52 @@ By default, `launch()` finds that managed browser in the package or an ancestor 
 export PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/chrome
 ```
 
-An explicit `launch(['executablePath' => '/absolute/path/to/chrome'])` takes precedence. The legacy `CHROME_BIN` variable is also accepted when `PUPPETEER_EXECUTABLE_PATH` is unset. Installing or downloading Chrome is a separate setup step, never an implicit action of `launch()`.
+An explicit `launch(['executablePath' => '/absolute/path/to/chrome'])` takes precedence. Installing or downloading Chrome is a separate setup step, never an implicit action of `launch()`.
+
+## Browser installation in an application
+
+In the package checkout, use `composer browser:install` after `npm ci`. Composer does not run dependency scripts. When installed in an application, prepare npm dependencies in the package directory:
+
+```sh
+npm ci --prefix vendor/zoon/puphpeteer
+# Repeat browser installation:
+php vendor/bin/console browser:install
+```
+
+`npm ci` already installs the browser through postinstall. The CLI uses the application's autoloader and runs npm in the package directory; Chrome is stored in `vendor/zoon/puphpeteer/node_modules/.puphpeteer`. Skip this setup for browserless. To expose a Composer alias in the application, add to its `scripts`:
+
+```json
+{
+  "scripts": {
+    "browser:install": "@php vendor/bin/console browser:install"
+  }
+}
+```
 
 ## Build and install php-quickjs
 
-Use our [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs), including the direct bridge changes (`dispatch` and `__quickjsEmit`). These changes must be present in your checkout; upstream release binaries do not provide the required API.
+### Docker
 
-The reviewed changes are currently on the local `async-jobs-fibers` branch and have not been pushed. For now, build from that local checkout; cloning the remote default branch is insufficient. Once this branch is published, obtain it with:
-
-```sh
-git clone --branch async-jobs-fibers https://github.com/xtrime-ru/php-quickjs.git
-```
-
-Building on Linux or macOS requires **Rust 1.96+** with Cargo, a C compiler and clang/libclang, and **PHP 8.4+ NTS development headers** with `php-config`. `PHP` and `PHP_CONFIG` must refer to the same PHP installation. The binary must match the deployment OS, architecture, PHP minor version and thread-safety mode. QuickJS is bundled; `phpize` is not needed.
+The Dockerfile builds a release of [our php-quickjs fork](https://github.com/xtrime-ru/php-quickjs) at a pinned SHA and enables it through PHP ini. The host needs Docker and Compose 2.17+; PHP, Cargo and Chrome are provided by the images.
 
 ```sh
-cd /path/to/php-quickjs
-export PHP="$(command -v php)"
-export PHP_CONFIG="$(command -v php-config)"
-cargo build --release --locked
-
-case "$(uname -s)" in
-    Darwin) export QUICKJS_EXTENSION="$PWD/target/release/libphp_quickjs.dylib" ;;
-    Linux) export QUICKJS_EXTENSION="$PWD/target/release/libphp_quickjs.so" ;;
-esac
+docker compose build php chrome
+docker compose run --rm php php bin/console doctor
+docker compose run --rm chrome php bin/console test all --no-interaction
+docker compose run --rm chrome php examples/04_form_intercept.php
 ```
 
-Use a release build for performance. If libclang is not found, set `LIBCLANG_PATH` to the directory containing its shared library. Verify the actual bridge, not only that PHP loads the extension:
+`Dockerfile` provides PHP, QuickJS and project tools without Chrome. `Dockerfile-chrome` extends it with locked Chrome. Images contain a project snapshot: rebuild after changes. Compose uses the host architecture. The installed browser architecture depends on the locked Chrome version and upstream download availability. The Chrome service receives `SYS_ADMIN` for the browser sandbox and is intended for local testing.
+
+For browserless:
 
 ```sh
-"$PHP" -n -d "extension=$QUICKJS_EXTENSION" <<'PHP'
-<?php
-if (!extension_loaded('php_quickjs') || !method_exists(Js\Callback::class, 'dispatch')) {
-    throw new RuntimeException('The PuPHPeteer-compatible php-quickjs fork is required.');
-}
-$js = new QuickJS();
-$callback = $js->eval('(value) => { __quickjsEmit("check", value); }');
-if ($callback->dispatch([42])['messages'] !== [['check', 42]]) {
-    throw new RuntimeException('QuickJS bridge check failed.');
-}
-echo "QuickJS bridge OK\n";
-PHP
+docker compose up -d browserless
+docker compose run --rm php php examples/03_browserless.php
+docker compose down
 ```
 
-For persistent installation, keep the binary at a stable absolute path (or copy it into the directory reported by `php-config --extension-dir`). Find the active CLI configuration and print the line to add:
-
-```sh
-php --ini
-printf 'extension=%s\n' "$QUICKJS_EXTENSION"
-```
-
-Add that `extension=/absolute/path/...` line once to `php.ini` or a scanned `.ini` file. Configure the PHP-FPM SAPI separately if used, and restart its workers. Verify the configured CLI with `php --ri php_quickjs`; the bridge check above can then also run without `-n -d ...`. The `QUICKJS_EXTENSION` variable is used by our test runners; normal PHP applications load the extension through PHP configuration.
-
-Return to the PuPHPeteer directory and run `composer install`, `npm ci`, then `composer test-browser` with `QUICKJS_EXTENSION` still exported. See the fork's [build documentation](https://github.com/xtrime-ru/php-quickjs/blob/main/docs/install.md) and [PuPHPeteer test details](docs/quickjs.md).
+Regular applications also load the extension through PHP ini. For manual builds, see [php-quickjs installation](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
 
 ## Use with browserless
 
@@ -280,9 +274,7 @@ bin/console benchmark --trials=5 --iterations=1000
 ```
 
 Use `--no-interaction` in CI. Add `--json` for agent and CI integrations; it
-disables decorations and prints one machine-readable line. `QUICKJS_EXTENSION` is read automatically for
-integration, browser and benchmark commands; `--extension=/path/to/module`
-overrides it. Existing Composer scripts remain available.
+disables decorations and prints one machine-readable line. Child processes inherit the configured PHP ini. Existing Composer scripts remain available.
 
 ## Development
 
@@ -298,15 +290,15 @@ npm run test-generator
 composer verify-php
 ```
 
-Ignoring the platform requirement only permits dependency installation; the client still requires the extension. For browser checks, install Chrome as described above and provide a compatible extension binary:
+Run browser checks in the prepared Chrome image:
 
 ```sh
-QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer test-browser
-QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer test-release
-QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so composer benchmark
+docker compose run --rm chrome composer test-browser
+docker compose run --rm chrome composer test-release -- --cycles=50 --timeout=600
+docker compose run --rm chrome composer benchmark -- --trials=5 --iterations=1000
 ```
 
-On macOS the extension may use `.dylib`. `PHP_BIN` overrides the PHP executable used by isolated processes. Smoke runs the browser scenarios and all three examples. The benchmark supports macOS and Linux and measures the PHP workload separately from Chrome and the wrapper process. See [QuickJS internals and test details](docs/quickjs.md).
+Smoke runs the browser scenarios and all three examples. The benchmark supports macOS and Linux and measures the PHP workload separately from Chrome and the wrapper process. See [QuickJS internals and test details](docs/quickjs.md).
 
 `npm run build` creates minified CDP-only bundles: `resources/puppeteer-core.js` for the default no-plugin path and `resources/puppeteer.js` with plugin support, plus version metadata and launch defaults. Commit these resources with source and lock-file changes. `npm run build:check` verifies reproducibility; `npm run build -- --debug` creates readable bundles for debugging. PHP dependency ranges are resolved by the consuming application; `composer.lock` is local. JS tooling is pinned in `package-lock.json`.
 
@@ -337,7 +329,7 @@ documented in [QuickJS test details](docs/quickjs.md).
 5. **Plugins:** bundled stealth modules, custom plugin registries and lifecycle hooks are implemented with isolated and browser tests; [compatibility limits](docs/plugins.md) are documented.
 6. **Release:** a PHP validation runner, repeated browser workloads, retention checks, portable benchmarks and an extension/browser CI matrix are implemented. See [release checks and remaining blockers](docs/release.md).
 
-CI checks unit tests, Psalm, API generation, plugins and the JS build. The extension/browser matrix requires a published fork SHA configured as `PHP_QUICKJS_REF`. Publishing that revision, obtaining green platform runs and updating the vulnerable browser downloader remain release prerequisites.
+Every push and PR runs PHPUnit and Psalm on PHP 8.4/8.5, independent JS checks, and functional tests in Docker on both PHP versions, including the browserless example. Composer and Docker build layers are cached. The fork SHA is pinned in `Dockerfile`; no `PHP_QUICKJS_REF` repository setting is needed. Load testing (50 cycles) and benchmark run only when a GitHub Release is published. See [CI details](docs/release.md#ci-and-remaining-release-blockers).
 
 ## License
 

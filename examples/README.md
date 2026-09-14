@@ -1,30 +1,29 @@
 # Examples
 
-Examples 01, 02 and 04 launch the Puppeteer-managed Chrome directly through
-`launch()`. The HTML fixtures are local files, so no Node.js process or HTTP
-server is required.
-
-With the QuickJS extension loaded:
+Build the prepared environment:
 
 ```sh
-export QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.dylib
-php -d "extension=$QUICKJS_EXTENSION" examples/01_page_open.php
-php -d "extension=$QUICKJS_EXTENSION" examples/04_form_intercept.php
+docker compose build php chrome
+docker compose run --rm chrome php examples/01_page_open.php
+docker compose run --rm chrome php examples/02_page_screenshot.php
+docker compose run --rm chrome php examples/04_form_intercept.php
 ```
 
-Set `EXAMPLE_URL` or `FORM_EXAMPLE_URL` to use another page. The form example
-demonstrates request interception and concurrent waiting for the POST request;
-the reserved endpoint is aborted after its data is captured.
+Examples 01, 02 and 04 use `launch()` and local HTML fixtures. Example 04 starts
+waiting for a form POST before clicking the button, prints the captured data and
+aborts the request. No HTTP server is required.
 
-For the Browserless example, start a WebSocket endpoint separately and use
-`connect()`:
+For the remote browser, the base PHP image is sufficient:
 
 ```sh
-docker run --rm --name puphpeteer-browserless -p 3000:3000 \
-  browserless/chrome:latest
-
-export BROWSER_WS=ws://127.0.0.1:3000
-php -d "extension=$QUICKJS_EXTENSION" examples/03_browserless.php
+docker compose up -d browserless
+docker compose run --rm php php examples/03_browserless.php
+docker compose down
 ```
 
-The static files are [index.html](pages/index.html) and [form.html](pages/form.html).
+Compose supplies `BROWSER_WS`. Outside Compose, set it to your browserless endpoint.
+The extension is enabled through PHP ini; no extension-path variable is needed.
+Images contain the source and dependencies; rebuild after edits. Screenshot output
+is inside the container; use `docker compose run --name screenshot chrome php
+examples/02_page_screenshot.php`, then `docker cp screenshot:/app/example.png .`
+and `docker rm screenshot` to keep it.

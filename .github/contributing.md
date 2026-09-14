@@ -16,7 +16,7 @@ The extension exception above is for unit tests and Psalm only. Integration
 requires the async/native-bridge php-quickjs fork with `dispatch()`.
 Run `composer test-integration` with that extension loaded; see the
 [extension contract](../docs/extension-contract.md) for boundary tests. For browser tests,
-set `QUICKJS_EXTENSION`, then run `composer test-browser`. Chrome is installed
+run `docker compose build php chrome`, then `docker compose run --rm chrome composer test-browser`. Chrome is installed
 under `node_modules` by `npm ci`; `PUPPETEER_EXECUTABLE_PATH` is an optional
 explicit override. Smoke and benchmark runners use PHP.
 See `docs/quickjs.md` for runner details.
@@ -25,4 +25,4 @@ Commit package-lock.json and resources/puppeteer.js when
 changing JS sources or build dependencies. Run npm run build to regenerate them;
 CI uses npm run build:check to verify the checked-in files without modifying them.
 composer.lock remains local: CI installs latest supported dependencies on each PHP
-version and runs unit tests and Psalm. Browser integration is a separate local check.
+version and runs unit tests and Psalm. Functional tests and the browserless example run in Docker on every push and PR. Load testing and benchmark run only when a GitHub Release is published.

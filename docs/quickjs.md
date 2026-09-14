@@ -17,26 +17,18 @@
 
 ## Запуск
 
-Для установки браузера и сборки используйте Node.js **22+**.
-Все зависимости устанавливаются из **корня репозитория**:
-
 ```sh
-composer update --prefer-stable
-npm ci
-npm run build
-export QUICKJS_EXTENSION=/absolute/path/to/libphp_quickjs.so
-composer test-browser
-BENCH_TRIALS=5 BENCH_ITERATIONS=1000 composer benchmark
+docker compose build php chrome
+docker compose run --rm chrome composer test-browser
+docker compose run --rm chrome composer benchmark -- --trials=5 --iterations=1000
 ```
 
-На macOS расширение может иметь суффикс `.dylib`. `PHP_BIN` задаёт PHP CLI;
-по умолчанию используется PHP текущего runner. Runner запускает тестовый PHP с `-n` и загружает
-только указанную сборку расширения. `QUICKJS_EXTENSION` обязательна. `npm ci` устанавливает совместимый Chrome в
-`npm ci` устанавливает зафиксированную версию Chrome через `@puppeteer/browsers` в `node_modules/.puphpeteer/`; `npm run browser:install` повторяет установку.
+Расширение подключено через ini образа. Дочерние процессы используют тот же PHP и ini.
+`Dockerfile` не содержит Chrome; `Dockerfile-chrome` устанавливает браузер из `upstream/lock.json`.
 Скачивание можно пропустить стандартными переменными Puppeteer
 `PUPPETEER_SKIP_DOWNLOAD=true` или `PUPPETEER_CHROME_SKIP_DOWNLOAD=true`
 (`PUPPETEER_SKIP_CHROME_DOWNLOAD=true` также поддерживается).
-Для другого браузера задайте `PUPPETEER_EXECUTABLE_PATH` (либо прежнюю `CHROME_BIN`).
+Для другого браузера задайте `PUPPETEER_EXECUTABLE_PATH`.
 Системные браузеры автоматически не выбираются.
 
 Для PHP unit-тестов и Psalm без расширения:

@@ -105,7 +105,7 @@ PHP owns browser shutdown.
 
 ```sh
 node --test tests/Plugins/adapter.test.cjs
-php -n -d extension="$QUICKJS_EXTENSION" tests/Browser/plugins.php
+docker compose run --rm chrome php tests/Browser/plugins.php
 ```
 
 The first suite builds plugins into an isolated JavaScript VM without Node
