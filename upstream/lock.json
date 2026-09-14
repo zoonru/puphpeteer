@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "package": {
     "name": "puppeteer-core",
-    "version": "25.10.0",
-    "resolved": "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-25.10.0.tgz",
-    "integrity": "sha512-Hy5eMQshOEMil4JUUx03h5pw1HYkYCso1RG/gcpPlFSd4cYPOcopxcXEAxpLPOkOPJb9LIJtwxuj66bSdvknFg==",
-    "chromeBuildId": "152.0.7977.75",
+    "version": "25.11.0",
+    "resolved": "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-25.11.0.tgz",
+    "integrity": "sha512-Ujym7JbxoAqanaxGcHgmTomfhC01HfDCSuGZ8Hs9boHrDjzbNVMnFRJo2KtbDT9LCRgeJoFnkn9JQZ41eEUrLw==",
+    "chromeBuildId": "153.0.8010.36",
     "entry": "lib/types.d.ts",
-    "declarationSha256": "d4ebd2e125a257990a0a52d976a200de602c394ee4b27ba0fea0479e1b6932eb"
+    "declarationSha256": "e1e7f5542b6ecb631777b1bcc1d7088b5ded5c031980f1180f8ac7f807387122"
   },
-  "npmLockSha256": "10b1310d78ce8ff33a1ef0c84233499f639a358b77418a6f5bd11837fdfc1ff2",
+  "npmLockSha256": "ec101e38d76008f806f9e8d2070dcbea4aea26f6306321c034045e53e444953e",
   "tools": {
     "@puppeteer/browsers": {
       "version": "3.2.2",
@@ -24,8 +24,8 @@
       "integrity": "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg=="
     },
     "puppeteer-core": {
-      "version": "25.10.0",
-      "integrity": "sha512-Hy5eMQshOEMil4JUUx03h5pw1HYkYCso1RG/gcpPlFSd4cYPOcopxcXEAxpLPOkOPJb9LIJtwxuj66bSdvknFg=="
+      "version": "25.11.0",
+      "integrity": "sha512-Ujym7JbxoAqanaxGcHgmTomfhC01HfDCSuGZ8Hs9boHrDjzbNVMnFRJo2KtbDT9LCRgeJoFnkn9JQZ41eEUrLw=="
     },
     "puppeteer-extra-plugin": {
       "version": "3.2.3",
@@ -46,10 +46,10 @@
   },
   "tests": {
     "repository": "https://github.com/puppeteer/puppeteer.git",
-    "tag": "puppeteer-v25.10.0",
-    "revision": "88b517ab3beb4a237b541cd18ada98ba43de71a7",
+    "tag": "puppeteer-v25.11.0",
+    "revision": "043cd46e594b39ea77343e221a59724183448059",
     "packageManifest": "packages/puppeteer-core/package.json",
-    "verifiedPackageVersion": "25.10.0",
+    "verifiedPackageVersion": "25.11.0",
     "testsPath": "test/src",
     "evidence": "Version-specific repository tag resolved to a commit; package manifest at that commit matches the npm package name and version."
   }
