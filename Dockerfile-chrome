@@ -1,4 +1,12 @@
 ARG BASE_IMAGE=puphpeteer-base
+FROM ${BASE_IMAGE} AS chrome-download
+USER root
+WORKDIR /tmp/browser-install
+COPY upstream/lock.json ./lock.json
+RUN npm install --no-save --package-lock=false --ignore-scripts "@puppeteer/browsers@$(node -p 'require("./lock.json").tools["@puppeteer/browsers"].version')" \
+    && node -e 'const {install, Browser} = require("@puppeteer/browsers"); install({browser: Browser.CHROME, buildId: require("./lock.json").package.chromeBuildId, cacheDir: "/opt/chrome"}).then(browser => require("node:fs").symlinkSync(browser.executablePath, "/opt/chrome/executable")).catch(error => { console.error(error); process.exit(1); });' \
+    && chmod -R a+rX /opt/chrome
+
 FROM ${BASE_IMAGE}
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -7,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrandr2 libgbm1 libasound2 libpango-1.0-0 libcairo2 libx11-xcb1 \
     fonts-liberation ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+COPY --from=chrome-download /opt/chrome /opt/chrome
+RUN ln -s /opt/chrome/executable /usr/local/bin/chrome
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome
 USER app
-ENV PUPPETEER_SKIP_DOWNLOAD=false
-RUN npm run browser:install

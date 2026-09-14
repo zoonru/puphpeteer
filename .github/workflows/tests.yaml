@@ -31,7 +31,7 @@ jobs:
       - name: Install latest supported PHP dependencies
         id: composer-install
         run: composer update --prefer-stable --ignore-platform-req=ext-php_quickjs --no-interaction --no-progress --prefer-dist
-      - run: composer test-unit
+      - run: php vendor/bin/phpunit
       - run: composer psalm
         if: ${{ !cancelled() && steps.composer-install.outcome == 'success' }}
 
@@ -57,6 +57,8 @@ jobs:
       - run: composer verify-php
 
   docker:
+    env:
+      COMPOSE_PROJECT_NAME: puphpeteer
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -79,24 +81,31 @@ jobs:
             php.cache-to=type=gha,mode=max,scope=php-${{ matrix.php-version }}
             chrome.cache-from=type=gha,scope=chrome-${{ matrix.php-version }}
             chrome.cache-to=type=gha,mode=max,scope=chrome-${{ matrix.php-version }}
+      - name: Install project dependencies
+        id: dependencies
+        run: |
+          docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" puphpeteer-base composer install --no-interaction --prefer-dist
+          docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" puphpeteer-base npm ci --cache /tmp/npm
       - name: Functional test suite
         if: ${{ github.event_name != 'release' }}
-        run: docker run --rm --init --shm-size=1g --cap-add=SYS_ADMIN puphpeteer-chrome php bin/console test all --no-interaction
+        run: docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" --shm-size=1g --cap-add=SYS_ADMIN -e XDG_CONFIG_HOME=/tmp/chrome-config puphpeteer-chrome php bin/console test all --no-interaction
       - name: Full release suite
         if: ${{ github.event_name == 'release' }}
-        run: docker run --rm --init --shm-size=1g --cap-add=SYS_ADMIN puphpeteer-chrome composer test-release -- --cycles=50 --timeout=600
+        run: docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" --shm-size=1g --cap-add=SYS_ADMIN -e XDG_CONFIG_HOME=/tmp/chrome-config puphpeteer-chrome composer test-release -- --cycles=50 --timeout=600
       - name: Check browserless example
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: |
           docker compose up -d browserless
           for attempt in $(seq 1 30); do
-            if docker compose run --rm php php examples/03_browserless.php; then exit 0; fi
+            if docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" --network puphpeteer_default -e "BROWSER_WS=ws://browserless:3000?token=local-tests" puphpeteer-base php examples/03_browserless.php; then exit 0; fi
             sleep 2
           done
           exit 1
+      - name: Browserless failure boundaries
+        run: docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" --network puphpeteer_default -e "BROWSER_WS=ws://browserless:3000?token=local-tests" puphpeteer-base php tests/Browser/Puppeteer/browserless.php
       - name: Benchmark
         if: ${{ github.event_name == 'release' }}
-        run: docker run --rm --init --shm-size=1g --cap-add=SYS_ADMIN puphpeteer-chrome composer benchmark -- --trials=5 --iterations=1000
+        run: docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" --shm-size=1g --cap-add=SYS_ADMIN -e XDG_CONFIG_HOME=/tmp/chrome-config puphpeteer-chrome composer benchmark -- --trials=5 --iterations=1000
       - name: Container logs
         if: failure()
         run: docker compose logs --no-color
