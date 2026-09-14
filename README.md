@@ -258,6 +258,7 @@ Compatibility is **best effort**. Canonical classes now live in `Nesk\Puphpeteer
 - Unsupported options, including `js_extra`, Node options and the old logger, throw an exception. `read_timeout` maps seconds to `protocolTimeout` milliseconds; `ignoreHTTPSErrors` maps to `acceptInsecureCerts`. Firefox and pipe transport are not implemented.
 - Local launch uses the Chrome in `node_modules`, an explicit `executablePath`, or `PUPPETEER_EXECUTABLE_PATH`. System Chrome is not selected automatically.
 - `undefined` becomes `null`; binary results become PHP strings. `screenshot()` and `pdf()` write `path` output through PHP. Awaiting public calls manually is unnecessary; use `Amp\async()` for concurrency.
+- Filesystem operations used by screenshot, PDF and script/style loading run on the PHP host. As in upstream Puppeteer, `screenshot()` with `encoding: 'base64'` returns before writing `path`. Node.js writable streams, video recording and `followSymlinks: false` are not implemented by this adapter.
 
 ## Interactive CLI
 

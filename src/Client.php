@@ -37,6 +37,7 @@ final class Client
     private ?Internal\BrowserProcess $browserProcess = null;
     private array $timers = [];
     private array $objects = [];
+    private ?Internal\HostFilesystem $filesystem = null;
 
     public function __construct(?string $bundle = null)
     {
@@ -151,9 +152,12 @@ final class Client
                     try { $future->complete($this->decode($data['value'])); }
                     catch (\Throwable $error) { $future->error($error); }
                 }
-            } elseif ($kind === 'callback') {
-                $fn = $this->callbacks[$data['callback']] ?? null;
+            } elseif ($kind === 'callback' || $kind === 'filesystem') {
+                $fn = $kind === 'filesystem'
+                    ? fn (...$arguments) => ($this->filesystem ??= new Internal\HostFilesystem())->call($data['operation'], $arguments)
+                    : ($this->callbacks[$data['callback']] ?? null);
                 async(function () use ($data, $fn): void {
+                    if ($this->closed) { return; }
                     try {
                         if ($fn === null) { throw new \RuntimeException('Unknown PHP callback'); }
                         $value = $fn(...$this->decode($data['args']));
@@ -298,6 +302,7 @@ final class Client
         foreach ($this->timers as $watcher) { EventLoop::cancel($watcher); }
         $this->timers = [];
         $this->writes = [];
+        $this->filesystem?->closeAll();
         $this->callbacks = [];
         $this->functionIds = null;
         $this->functionReferences = null;

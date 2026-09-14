@@ -18,24 +18,9 @@ class RemoteObject
             if ($method === 'close') { $this->client->browserClosed(); }
             return null;
         }
-        $path = null;
-        if (in_array($method, ['screenshot', 'pdf'], true) && isset($arguments[0]['path'])) {
-            $path = $arguments[0]['path'];
-            unset($arguments[0]['path']);
-            if ($method === 'screenshot' && !isset($arguments[0]['type'])) {
-                $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-                $arguments[0]['type'] = match ($extension) { 'jpg', 'jpeg' => 'jpeg', 'webp' => 'webp', default => 'png' };
-            }
-        }
         try { $result = $this->client->call($this->id, $method, $arguments)->await(); }
         finally {
             if ($this instanceof Browser && $method === 'close') { $this->client->browserClosed(); }
-        }
-        if ($path !== null) {
-            $bytes = ($arguments[0]['encoding'] ?? '') === 'base64' ? base64_decode($result, true) : $result;
-            if (!is_string($bytes) || file_put_contents($path, $bytes) !== strlen($bytes)) {
-                throw new \RuntimeException('Cannot write browser output: ' . $path);
-            }
         }
         return $result;
     }

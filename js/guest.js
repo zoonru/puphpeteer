@@ -1,4 +1,5 @@
 import {fireTimer, clearTimers} from './host-environment.js';
+import {installFilesystem} from './filesystem.js';
 import {PluginAdapter} from './plugins/adapter.js';
 import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
@@ -58,6 +59,11 @@ function clearEvents(objectId, event) {
 }
 const emit = (kind, value) => __quickjsEmit(kind, value);
 const errorData = error => ({name: error?.name ?? 'Error', message: error?.message ?? String(error), stack: error?.stack ?? ''});
+installFilesystem((operation, args) => new Promise((resolve, reject) => {
+  const id = ++nextCallback;
+  callbacks.set(id, {resolve, reject});
+  emit('filesystem', {id, operation, args: args.map(item => encode(item))});
+}));
 function encodeRecord(value, ancestors) {
   const entries = Object.entries(value);
   const record = {};

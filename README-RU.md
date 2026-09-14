@@ -259,6 +259,7 @@ composer verify-php
 - Неподдерживаемые настройки, включая `js_extra`, Node-настройки и старый logger, вызывают исключение. `read_timeout` переводится из секунд в `protocolTimeout` в миллисекундах; `ignoreHTTPSErrors` — в `acceptInsecureCerts`. Firefox и pipe-транспорт не реализованы.
 - Локальный запуск использует Chrome из `node_modules`, явный `executablePath` или `PUPPETEER_EXECUTABLE_PATH`. Системный Chrome автоматически не выбирается.
 - `undefined` преобразуется в `null`; бинарные результаты — в PHP-строки. `screenshot()` и `pdf()` записывают результат по `path` средствами PHP. Явно ожидать публичные вызовы не нужно; для параллельности используйте `Amp\async()`.
+- Файловые операции screenshot, PDF и загрузки script/style выполняются на стороне PHP. Как в upstream Puppeteer, `screenshot()` с `encoding: 'base64'` возвращает результат без записи в `path`. Адаптер пока не реализует Node.js writable streams, запись видео и `followSymlinks: false`.
 
 ## Интерактивный CLI
 
