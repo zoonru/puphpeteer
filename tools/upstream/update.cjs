@@ -30,7 +30,7 @@ async function updatePhp(root=toolRoot,{check=false,offline=false,modelOnly=fals
    if(added.length) throw new Error(`New generator diagnostics require review: ${json(added)}`);
   }
  }
- const files=[{path:'upstream/api.json',content:json(api)},{path:'upstream/lock.json',content:json(source.lock)},
+ const files=[{path:'upstream/lock.json',content:json(source.lock)},
  {path:'upstream/coverage.json',content:json({schemaVersion:1,note:'Declaration coverage only; does not imply runtime or test coverage.', total:model.coverage.length,generated:model.coverage.filter(m=>m.status==='generated').length,members:model.coverage,diagnostics})}];
  let deletedFiles=[];
  if(!modelOnly){
