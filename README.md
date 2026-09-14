@@ -1,5 +1,8 @@
 # PuPHPeteer
 
+[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.11.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.11.0)
+[![Chrome](https://img.shields.io/badge/Chrome-153.0.8010.36-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
+
 <img src="https://user-images.githubusercontent.com/817508/100672192-dd258500-3361-11eb-845f-e8b5109752e4.png" style="max-width:100%;" width="190px" align="right">
 
 **English** | [Русский](README-RU.md)
@@ -34,7 +37,7 @@ Navigate to a page and save a screenshot:
 ```php
 require 'vendor/autoload.php';
 
-use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 
 $puppeteer = new Puppeteer();
 $browser = $puppeteer->launch();
@@ -82,11 +85,10 @@ Requires Docker and Compose **2.17+**. The image builds the pinned fork SHA and 
 docker compose build php chrome
 docker compose run --rm php composer install
 docker compose run --rm php npm ci
-docker compose run --rm chrome composer browser:install
 docker compose run --rm chrome php examples/01_page_open.php
 ```
 
-`Dockerfile` provides PHP/QuickJS without Chrome; `Dockerfile-chrome` adds the browser. Images do not run tests automatically. Compose mounts the checkout at `/app`, with shared `vendor`/`node_modules` dependency volumes. Rebuild after Dockerfile or extension changes.
+`Dockerfile` provides PHP, QuickJS, Composer and Node.js without a browser. `Dockerfile-chrome` installs Chrome from `upstream/lock.json` into `/opt/chrome` using `@puppeteer/browsers` and sets `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. Neither image contains application code or project dependencies, and neither starts a command automatically. Compose mounts the checkout at `/app` and dependencies in shared `vendor`/`node_modules` volumes. Browser downloads during `npm ci` are skipped in both images. Rebuild after Dockerfile, extension or locked Chrome changes.
 
 Images use the host architecture; Chrome availability depends on the locked version. The Chrome service uses `SYS_ADMIN` for its sandbox. The image has no graphical display.
 
@@ -111,17 +113,17 @@ docker compose run --rm php composer update
 docker compose run --rm php npm ci
 ```
 
-Update Puppeteer and its supported Chrome (25.11.0 example):
+Update Puppeteer and its supported Chrome:
 
 ```sh
-docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@25.11.0
+docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@latest
 docker compose run --rm php php bin/console generate
 docker compose run --rm php npm run build
-docker compose run --rm chrome composer browser:install
+docker compose build chrome
 docker compose run --rm chrome php bin/console test all --no-interaction
 ```
 
-The base `php` service skips Chrome downloads: install the browser through `chrome` after updating `upstream/lock.json`. API generation and bundle building are separate commands. Replace `25.11.0` with `latest` for the latest release. Changes to `package.json`, `package-lock.json`, `upstream/` and `resources/` appear in the host Git checkout. Composer's lock file also persists on the host but is not committed in this package.
+Rebuild `chrome` after `generate` updates `upstream/lock.json`; its ENV path selects the browser installed in the image. API generation and bundle building are separate commands. Changes to `package.json`, `package-lock.json`, `upstream/` and `resources/` appear in the host Git checkout. Composer's lock file also persists on the host but is not committed in this package.
 
 ## Use with browserless
 
@@ -142,6 +144,8 @@ Compose supplies `BROWSER_WS` with its token. Outside Compose, pass your endpoin
 Client timeouts do not extend the server session. Browserless v1 used `CONNECTION_TIMEOUT`. Apply ENV changes with `docker compose up -d browserless`. [Browserless reference](https://docs.browserless.io/enterprise/docker/config).
 
 ## Notable differences from Puppeteer
+
+Browser API classes live in `Nesk\Puphpeteer\Puppeteer` (for example, `Puppeteer`, `Page`, `Browser`). Shared `JsFunction` remains in `Nesk\Puphpeteer`; old imports are available through aliases.
 
 ### Instantiate Puppeteer
 
@@ -317,42 +321,110 @@ The first command regenerates wrappers and compatibility aliases; the second che
 
 ## Upgrade from v2
 
-Compatibility is **best effort**. Canonical classes now live in `Nesk\Puphpeteer`. Composer automatically loads generated aliases for `Nesk\Puphpeteer\Resources\*` and `Nesk\Rialto\Data\JsFunction`. Old imports and `instanceof` work for available wrappers. An old name already provided by the application is preserved; compatibility of that external class is not guaranteed.
+Install PHP 8.4+, the compatible QuickJS extension and the npm dependencies as described above. Node.js is used for installation/builds, not as the browser transport.
 
-- PHP 8.4+ and the compatible QuickJS extension replace the Rialto/Node runtime. Old implementations remain in Git history and the `zoon`, `native` and `native-wip` branches.
-- `new JsFunction(source)` takes a complete function. The old `(parameters, body, scope)` constructor is unsupported. Keep using `create()`, `createWithBody()`, `createWithParameters()`, `createWithScope()`, `createWithAsync()` and immutable `body()/parameters()/scope()/async()` chains.
-- Function scope and default values accept scalars, arrays and `JsFunction`. Pass remote handles as separate `evaluate()` arguments; PHP callbacks must be `Closure` objects.
-- Wrappers follow the pinned Puppeteer API. Aliases do not restore removed or unsupported upstream methods.
-- Replace `->tryCatch` and Rialto exception imports with ordinary PHP `try/catch`; JavaScript errors currently become `\RuntimeException`.
-- Unsupported options, including `js_extra`, Node options and the old logger, throw an exception. `read_timeout` maps seconds to `protocolTimeout` milliseconds; `ignoreHTTPSErrors` maps to `acceptInsecureCerts`. Firefox and pipe transport are not implemented.
-- Local launch uses the Chrome in `node_modules`, an explicit `executablePath`, or `PUPPETEER_EXECUTABLE_PATH`. System Chrome is not selected automatically.
-- `undefined` becomes `null`; binary results become PHP strings. `screenshot()` and `pdf()` write `path` output through PHP. Awaiting public calls manually is unnecessary; use `Amp\async()` for concurrency.
-- Filesystem operations used by screenshot, PDF and script/style loading run on the PHP host. As in upstream Puppeteer, `screenshot()` with `encoding: 'base64'` returns before writing `path`. Node.js writable streams, video recording and `followSymlinks: false` are not implemented by this adapter.
+Composer loads **best-effort aliases**, so existing imports can remain. For new code use:
+
+| v2 import | Current import |
+| --- | --- |
+| `Nesk\Puphpeteer\Puppeteer` | `Nesk\Puphpeteer\Puppeteer\Puppeteer` |
+| `Nesk\Puphpeteer\Resources\Page` (and other wrappers) | `Nesk\Puphpeteer\Puppeteer\Page` |
+| `Nesk\Rialto\Data\JsFunction` | `Nesk\Puphpeteer\JsFunction` |
+
+Aliases preserve `instanceof` for available wrappers, but do not restore removed upstream methods or replace classes already loaded by the application. `querySelector*()` names and automatic waiting remain unchanged.
+
+**Errors:** remove `tryCatch` and catch `RuntimeException` instead of Rialto exceptions. An ordinary Puppeteer operation error does not close the client.
+
+```php
+// v2
+try {
+    $page->tryCatch->goto('invalid_url');
+} catch (\Nesk\Rialto\Exceptions\Node\Exception $error) {
+    echo $error->getMessage();
+}
+
+// v3
+try {
+    $page->goto('invalid_url');
+} catch (\RuntimeException $error) {
+    echo $error->getMessage();
+}
+```
+
+**Plugins:** replace JavaScript initialization in `js_extra` with registration before `launch()` or `connect()`.
+
+```php
+// v2
+$puppeteer = new Puppeteer(['js_extra' => "
+    const puppeteer = require('puppeteer-extra');
+    puppeteer.use(require('puppeteer-extra-plugin-stealth')());
+    instruction.setDefaultResource(puppeteer);
+"]);
+
+// v3
+$puppeteer = (new Puppeteer())->use('stealth');
+```
+
+**Timeouts and HTTPS:** the old options still map automatically; prefer the upstream names. `protocolTimeout` is in milliseconds, whereas `read_timeout` was in seconds. Navigation has its own timeout.
+
+```php
+// v2
+$puppeteer = new Puppeteer(['read_timeout' => 65]);
+$browser = $puppeteer->launch(['ignoreHTTPSErrors' => true]);
+
+// v3
+$puppeteer = new Puppeteer();
+$browser = $puppeteer->launch([
+    'protocolTimeout' => 65000,
+    'acceptInsecureCerts' => true,
+]);
+// Both versions:
+$browser->newPage()->goto($url, ['timeout' => 60000]);
+```
+
+**JavaScript functions:** existing factories still work. Replace a direct `(parameters, body, scope)` constructor with a factory or a complete function source:
+
+```php
+// v2
+$function = new JsFunction(['element'], 'return element.textContent;', []);
+
+// v3: factory (also compatible with v2)
+$function = JsFunction::createWithParameters(['element'])
+    ->body('return element.textContent;');
+// Or v3 source syntax:
+$function = new JsFunction('(element) => element.textContent');
+```
+
+Other behavior changes:
+
+- Node options, the old logger and `js_extra` throw an exception. Local launch uses installed Chrome, `executablePath` or `PUPPETEER_EXECUTABLE_PATH`; system Chrome is not selected automatically.
+- Function scope/defaults accept scalars, arrays and `JsFunction`; pass remote handles as separate `evaluate()` arguments. PHP callbacks must be `Closure` objects. Use `Amp\async()` for concurrency; public results need no manual `await()`.
+- `undefined` becomes `null`; binary results are PHP strings. Screenshot, PDF and script/style filesystem operations run on the PHP host. A base64 screenshot returns without writing `path`.
+- Firefox, pipe transport, Node.js writable streams, video recording and `followSymlinks: false` are unsupported.
 
 ## Development
 
 After Docker setup, run functional and static checks:
 
 ```sh
-docker compose run --rm chrome php bin/console test all --no-interaction
-docker compose run --rm php composer psalm
-docker compose run --rm php npm run test-generator
-docker compose run --rm php npm run test-plugins
-docker compose run --rm php composer verify-php
-docker compose run --rm php npm run build:check
+docker compose run --rm chrome composer test
 ```
 
 `npm run build` creates minified CDP bundles: `resources/puppeteer-core.js` without plugins and `resources/puppeteer.js` with plugins. `--debug` produces readable JS. Commit resources with source and lock-file changes. `package-lock.json` pins JS dependencies; `composer.lock` stays local, and applications resolve PHP dependency ranges.
 
-Without the extension, only unit tests/Psalm are available: `composer install --ignore-platform-req=ext-php_quickjs`, then `composer check`.
+Without the extension, only unit tests/Psalm are available: `composer install --ignore-platform-req=ext-php_quickjs`, then `php vendor/bin/phpunit` and `composer psalm`.
+
+For a single suite, use `php bin/console test unit` (or `integration` / `browser`); use `php vendor/bin/phpunit --filter=...` for individual tests. `composer test` includes PHP/JS tests, Psalm, API generation and bundle checks; `composer test-release` adds load cycles; `composer benchmark` measures performance separately.
 
 CLI help: `docker compose run --rm php php bin/console`. `doctor` checks the environment; `--no-interaction` disables prompts, and `--json` selects machine-readable output.
 
 ## Runtime lifecycle
 
+QuickJS diagnostics use a bounded asynchronous queue: at most 64 pending messages / 1 MiB, with each payload limited to 64 KiB. Overflow is dropped when the reader cannot keep up. Explicit close waits at most one second for pending logs.
+
 - Close pages/contexts with `close()` and JS handles with `dispose()`, preferably in `finally`. `release()` only drops the bridge reference. Do not pass objects between clients.
 - `on()`, `once()` and `off()` preserve handler identity. Removing the last registration releases the callback; other callbacks, such as `exposeFunction()`, remain until disconnect.
-- Event callback errors go to stderr; callbacks returning a result reject their JS Promise on failure.
+- Event callback errors go to stderr; callbacks returning a result reject their JS Promise on failure. Logs use Amp streams; `close()`/`disconnect()` allow up to one second to flush pending messages.
 - Ordinary JS errors and operation timeouts leave the connection usable. Transport failure clears calls, timers and registries; create a new connection afterward.
 - `undefined` becomes `null`, binary becomes a PHP string, empty JS objects and arrays both become `[]`. Exact integers must fit ±9,007,199,254,740,991. BigInt/non-finite results use tagged arrays; cyclic or excessively deep data is rejected.
 - CDP Chrome is supported. Firefox/BiDi, public `AbortSignal` and arbitrary Node APIs are unavailable.

@@ -1,5 +1,8 @@
 # PuPHPeteer
 
+[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.11.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.11.0)
+[![Chrome](https://img.shields.io/badge/Chrome-153.0.8010.36-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
+
 <img src="https://user-images.githubusercontent.com/817508/100672192-dd258500-3361-11eb-845f-e8b5109752e4.png" style="max-width:100%;" width="190px" align="right">
 
 [English](README.md) | **Русский**
@@ -34,7 +37,7 @@
 ```php
 require 'vendor/autoload.php';
 
-use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 
 $puppeteer = new Puppeteer();
 $browser = $puppeteer->launch();
@@ -82,11 +85,10 @@ php vendor/bin/console browser:install
 docker compose build php chrome
 docker compose run --rm php composer install
 docker compose run --rm php npm ci
-docker compose run --rm chrome composer browser:install
 docker compose run --rm chrome php examples/01_page_open.php
 ```
 
-`Dockerfile` содержит PHP/QuickJS без Chrome; `Dockerfile-chrome` добавляет браузер. Образы не запускают тесты автоматически. Compose монтирует checkout в `/app`, зависимости — в общие `vendor`/`node_modules` volumes. После изменения Dockerfile или расширения пересоберите образы.
+`Dockerfile` содержит PHP, QuickJS, Composer и Node.js без браузера. `Dockerfile-chrome` устанавливает Chrome из `upstream/lock.json` через `@puppeteer/browsers` в `/opt/chrome` и задаёт `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. В образах нет кода приложения и его зависимостей; автоматически ничего не запускается. Compose монтирует checkout в `/app`, зависимости — в общие `vendor`/`node_modules` volumes. Скачивание браузера при `npm ci` отключено в обоих образах. После изменения Dockerfile, расширения или закреплённого Chrome пересоберите образ.
 
 Архитектура соответствует хосту; доступность Chrome зависит от закреплённой версии. Chrome-сервис использует `SYS_ADMIN` для sandbox. Графического дисплея в образе нет.
 
@@ -111,17 +113,17 @@ docker compose run --rm php composer update
 docker compose run --rm php npm ci
 ```
 
-Обновить Puppeteer и поддерживаемый Chrome (пример для 25.11.0):
+Обновить Puppeteer и поддерживаемый Chrome:
 
 ```sh
-docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@25.11.0
+docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@latest
 docker compose run --rm php php bin/console generate
 docker compose run --rm php npm run build
-docker compose run --rm chrome composer browser:install
+docker compose build chrome
 docker compose run --rm chrome php bin/console test all --no-interaction
 ```
 
-Базовый сервис `php` пропускает скачивание Chrome: браузер устанавливается после обновления `upstream/lock.json` через сервис `chrome`. Генерация API и сборка bundle — отдельные команды. Для последней версии замените `25.11.0` на `latest`. Изменения `package.json`, `package-lock.json`, `upstream/` и `resources/` будут видны в Git на хосте. Composer lock сохраняется на хосте, но в этом пакете не коммитится.
+После обновления `upstream/lock.json` командой `generate` пересоберите `chrome`: путь из ENV выбирает браузер внутри образа. Генерация API и сборка bundle — отдельные команды. Изменения `package.json`, `package-lock.json`, `upstream/` и `resources/` будут видны в Git на хосте. Composer lock сохраняется на хосте, но в этом пакете не коммитится.
 
 ## Использование с browserless
 
@@ -142,6 +144,8 @@ Compose задаёт `BROWSER_WS` с токеном. Вне Compose переда
 Клиентские таймауты не продлевают серверную сессию. В Browserless v1 переменная называлась `CONNECTION_TIMEOUT`. После изменения ENV выполните `docker compose up -d browserless`. [Справочник Browserless](https://docs.browserless.io/enterprise/docker/config).
 
 ## Основные отличия от Puppeteer
+
+API браузера находится в `Nesk\Puphpeteer\Puppeteer` (например, `Puppeteer`, `Page`, `Browser`). Общий `JsFunction` остаётся в `Nesk\Puphpeteer`; старые импорты доступны через алиасы.
 
 ### Создайте экземпляр Puppeteer
 
@@ -286,42 +290,110 @@ docker compose run --rm php composer verify-php
 
 ## Обновление с v2
 
-Совместимость предоставляется по принципу **best effort**. Основные классы теперь находятся в `Nesk\Puphpeteer`. Composer автоматически подключает сгенерированные алиасы `Nesk\Puphpeteer\Resources\*` и `Nesk\Rialto\Data\JsFunction`. Старые импорты и `instanceof` работают для доступных обёрток. Если старое имя уже предоставлено приложением, оно сохраняется; совместимость такого стороннего класса не гарантируется.
+Установите PHP 8.4+, совместимое расширение QuickJS и npm-зависимости по инструкции выше. Node.js используется для установки и сборки, а не как транспорт браузера.
 
-- PHP 8.4+ и совместимое расширение QuickJS заменяют runtime Rialto/Node. Старые реализации остаются в истории Git и ветках `zoon`, `native`, `native-wip`.
-- `new JsFunction(source)` принимает полную функцию. Старый конструктор `(parameters, body, scope)` не поддерживается. Сохранены `create()`, `createWithBody()`, `createWithParameters()`, `createWithScope()`, `createWithAsync()` и неизменяемые цепочки `body()/parameters()/scope()/async()`.
-- Scope функции и значения параметров по умолчанию принимают скаляры, массивы и `JsFunction`. Remote handles передавайте отдельными аргументами `evaluate()`; PHP callbacks должны быть объектами `Closure`.
-- Обёртки соответствуют закреплённому API Puppeteer. Алиасы не восстанавливают удалённые или неподдерживаемые upstream-методы.
-- Замените `->tryCatch` и импорты исключений Rialto обычным PHP `try/catch`; ошибки JavaScript сейчас преобразуются в `\RuntimeException`.
-- Неподдерживаемые настройки, включая `js_extra`, Node-настройки и старый logger, вызывают исключение. `read_timeout` переводится из секунд в `protocolTimeout` в миллисекундах; `ignoreHTTPSErrors` — в `acceptInsecureCerts`. Firefox и pipe-транспорт не реализованы.
-- Локальный запуск использует Chrome из `node_modules`, явный `executablePath` или `PUPPETEER_EXECUTABLE_PATH`. Системный Chrome автоматически не выбирается.
-- `undefined` преобразуется в `null`; бинарные результаты — в PHP-строки. `screenshot()` и `pdf()` записывают результат по `path` средствами PHP. Явно ожидать публичные вызовы не нужно; для параллельности используйте `Amp\async()`.
-- Файловые операции screenshot, PDF и загрузки script/style выполняются на стороне PHP. Как в upstream Puppeteer, `screenshot()` с `encoding: 'base64'` возвращает результат без записи в `path`. Адаптер пока не реализует Node.js writable streams, запись видео и `followSymlinks: false`.
+Composer подключает алиасы по принципу **best effort**, поэтому прежние импорты можно оставить. В новом коде используйте:
+
+| Импорт v2 | Текущий импорт |
+| --- | --- |
+| `Nesk\Puphpeteer\Puppeteer` | `Nesk\Puphpeteer\Puppeteer\Puppeteer` |
+| `Nesk\Puphpeteer\Resources\Page` (и другие обёртки) | `Nesk\Puphpeteer\Puppeteer\Page` |
+| `Nesk\Rialto\Data\JsFunction` | `Nesk\Puphpeteer\JsFunction` |
+
+Алиасы сохраняют `instanceof` для доступных обёрток, но не восстанавливают удалённые upstream-методы и не заменяют классы, уже загруженные приложением. Имена `querySelector*()` и автоматическое ожидание результатов сохраняются.
+
+**Ошибки:** уберите `tryCatch` и перехватывайте `RuntimeException` вместо исключений Rialto. Обычная ошибка операции Puppeteer не закрывает клиент.
+
+```php
+// v2
+try {
+    $page->tryCatch->goto('invalid_url');
+} catch (\Nesk\Rialto\Exceptions\Node\Exception $error) {
+    echo $error->getMessage();
+}
+
+// v3
+try {
+    $page->goto('invalid_url');
+} catch (\RuntimeException $error) {
+    echo $error->getMessage();
+}
+```
+
+**Плагины:** замените JavaScript-инициализацию в `js_extra` регистрацией до `launch()` или `connect()`.
+
+```php
+// v2
+$puppeteer = new Puppeteer(['js_extra' => "
+    const puppeteer = require('puppeteer-extra');
+    puppeteer.use(require('puppeteer-extra-plugin-stealth')());
+    instruction.setDefaultResource(puppeteer);
+"]);
+
+// v3
+$puppeteer = (new Puppeteer())->use('stealth');
+```
+
+**Таймауты и HTTPS:** старые настройки преобразуются автоматически; предпочтительны имена из upstream. `protocolTimeout` задаётся в миллисекундах, а `read_timeout` — в секундах. У навигации отдельный таймаут.
+
+```php
+// v2
+$puppeteer = new Puppeteer(['read_timeout' => 65]);
+$browser = $puppeteer->launch(['ignoreHTTPSErrors' => true]);
+
+// v3
+$puppeteer = new Puppeteer();
+$browser = $puppeteer->launch([
+    'protocolTimeout' => 65000,
+    'acceptInsecureCerts' => true,
+]);
+// В обеих версиях:
+$browser->newPage()->goto($url, ['timeout' => 60000]);
+```
+
+**JavaScript-функции:** прежние фабрики продолжают работать. Прямой конструктор `(parameters, body, scope)` замените фабрикой или полным исходником функции:
+
+```php
+// v2
+$function = new JsFunction(['element'], 'return element.textContent;', []);
+
+// v3: фабрика (работает и в v2)
+$function = JsFunction::createWithParameters(['element'])
+    ->body('return element.textContent;');
+// Или исходник функции в v3:
+$function = new JsFunction('(element) => element.textContent');
+```
+
+Другие изменения поведения:
+
+- Настройки Node, старый logger и `js_extra` вызывают исключение. Локальный запуск использует установленный Chrome, `executablePath` или `PUPPETEER_EXECUTABLE_PATH`; системный Chrome автоматически не выбирается.
+- Scope и значения параметров функции по умолчанию принимают скаляры, массивы и `JsFunction`; remote handles передавайте отдельными аргументами `evaluate()`. PHP callbacks должны быть объектами `Closure`. Для конкурентности используйте `Amp\async()`; вручную вызывать `await()` для публичных результатов не нужно.
+- `undefined` превращается в `null`, бинарные результаты — в PHP-строки. Файловые операции скриншотов, PDF, загрузки скриптов и стилей выполняются на PHP-хосте. Скриншот в base64 возвращается без записи в `path`.
+- Firefox, pipe transport, Node.js writable streams, запись видео и `followSymlinks: false` не поддерживаются.
 
 ## Разработка
 
 После установки Docker-окружения запускайте функциональные и статические проверки:
 
 ```sh
-docker compose run --rm chrome php bin/console test all --no-interaction
-docker compose run --rm php composer psalm
-docker compose run --rm php npm run test-generator
-docker compose run --rm php npm run test-plugins
-docker compose run --rm php composer verify-php
-docker compose run --rm php npm run build:check
+docker compose run --rm chrome composer test
 ```
 
 `npm run build` собирает минифицированные CDP bundle: `resources/puppeteer-core.js` без плагинов и `resources/puppeteer.js` с плагинами. `--debug` создаёт читаемый JS. Коммитьте ресурсы вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости; `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
 
-Без расширения доступны только unit-тесты и Psalm: `composer install --ignore-platform-req=ext-php_quickjs`, затем `composer check`.
+Без расширения доступны только unit-тесты и Psalm: `composer install --ignore-platform-req=ext-php_quickjs`, затем `php vendor/bin/phpunit` и `composer psalm`.
+
+Отдельный набор: `php bin/console test unit` (или `integration` / `browser`); отдельные тесты: `php vendor/bin/phpunit --filter=...`. `composer test` включает PHP/JS-тесты, Psalm, проверку генерации API и bundle; `composer test-release` добавляет нагрузочные циклы; `composer benchmark` измеряет производительность отдельно.
 
 Список CLI-команд: `docker compose run --rm php php bin/console`. `doctor` проверяет окружение; `--no-interaction` отключает вопросы, `--json` включает машинный вывод.
 
 ## Жизненный цикл runtime
 
+Диагностика QuickJS записывается асинхронно: очередь ограничена 64 сообщениями / 1 МиБ, payload сообщения — 64 КиБ. При переполнении сообщения отбрасываются. Явное закрытие ждёт дописывания логов не больше секунды.
+
 - Закрывайте страницы/контексты через `close()`, JS handles — через `dispose()`, желательно в `finally`. `release()` удаляет только ссылку моста. Не передавайте объекты между клиентами.
 - `on()`, `once()` и `off()` сохраняют идентичность обработчика. Последняя снятая регистрация освобождает callback; остальные callbacks, например `exposeFunction()`, удерживаются до закрытия соединения.
-- Ошибки event callbacks пишутся в stderr; callbacks с возвращаемым результатом отклоняют JS Promise.
+- Ошибки event callbacks пишутся в stderr; callbacks с возвращаемым результатом отклоняют JS Promise. Логи записываются через Amp; `close()`/`disconnect()` ожидают дописывания до одной секунды.
 - Обычные JS-ошибки и таймауты операций не закрывают соединение. Сбой транспорта очищает вызовы, таймеры и реестры; после него создайте новое соединение.
 - `undefined` становится `null`, binary — PHP-строкой, пустые JS object и array — `[]`. Точные целые должны укладываться в ±9 007 199 254 740 991. BigInt/non-finite результаты — tagged-массивы; циклические и слишком глубокие данные отклоняются.
 - Поддерживается CDP Chrome. Firefox/BiDi, публичный `AbortSignal` и произвольные Node API недоступны.

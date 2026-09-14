@@ -7,6 +7,7 @@ const {extractPublicApi} = require('./public-api.cjs');
 const {resolveSources} = require('./source-resolver.cjs');
 const {buildPhpModel} = require('./php-model.cjs');
 const {generateAliases} = require('./aliases.cjs');
+const {generateReadmeBadges} = require('./readme-badges.cjs');
 const {readJson,json,inside,sortDiagnostics,validateConfig} = require('./model.cjs');
 const toolRoot = path.resolve(__dirname,'../..');
 function applyGeneratedFiles(root, files, deletedFiles, check=false) {
@@ -32,6 +33,7 @@ async function updatePhp(root=toolRoot,{check=false,offline=false,modelOnly=fals
  }
  const files=[{path:'upstream/lock.json',content:json(source.lock)},
  {path:'upstream/coverage.json',content:json({schemaVersion:1,note:'Declaration coverage only; does not imply runtime or test coverage.', total:model.coverage.length,generated:model.coverage.filter(m=>m.status==='generated').length,members:model.coverage,diagnostics})}];
+ files.push(...generateReadmeBadges(root, source.lock));
  let deletedFiles=[];
  if(!modelOnly){
   const result=spawnSync('php',[path.join(toolRoot,'tools/php/synchronize.php')],{cwd:root,input:json({root,classes:model.classes}),encoding:'utf8',maxBuffer:32*1024*1024});

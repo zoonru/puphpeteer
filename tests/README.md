@@ -1,12 +1,25 @@
 # Test suites
 
-`composer test` runs PHP-only PHPUnit unit tests without Chrome or the QuickJS
-extension. Native extension stubs are static-analysis declarations only and are
+`composer test` runs PHP unit/generator, native integration and browser tests, local examples, JS tests, Psalm, generated API and bundle checks. It requires QuickJS, Chrome and npm. For PHP-only unit/generator tests without Chrome or QuickJS, run `php vendor/bin/phpunit`. Native extension stubs are static-analysis declarations only and are
 never loaded as runtime substitutes.
+
+Tests are separated by scope within each suite:
+
+| Suite | Puppeteer | Shared |
+| --- | --- | --- |
+| `Unit` | API, aliases, Chrome launcher | Client, filesystem, JS functions, process runner |
+| `Integration` | Shipped bundle, streams, payloads, browser log flushing | Native extension contract and transport with test dispatchers |
+| `Browser` | Chrome scenarios and smoke runner | — |
+| `Plugins` | JS adapter, Puppeteer filesystem and protocol streams | — |
+| `Generator` | Upstream extraction, mapping, aliases and version badges (JS) | PHP emitter and fixtures |
+| `Release` | Repeated Chrome workload and release runner | — |
+| `Support` | Bundle instrumentation | Process runner |
+
+Directories use `<suite>/Puppeteer/` and `<suite>/Shared/`; future Playwright tests belong in `<suite>/Playwright/`. PHPUnit and Psalm discover nested PHP tests automatically. Existing Composer/npm commands remain the entry points.
 
 Client codec/lifecycle tests construct a client without its constructor to isolate
 PHP behavior; they do not claim to verify dispatch, Promise pumping or the
-browser transport. `composer test-integration` checks the native batch bridge
+browser transport. `php bin/console test integration` checks the native batch bridge
 with the compatible extension loaded; missing extension support is an error.
 The [extension contract](../README.md#extension-contract) defines supported values,
 batch limits, error recovery, callback ownership and Fiber boundaries. Run it
@@ -15,23 +28,23 @@ against the release build from the fork, not a separately patched prototype:
 ```sh
 docker compose run --rm php php vendor/bin/phpunit tests/Integration
 ```
-`composer test-browser` runs the PHP smoke and runtime lifecycle suites and the local examples. It
+`php bin/console test browser` runs the PHP smoke and runtime lifecycle suites and the local examples. It
 requires the extension loaded through PHP ini, the built JavaScript bundle and the project
-Chrome installed under `node_modules`. Each browser script starts Chrome through the public
+Chrome from `PUPPETEER_EXECUTABLE_PATH` (set by the Chrome image), or the managed installation under `node_modules` outside Docker. Each browser script starts Chrome through the public
 `launch()` API and uses the static fixtures in `examples/pages`; no HTTP fixture server is started.
 `PUPPETEER_EXECUTABLE_PATH` can explicitly override the browser; system installations are never
 selected automatically. See the [installation instructions](../README.md#requirements-and-installation).
 Missing prerequisites must not be treated as an integration pass.
 
 `composer test-release` adds repeated browser workloads and resource-retention
-checks to the PHP suites; see [release validation](../README.md#release-validation).
+checks after `composer test`; see [release validation](../README.md#release-validation).
 
 `composer benchmark` launches Chrome through the public `launch()` API and measures a separate PHP
 process with `/usr/bin/time` and `ps`; the parent Chrome process is excluded. `--trials` defaults
 to 5 and `--iterations` to 1000.
 Child processes use the same PHP binary and ini configuration as the runner.
 
-`composer test-generator` runs PHP generator fixtures: signatures, omitted and
+`php vendor/bin/phpunit --testsuite Generator` runs PHP generator fixtures: signatures, omitted and
 explicit-null arguments, variadics, full regeneration and removal of obsolete methods.
 These fixtures also run as part of the default PHPUnit suite. `npm run test-generator`
 checks extraction/type mapping and upstream method/class removal, including read-only checks; `composer verify-php` checks generated artifacts.
@@ -42,13 +55,13 @@ is executed separately and is not included in static analysis.
 
 ## Large payload regressions and performance
 
-`tests/Integration/LargePayloadTest.php` uses the real shipped QuickJS bundle:
+`tests/Integration/Puppeteer/LargePayloadTest.php` uses the real shipped QuickJS bundle:
 indexed UTF-8 strings (including NUL and JSON escapes), all-byte binary data,
 PHP → JS → PHP round trips, 2 MiB boundary cases, 4/8/12 MiB results,
 32 MiB streams, uneven chunks and concurrent readers. Length and SHA-256 must
 match; chunks must not exceed 64 KiB. Stream lifecycle/fairness tests also cover
 cancellation, early close, producer failure and an event loop tick between reads.
-`tests/Browser/large-payload.php`, included in the browser suite, checks real
+`tests/Browser/Puppeteer/large-payload.php`, included in the browser suite, checks real
 `Page::content()` and `JsFunction` results, including concurrent responses.
 The fixture hides its large text to measure transport rather than text layout.
 
@@ -60,8 +73,8 @@ This does not make `content()` / `evaluate()` streaming APIs: final JSON parsing
 and returning a whole string still require synchronous work and memory.
 
 ```sh
-docker compose run --rm php php vendor/bin/phpunit tests/Integration/LargePayloadTest.php
-docker compose run --rm chrome php tests/Browser/large-payload.php
+docker compose run --rm php php vendor/bin/phpunit tests/Integration/Puppeteer/LargePayloadTest.php
+docker compose run --rm chrome php tests/Browser/Puppeteer/large-payload.php
 docker compose run --rm chrome php benchmarks/payloads.php --sizes=4,8,12 --trials=3
 docker compose run --rm php php benchmarks/payloads.php --mode=stream --sizes=32 --trials=3
 ```
@@ -75,3 +88,22 @@ startup and one warm-up per case are excluded. Chrome CPU is excluded. Use
 stdout. No benchmark artifacts are written. Compare runs on the same environment;
 absolute timing is deliberately not a CI assertion. The older 64 KiB benchmark
 remains unchanged for historical comparisons.
+
+## Failure and installation regressions
+
+The browser suite checks launch options, slowMo, WebSocket loss with concurrent requests,
+Chrome crashes, and preservation of a supplied user profile. Unit tests exercise forced
+process-tree shutdown; logging integration tests cover a slow, absent and closed stderr reader.
+JS installation tests create an isolated Composer consumer with production dependencies only,
+verify its autoloader and vendor CLI, and test installer skip flags and the locked Chrome CLI arguments.
+The download is replaced by a recording CLI fixture; these checks do not download another Chrome.
+
+Browserless authentication and server session expiry are checked separately (also in CI):
+
+```sh
+docker compose up -d browserless
+docker compose run --rm php php tests/Browser/Puppeteer/browserless.php
+```
+
+Release retention checks include streams, filesystem handles and pending log messages/bytes,
+in addition to object, callback, request and timer registries.

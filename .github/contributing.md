@@ -9,16 +9,16 @@ From the repository root:
 composer update --prefer-stable --ignore-platform-req=ext-php_quickjs
 npm ci
 npm run build
-composer check
+php vendor/bin/phpunit
+composer psalm
 ```
 
 The extension exception above is for unit tests and Psalm only. Integration
 requires the async/native-bridge php-quickjs fork with `dispatch()`.
-Run `composer test-integration` with that extension loaded; see the
+Run `php bin/console test integration` with that extension loaded; see the
 [extension contract](../README.md#extension-contract) for boundary tests. For browser tests,
-run `docker compose build php chrome`, then `docker compose run --rm chrome composer test-browser`. Chrome is installed
-under `node_modules` by `npm ci`; `PUPPETEER_EXECUTABLE_PATH` is an optional
-explicit override. Smoke and benchmark runners use PHP.
+run `docker compose build php chrome`, then `docker compose run --rm chrome php bin/console test browser`. The Chrome image sets `PUPPETEER_EXECUTABLE_PATH` to its installed browser.
+Install project dependencies through the Compose commands in the root README. Smoke and benchmark runners use PHP.
 See [release validation](../README.md#release-validation) for runner details.
 
 Commit package-lock.json and resources/puppeteer.js when
