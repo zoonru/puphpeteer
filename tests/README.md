@@ -8,7 +8,7 @@ Client codec/lifecycle tests construct a client without its constructor to isola
 PHP behavior; they do not claim to verify dispatch, Promise pumping or the
 browser transport. `composer test-integration` checks the native batch bridge
 with the compatible extension loaded; missing extension support is an error.
-The [extension contract](../docs/extension-contract.md) defines supported values,
+The [extension contract](../README.md#extension-contract) defines supported values,
 batch limits, error recovery, callback ownership and Fiber boundaries. Run it
 against the release build from the fork, not a separately patched prototype:
 
@@ -24,7 +24,7 @@ selected automatically. See the [installation instructions](../README.md#require
 Missing prerequisites must not be treated as an integration pass.
 
 `composer test-release` adds repeated browser workloads and resource-retention
-checks to the PHP suites; see [release validation](../docs/release.md).
+checks to the PHP suites; see [release validation](../README.md#release-validation).
 
 `composer benchmark` launches Chrome through the public `launch()` API and measures a separate PHP
 process with `/usr/bin/time` and `ps`; the parent Chrome process is excluded. `--trials` defaults

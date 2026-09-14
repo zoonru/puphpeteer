@@ -13,15 +13,17 @@ This version is **under development and has not been released**. Generated wrapp
 - [Usage](#usage)
 - [Requirements and installation](#requirements-and-installation)
 - [Browser installation in an application](#browser-installation-in-an-application)
-- [Docker and php-quickjs installation](#build-and-install-php-quickjs)
+- [Build and install php-quickjs](#build-and-install-php-quickjs)
 - [Use with browserless](#use-with-browserless)
 - [Notable differences from Puppeteer](#notable-differences-from-puppeteer)
 - [Puppeteer plugins](#puppeteer-plugins)
 - [IDE support and API generation](#ide-support-and-api-generation)
 - [Upgrade from v2](#upgrade-from-v2)
-- [Interactive CLI](#interactive-cli)
 - [Development](#development)
-- [Implementation plan](#implementation-plan)
+- [Runtime lifecycle](#runtime-lifecycle)
+- [Extension contract](#extension-contract)
+- [Release validation](#release-validation)
+- [Benchmark results](#benchmark-results)
 - [License](#license)
 - [Logo attribution](#logo-attribution)
 
@@ -45,60 +47,24 @@ try {
 }
 ```
 
-Evaluate JavaScript in the page, using the same `$page` before closing the browser:
-
-```php
-use Nesk\Puphpeteer\JsFunction;
-
-$dimensions = $page->evaluate(JsFunction::createWithBody('
-    return {
-        width: document.documentElement.clientWidth,
-        height: document.documentElement.clientHeight,
-        deviceScaleFactor: window.devicePixelRatio
-    };
-'));
-
-printf('Dimensions: %s', print_r($dimensions, true));
-```
-
-See also the runnable [examples](examples/), including [form submission interception with concurrent request waiting](examples/04_form_intercept.php). Their [run instructions](examples/README.md) use the bundled static pages; browserless is a separate Docker example.
-
 ## Requirements and installation
 
-- PHP **8.4+**, Composer and the compatible [**php_quickjs fork**](https://github.com/xtrime-ru/php-quickjs) with `Js\Callback::dispatch()` and `__quickjsEmit`. An upstream build without these bridge APIs is insufficient.
-- Chrome for local launches, or a remote Chrome exposing a browser WebSocket endpoint.
-- Node.js **22+** and npm for installing the bundled browser and development tools. The PHP client and test runners do not execute Node.js.
+Requires PHP **8.4+**, Composer, the [php-quickjs fork](https://github.com/xtrime-ru/php-quickjs), and local or remote Chrome. Node.js **22+** and npm are needed for browser installation and development; the PHP client does not run Node.js.
 
-Build and enable the extension [as described below](#build-and-install-php-quickjs) before installing PHP dependencies.
+This version is not published yet: use a checkout. For a host installation, [build the extension](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md), enable it through PHP ini, then run `composer install` and `npm ci`. Ready-to-use bundles are committed in `resources/`.
 
-The QuickJS version is not published yet. Work from a checkout of this branch:
+`npm ci` installs locked Chrome via `@puppeteer/browsers` into `node_modules/.puphpeteer`. Repeat with `composer browser:install`. `launch()` never downloads Chrome or searches for a system browser.
 
-```sh
-composer install
-npm ci
-```
-
-Load the compatible extension in your PHP configuration before running the client. Composer checks the extension's presence; the client checks the required bridge methods. The JS bundle is committed in `resources/`, so normal use does not require rebuilding it. If you use this checkout as a Composer dependency of another application, run the npm setup in the package directory; PHP also finds the managed browser there.
-
-`npm ci` downloads the locked Chrome for Testing build with `@puppeteer/browsers` through its postinstall script into `node_modules/.puphpeteer/`. Run `composer browser:install` to repeat the installation.
-
-To skip the local browser download (for example, when using browserless), set
-`PUPPETEER_SKIP_DOWNLOAD=true` or the Chrome-specific
-`PUPPETEER_CHROME_SKIP_DOWNLOAD=true` (`PUPPETEER_SKIP_CHROME_DOWNLOAD=true` is
-also accepted for compatibility). These variables affect the install script;
-set `PUPPETEER_EXECUTABLE_PATH` or a remote connection option for runtime use.
-
-By default, `launch()` finds that managed browser in the package or an ancestor application directory; it does not search system browsers. Override it with Puppeteer's standard environment variable:
-
-```sh
-export PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/chrome
-```
-
-An explicit `launch(['executablePath' => '/absolute/path/to/chrome'])` takes precedence. Installing or downloading Chrome is a separate setup step, never an implicit action of `launch()`.
+| Setting | Effect |
+| --- | --- |
+| `launch(['executablePath' => '/path/to/chrome'])` | Explicit path; highest priority |
+| `PUPPETEER_EXECUTABLE_PATH` | Browser path when no explicit option is supplied |
+| `PUPPETEER_SKIP_DOWNLOAD=true` | Skip browser download |
+| `PUPPETEER_CHROME_SKIP_DOWNLOAD=true` | Skip Chrome; `PUPPETEER_SKIP_CHROME_DOWNLOAD` is also accepted |
 
 ## Browser installation in an application
 
-In the package checkout, use `composer browser:install` after `npm ci`. Composer does not run dependency scripts. When installed in an application, prepare npm dependencies in the package directory:
+Composer does not run dependency scripts. For local Chrome, run from your application:
 
 ```sh
 npm ci --prefix vendor/zoon/puphpeteer
@@ -106,32 +72,58 @@ npm ci --prefix vendor/zoon/puphpeteer
 php vendor/bin/console browser:install
 ```
 
-`npm ci` already installs the browser through postinstall. The CLI uses the application's autoloader and runs npm in the package directory; Chrome is stored in `vendor/zoon/puphpeteer/node_modules/.puphpeteer`. Skip this setup for browserless. To expose a Composer alias in the application, add to its `scripts`:
-
-```json
-{
-  "scripts": {
-    "browser:install": "@php vendor/bin/console browser:install"
-  }
-}
-```
+Skip this npm setup for browserless. Optionally add `"browser:install": "@php vendor/bin/console browser:install"` to application scripts.
 
 ## Build and install php-quickjs
 
-### Docker
-
-The Dockerfile builds a release of [our php-quickjs fork](https://github.com/xtrime-ru/php-quickjs) at a pinned SHA and enables it through PHP ini. The host needs Docker and Compose 2.17+; PHP, Cargo and Chrome are provided by the images.
+Requires Docker and Compose **2.17+**. The image builds the pinned fork SHA and enables it through PHP ini; no host PHP/Rust toolchain is needed.
 
 ```sh
 docker compose build php chrome
-docker compose run --rm php php bin/console doctor
-docker compose run --rm chrome php bin/console test all --no-interaction
-docker compose run --rm chrome php examples/04_form_intercept.php
+docker compose run --rm php composer install
+docker compose run --rm php npm ci
+docker compose run --rm chrome composer browser:install
+docker compose run --rm chrome php examples/01_page_open.php
 ```
 
-`Dockerfile` provides PHP, QuickJS and project tools without Chrome. `Dockerfile-chrome` extends it with locked Chrome. Images contain a project snapshot: rebuild after changes. Compose uses the host architecture. The installed browser architecture depends on the locked Chrome version and upstream download availability. The Chrome service receives `SYS_ADMIN` for the browser sandbox and is intended for local testing.
+`Dockerfile` provides PHP/QuickJS without Chrome; `Dockerfile-chrome` adds the browser. Images do not run tests automatically. Compose mounts the checkout at `/app`, with shared `vendor`/`node_modules` dependency volumes. Rebuild after Dockerfile or extension changes.
 
-For browserless:
+Images use the host architecture; Chrome availability depends on the locked version. The Chrome service uses `SYS_ADMIN` for its sandbox. The image has no graphical display.
+
+### Examples
+
+Run `docker compose run --rm chrome php examples/<filename>`.
+
+| File | Demonstrates |
+| --- | --- |
+| [01_page_open.php](examples/01_page_open.php) | Launch options, viewport, timeout and evaluate |
+| [02_page_screenshot.php](examples/02_page_screenshot.php) | Stealth, User-Agent, language, viewport scale and screenshot |
+| [04_form_intercept.php](examples/04_form_intercept.php) | Wait for POST before clicking, print data and abort the request |
+
+Local HTML needs no HTTP server; screenshots persist on the host. For a visible browser on a host with PHP/QuickJS and a graphical display: `php examples/01_page_open.php --headful` (`headless => false`).
+
+### Updating through Docker
+
+Update PHP dependencies and install locked JS dependencies:
+
+```sh
+docker compose run --rm php composer update
+docker compose run --rm php npm ci
+```
+
+Update Puppeteer and its supported Chrome (25.11.0 example):
+
+```sh
+docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@25.11.0
+docker compose run --rm php php bin/console generate
+docker compose run --rm php npm run build
+docker compose run --rm chrome composer browser:install
+docker compose run --rm chrome php bin/console test all --no-interaction
+```
+
+The base `php` service skips Chrome downloads: install the browser through `chrome` after updating `upstream/lock.json`. API generation and bundle building are separate commands. Replace `25.11.0` with `latest` for the latest release. Changes to `package.json`, `package-lock.json`, `upstream/` and `resources/` appear in the host Git checkout. Composer's lock file also persists on the host but is not committed in this package.
+
+## Use with browserless
 
 ```sh
 docker compose up -d browserless
@@ -139,27 +131,15 @@ docker compose run --rm php php examples/03_browserless.php
 docker compose down
 ```
 
-Regular applications also load the extension through PHP ini. For manual builds, see [php-quickjs installation](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
+Compose supplies `BROWSER_WS` with its token. Outside Compose, pass your endpoint to `connect(['browserWSEndpoint' => $url])`; use `browserURL` for an HTTP debugging endpoint. `disconnect()` leaves the browser running; `close()` closes it.
 
-## Use with browserless
+| Timeout | Scope |
+| --- | --- |
+| Container ENV `TIMEOUT=300000` | Entire session: 5 minutes in Compose; Browserless default is 30 seconds |
+| Client `protocolTimeout` | Individual CDP call, milliseconds |
+| `goto(..., ['timeout' => 30000])` | Navigation, milliseconds |
 
-Connect to a browserless instance using its browser WebSocket URL:
-
-```php
-$puppeteer = new Nesk\Puphpeteer\Puppeteer();
-$browser = $puppeteer->connect([
-    'browserWSEndpoint' => getenv('BROWSER_WS'),
-]);
-try {
-    $page = $browser->newPage();
-    $page->goto('https://example.com');
-    $page->screenshot(['path' => 'example.png']);
-} finally {
-    $browser->disconnect();
-}
-```
-
-Use the URL and authentication options supplied by your browserless deployment. For a Chrome debugging HTTP endpoint, use `connect(['browserURL' => 'http://localhost:9222'])` instead. `disconnect()` detaches the client; `close()` closes the browser. See [the browserless example](examples/03_browserless.php).
+Client timeouts do not extend the server session. Browserless v1 used `CONNECTION_TIMEOUT`. Apply ENV changes with `docker compose up -d browserless`. [Browserless reference](https://docs.browserless.io/enterprise/docker/config).
 
 ## Notable differences from Puppeteer
 
@@ -168,6 +148,8 @@ Use the URL and authentication options supplied by your browserless deployment. 
 Use `new Puppeteer()` in place of JavaScript's Puppeteer import. `launch()` starts Chrome from PHP; `connect()` attaches to an existing browser. The original Puppeteer logic executes in embedded QuickJS.
 
 ### Promises are awaited automatically
+
+You do not need to call `Revolt\EventLoop::run()` explicitly: public methods await internal Futures, which let the event loop run while waiting. Concurrency is cooperative: `sleep()` and long synchronous PHP operations block other tasks; use `Amp\delay()` and asynchronous I/O instead.
 
 Public methods return their result or throw an exception directly. Properties use normal PHP syntax, for example `$page->keyboard->press('Enter')`. Futures remain internal to the transport. Run independent operations concurrently with Amp:
 
@@ -244,11 +226,81 @@ $puppeteer = (new Puppeteer())->use('stealth');
 $browser = $puppeteer->launch(['headless' => true]);
 ```
 
-The bundle includes upstream stealth modules and an adapter for puppeteer-extra
-hooks. Custom plugins are registered at build time. Node APIs are unavailable
-inside QuickJS; the old `js_extra` configuration remains unsupported.
-See [plugin configuration, custom bundles and compatibility limits](docs/plugins.md),
-including popup first-document timing and the locale adaptation.
+The bundle includes upstream stealth modules and the puppeteer-extra hook adapter.
+
+`use()` returns the same Puppeteer instance. Registrations apply to subsequent
+`launch()` and `connect()` calls; each browser connection gets fresh plugin
+instances. Unknown names, missing dependencies and incompatible requirements
+fail before launching Chrome. Registering the same name again replaces its options.
+The `puppeteer-extra-plugin-` prefix is optional. Launch preparation respects
+`timeout` (default 30 seconds); connect preparation uses `protocolTimeout` or
+`read_timeout` (default 180 seconds). Zero disables that preparation deadline.
+
+To select evasions, pass their upstream names:
+
+```php
+$puppeteer->use('stealth', ['enabledEvasions' => [
+    'navigator.webdriver', 'navigator.languages', 'navigator.hardwareConcurrency',
+]]);
+```
+
+Individual evasions accept their original options:
+
+```php
+$puppeteer->use('stealth/evasions/navigator.hardwareConcurrency', [
+    'hardwareConcurrency' => 8,
+]);
+```
+
+### Application plugins
+
+Plugins must be bundled in advance. Install the plugin with npm in the build
+project, then create a JavaScript registry exporting name-to-factory entries:
+
+```js
+// app-plugins.js
+import plugin from 'puppeteer-extra-plugin-example';
+export default {example: options => plugin(options)};
+```
+
+```sh
+docker compose run --rm php npm run build -- --plugins=./app-plugins.js
+```
+
+Commit/distribute the resulting `resources/puppeteer.js` with your
+application. The no-plugin path uses the smaller `resources/puppeteer-core.js`
+automatically; an explicitly configured `bundle` always takes precedence. Use
+`new Puppeteer(['bundle' => '/absolute/path/puppeteer.js'])` when keeping an
+application bundle separately. Reproducibility checks need the same
+`--plugins` argument. Register it with `$puppeteer->use('example', $options)`.
+Custom registry names cannot override bundled names. Dependencies must also be
+present in the registry. This is build-time dependency resolution: runtime
+`require()`, Node filesystem, Node process and network modules are unavailable.
+
+### Compatibility limits
+
+- The adapter currently supports CDP Chrome, including browser contexts, existing
+  targets, frames and popups. New client-created pages await `onPageCreated`.
+  Scripts registered with `evaluateOnNewDocument()` cover future navigations and
+  child frames. Existing documents are not reinjected automatically.
+- Popups created by page JavaScript can execute their first document before
+  `targetcreated` handlers finish. This also affects event-based puppeteer-extra
+  integration. Obtain the popup page and navigate after the page is returned if
+  injection must precede document scripts. Do not assume first-popup-document
+  coverage or retroactive modification of already running scripts.
+- Stealth's `user-agent-override` normally depends on a Node plugin that writes
+  Chrome profile preferences. Here the upstream CDP `acceptLanguage` override is
+  enabled for headful and headless browsers. The profile Preferences file is not
+  modified. Locale persistence and HTTP header ordering can differ from the
+  Node implementation.
+- Hook failures during requested operations propagate to PHP. Background target
+  or close hook failures are retained and surfaced by the next client operation.
+  Closing an already closed target during initialization is normal teardown.
+  `close()` and `disconnect()` remain available after plugin failures.
+  User-supplied plugins must return/await their asynchronous work.
+- Browser-side stealth patches evolve independently of Chrome. The integration
+  tests verify concrete properties and lifecycle behavior; they do not promise
+  that a website cannot detect automation.
 
 ## IDE support and API generation
 
@@ -257,8 +309,8 @@ Real PHP classes, methods, property getters, signatures and PHPDoc are generated
 Coverage is partial: see [the coverage report](upstream/coverage.json) for skipped declarations and [the generator contract](upstream/README.md) for type limitations. Declaration coverage does not establish runtime support for every method.
 
 ```sh
-composer update-php
-composer verify-php
+docker compose run --rm php composer update-php
+docker compose run --rm php composer verify-php
 ```
 
 The first command regenerates wrappers and compatibility aliases; the second checks them without changing files. Manual edits to generated files are overwritten. Classes, methods and aliases removed from upstream also disappear from the generated output.
@@ -277,54 +329,66 @@ Compatibility is **best effort**. Canonical classes now live in `Nesk\Puphpeteer
 - `undefined` becomes `null`; binary results become PHP strings. `screenshot()` and `pdf()` write `path` output through PHP. Awaiting public calls manually is unnecessary; use `Amp\async()` for concurrency.
 - Filesystem operations used by screenshot, PDF and script/style loading run on the PHP host. As in upstream Puppeteer, `screenshot()` with `encoding: 'base64'` returns before writing `path`. Node.js writable streams, video recording and `followSymlinks: false` are not implemented by this adapter.
 
-## Interactive CLI
-
-The development commands are available through `bin/console` and use Symfony
-Console for animated indicators, progress bars, tables and interactive choices:
-
-```sh
-bin/console                 # show the command list
-bin/console doctor          # inspect PHP, QuickJS, Node.js, npm and bundle
-bin/console build           # build the production bundle
-bin/console generate --check
-bin/console test            # choose a suite interactively
-bin/console benchmark --trials=5 --iterations=1000
-```
-
-Use `--no-interaction` in CI. Add `--json` for agent and CI integrations; it
-disables decorations and prints one machine-readable line. Child processes inherit the configured PHP ini. Existing Composer scripts remain available.
-
 ## Development
 
-For development without the extension loaded:
+After Docker setup, run functional and static checks:
 
 ```sh
-composer install --ignore-platform-req=ext-php_quickjs
-npm ci
-npm run build
-composer test-unit
-composer psalm
-npm run test-generator
-composer verify-php
+docker compose run --rm chrome php bin/console test all --no-interaction
+docker compose run --rm php composer psalm
+docker compose run --rm php npm run test-generator
+docker compose run --rm php npm run test-plugins
+docker compose run --rm php composer verify-php
+docker compose run --rm php npm run build:check
 ```
 
-Run browser checks in the prepared Chrome image:
+`npm run build` creates minified CDP bundles: `resources/puppeteer-core.js` without plugins and `resources/puppeteer.js` with plugins. `--debug` produces readable JS. Commit resources with source and lock-file changes. `package-lock.json` pins JS dependencies; `composer.lock` stays local, and applications resolve PHP dependency ranges.
+
+Without the extension, only unit tests/Psalm are available: `composer install --ignore-platform-req=ext-php_quickjs`, then `composer check`.
+
+CLI help: `docker compose run --rm php php bin/console`. `doctor` checks the environment; `--no-interaction` disables prompts, and `--json` selects machine-readable output.
+
+## Runtime lifecycle
+
+- Close pages/contexts with `close()` and JS handles with `dispose()`, preferably in `finally`. `release()` only drops the bridge reference. Do not pass objects between clients.
+- `on()`, `once()` and `off()` preserve handler identity. Removing the last registration releases the callback; other callbacks, such as `exposeFunction()`, remain until disconnect.
+- Event callback errors go to stderr; callbacks returning a result reject their JS Promise on failure.
+- Ordinary JS errors and operation timeouts leave the connection usable. Transport failure clears calls, timers and registries; create a new connection afterward.
+- `undefined` becomes `null`, binary becomes a PHP string, empty JS objects and arrays both become `[]`. Exact integers must fit ±9,007,199,254,740,991. BigInt/non-finite results use tagged arrays; cyclic or excessively deep data is rejected.
+- CDP Chrome is supported. Firefox/BiDi, public `AbortSignal` and arbitrary Node APIs are unavailable.
+
+## Extension contract
+
+Use the fork SHA pinned in `Dockerfile`: `dispatch()` alone does not establish compatibility. [Integration tests](tests/Integration/) check values, limits, recovery, resource release and Fibers against the installed extension.
+
+The bridge copies values without MessagePack or shared memory. The client runs up to 100 ready JS jobs per batch; Amp handles I/O. Limits: 2 seconds native execution, 256 MiB JS heap, 512 KiB stack; 4,096 messages / 32 MiB queue; 16 MiB conversion budget including structural overhead; depth 64. These do not bound PHP callbacks or Chrome memory.
+
+Dispatch failure discards partial messages but does not roll back JS mutations: the client closes without retrying. PHP callbacks run after native dispatch returns so they can suspend their Fiber.
+
+## Release validation
+
+[GitHub Actions](.github/workflows/tests.yaml) on push, PR and manual dispatch checks PHPUnit/Psalm on PHP 8.4/8.5, JS, bundles, native integration, browser scenarios and examples. Composer and images are cached; project tests run on cache hits too.
+
+Run load tests and benchmarks only for releases:
 
 ```sh
-docker compose run --rm chrome composer test-browser
 docker compose run --rm chrome composer test-release -- --cycles=50 --timeout=600
 docker compose run --rm chrome composer benchmark -- --trials=5 --iterations=1000
 ```
 
-Smoke runs the browser scenarios and all three examples. The benchmark supports macOS and Linux and measures the PHP workload separately from Chrome and the wrapper process. See [QuickJS internals and test details](docs/quickjs.md).
+Each load cycle checks two pages, listeners, handle release and error recovery; every tenth renders PNG/PDF. Resource registries must return to baseline. `--timeout` bounds the workload in seconds; increase both arguments for longer runs. These checks do not prove absence of all native leaks.
 
-`npm run build` creates minified CDP-only bundles: `resources/puppeteer-core.js` for the default no-plugin path and `resources/puppeteer.js` with plugin support, plus version metadata and launch defaults. Commit these resources with source and lock-file changes. `npm run build:check` verifies reproducibility; `npm run build -- --debug` creates readable bundles for debugging. PHP dependency ranges are resolved by the consuming application; `composer.lock` is local. JS tooling is pinned in `package-lock.json`.
+The release workflow runs **after publication**, including prereleases, and does not block it. Check dependency audits and target platforms before publishing: hosted runtime CI covers Linux amd64.
+
+### Repeatable performance measurements
+
+Each trial measures 1,000 evaluates, 100 × 64 KiB returns, 20 concurrent 25 ms waits and 20 navigations. `--iterations` changes evaluate count. CPU/RSS exclude Chrome; 25 ms sampling may miss peaks. Compare on identical hardware, PHP, Chrome, extension and bundle. macOS/Linux require `ps` and `/usr/bin/time` (GNU time on Linux).
 
 ## Benchmark results
 
-The latest optimized QuickJS runs were measured on macOS arm64 with PHP 8.5.7
+The reference QuickJS runs were measured on macOS arm64 with PHP 8.5.7
 and managed Chrome 144.0.7559.96. Values below are means; benchmark execution is
-documented in [QuickJS test details](docs/quickjs.md).
+documented in [performance measurements](#repeatable-performance-measurements).
 
 - **Rialto** — PHP controls a separate Node.js process over a socket; Puppeteer runs in Node.js.
 - **Native PHP** — a PHP implementation speaks CDP directly, without Node.js or QuickJS; API coverage is partial.
@@ -337,17 +401,6 @@ documented in [QuickJS test details](docs/quickjs.md).
 | 20 waits of 25 ms | 545.30 ms | **29.64 ms** | 29.86 ms |
 | Total client CPU | 830 ms | **360 ms** | 428 ms |
 | Peak client RSS | 123.55 MiB | **38.14 MiB** | 56.53 MiB |
-
-## Implementation plan
-
-1. **Foundation:** remove old backends; configure Composer, PHPUnit, Psalm, reproducible bundle and CI. Completed.
-2. **Generator:** real methods, properties, PHP types, PHPDoc and compatibility aliases. Implemented; API coverage remains partial.
-3. **Extension:** direct bridge, `dispatch`, type contract, queue limits, callback/handle release and Fiber boundaries are implemented and covered by [contract tests](docs/extension-contract.md). Cross-platform release validation remains in step 6.
-4. **Runtime:** transport shutdown, internal cancellation, timeout recovery and object/browser cleanup are implemented with [lifecycle tests and documented boundaries](docs/runtime.md).
-5. **Plugins:** bundled stealth modules, custom plugin registries and lifecycle hooks are implemented with isolated and browser tests; [compatibility limits](docs/plugins.md) are documented.
-6. **Release:** a PHP validation runner, repeated browser workloads, retention checks, portable benchmarks and an extension/browser CI matrix are implemented. See [release checks and remaining blockers](docs/release.md).
-
-Every push and PR runs PHPUnit and Psalm on PHP 8.4/8.5, independent JS checks, and functional tests in Docker on both PHP versions, including the browserless example. Composer and Docker build layers are cached. The fork SHA is pinned in `Dockerfile`; no `PHP_QUICKJS_REF` repository setting is needed. Load testing (50 cycles) and benchmark run only when a GitHub Release is published. See [CI details](docs/release.md#ci-and-remaining-release-blockers).
 
 ## License
 

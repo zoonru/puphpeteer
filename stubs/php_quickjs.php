@@ -4,7 +4,7 @@ namespace {
 
 // Stubs for the php-quickjs extension (IDE / static-analysis aid only).
 // These declarations describe the native classes; they are not loaded at
-// runtime. Contract: docs/extension-contract.md. Keep in sync with the
+// runtime. Contract: README.md#extension-contract. Keep in sync with the
 // hardened https://github.com/xtrime-ru/php-quickjs fork.
 
 /**
@@ -75,7 +75,7 @@ namespace Js {
          * budget does not bound synchronous JS (the engine timeout does).
          * Failures discard partial messages. No host I/O is performed here.
          * Throws on nested dispatch or Fiber switching inside native JS.
-         * See docs/extension-contract.md for conversion and queue limits.
+         * See README.md#extension-contract for conversion and queue limits.
          * @param list<mixed>|null $args
          * @return array{messages: list<array{0: string, 1: mixed}>, pending: bool, jobs: non-negative-int}
          */

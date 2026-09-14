@@ -15,11 +15,11 @@ composer check
 The extension exception above is for unit tests and Psalm only. Integration
 requires the async/native-bridge php-quickjs fork with `dispatch()`.
 Run `composer test-integration` with that extension loaded; see the
-[extension contract](../docs/extension-contract.md) for boundary tests. For browser tests,
+[extension contract](../README.md#extension-contract) for boundary tests. For browser tests,
 run `docker compose build php chrome`, then `docker compose run --rm chrome composer test-browser`. Chrome is installed
 under `node_modules` by `npm ci`; `PUPPETEER_EXECUTABLE_PATH` is an optional
 explicit override. Smoke and benchmark runners use PHP.
-See `docs/quickjs.md` for runner details.
+See [release validation](../README.md#release-validation) for runner details.
 
 Commit package-lock.json and resources/puppeteer.js when
 changing JS sources or build dependencies. Run npm run build to regenerate them;
