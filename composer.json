@@ -63,6 +63,7 @@
       "@psalm"
     ],
     "build": "npm run build",
+    "browser:install": "@php bin/console browser:install",
     "test-browser": "@php tests/Browser/run-smoke.php",
     "test-release": "@php tests/Release/run.php",
     "benchmark": "@php bin/console benchmark",
