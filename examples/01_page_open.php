@@ -7,7 +7,12 @@ use Nesk\Puphpeteer\JsFunction;
 
 $puppeteer = new Puppeteer;
 
-$browser = $puppeteer->launch();
+// Add --headful on a machine with a graphical session to use headless => false.
+$browser = $puppeteer->launch([
+    'headless' => !in_array('--headful', $argv, true),
+    'defaultViewport' => ['width' => 1280, 'height' => 720],
+    'timeout' => 30_000,
+]);
 $page = $browser->newPage();
 $page->goto('file://' . __DIR__ . '/pages/index.html');
 

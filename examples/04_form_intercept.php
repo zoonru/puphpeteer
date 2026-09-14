@@ -17,19 +17,30 @@ try {
     $page->setRequestInterception(true);
     $page->on('request', static function (HTTPRequest $request): void {
         if (str_contains($request->url(), 'example.invalid/form-submit')) {
-            echo 'Form request: ', $request->method(), ' ', $request->url(), PHP_EOL;
-            echo 'Form data: ', $request->postData() ?? '', PHP_EOL;
             $request->abort('blockedbyclient');
             return;
         }
         $request->continue();
     });
 
-    $requestFuture = async(static function () use ($page): HTTPRequest {
+    $result = [];
+    $requestFuture = async(static function () use ($page, &$result): HTTPRequest {
         return $page->waitForRequest(
-            static fn(HTTPRequest $request): bool => $request->isNavigationRequest()
-                && str_contains($request->url(), 'example.invalid/form-submit')
-                && $request->method() === 'POST',
+            function (HTTPRequest $request) use(&$result): bool {
+                $isMatch = $request->isNavigationRequest()
+                    && str_contains($request->url(), 'example.invalid/form-submit')
+                    && $request->method() === 'POST';
+
+                if ($isMatch) {
+                    $result = [
+                        'method' => $request->method(),
+                        'url' => $request->url(),
+                        'form_data' => $request->postData(),
+                    ];
+                }
+
+                return $isMatch;
+            },
             ['timeout' => 10_000],
         );
     });
@@ -37,6 +48,7 @@ try {
     $page->click('#submit');
     $request = $requestFuture->await(new TimeoutCancellation(10));
     echo 'Intercepted form URL: ', $request->url(), PHP_EOL;
+    var_dump($result);
 } finally {
     $browser->close();
 }
