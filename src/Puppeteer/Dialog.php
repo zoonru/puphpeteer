@@ -6,45 +6,38 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Dialog extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class Dialog extends RemoteObject
 {
     /**
      * @param (string)|null $promptText
-     * @return void
      */
-    public function accept(string|null $promptText = NULL): void
+    public function accept(?string $promptText = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function defaultValue(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return void
-     */
+
     public function dismiss(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @var bool
-     */
     public bool $handled {
         get {
             return $this->getRemote('handled');
         }
     }
-    /**
-     * @return string
-     */
+
     public function message(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return "prompt"|"alert"|"confirm"|"beforeunload"
      */

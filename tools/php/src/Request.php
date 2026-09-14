@@ -8,12 +8,14 @@ use InvalidArgumentException;
 
 /**
  * @psalm-import-type ClassSpec from Synchronizer
+ *
  * @psalm-pure
  */
 final class Request
 {
     /**
      * @return array{root:string,classes:list<ClassSpec>}
+     *
      * @psalm-pure
      */
     public static function decode(string $json): array
@@ -58,19 +60,20 @@ final class Request
         }
         /** @var list<ClassSpec> $classes Validated structurally above; field semantics are validated during AST creation. */
         $classes = $value['classes'];
+
         return ['root' => $value['root'], 'classes' => $classes];
     }
 
     /**
      * @param array<array-key,mixed> $value
-     * @param list<string> $keys
-
+     * @param list<string>           $keys
+     *
      * @psalm-pure
      */
     private static function strings(array $value, array $keys): void
     {
         foreach ($keys as $key) {
-            if (!is_string($value[$key] ?? null) || $value[$key] === '') {
+            if (!is_string($value[$key] ?? null) || '' === $value[$key]) {
                 throw new InvalidArgumentException($key . ' must be a nonempty string');
             }
         }
@@ -78,8 +81,8 @@ final class Request
 
     /**
      * @param array<array-key,mixed> $value
-     * @param list<string> $keys
-
+     * @param list<string>           $keys
+     *
      * @psalm-pure
      */
     private static function optionalStrings(array $value, array $keys): void
@@ -93,8 +96,8 @@ final class Request
 
     /**
      * @param array<array-key,mixed> $value
-     * @param list<string> $keys
-
+     * @param list<string>           $keys
+     *
      * @psalm-pure
      */
     private static function booleans(array $value, array $keys): void

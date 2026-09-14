@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Unit\Puppeteer;
 
-use Amp\Future;
-use Nesk\Puphpeteer\Puppeteer\Browser;
-use Nesk\Puphpeteer\Puppeteer\BrowserContext;
 use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\Puppeteer\Browser;
+use Nesk\Puphpeteer\Puppeteer\BrowserContext;
 use Nesk\Puphpeteer\Puppeteer\Page;
 use Nesk\Puphpeteer\RemoteObject;
+use Override;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
+use RuntimeException;
 
 final class TypedWrappersTest extends TestCase
 {
@@ -64,11 +65,14 @@ final class TypedWrappersTest extends TestCase
             public array $calls = [];
 
             /** @psalm-external-mutation-free */
-            #[\Override]
+            #[Override]
             protected function invokeRemote(string $method, array $arguments): mixed
             {
                 $this->calls[] = [$method, $arguments];
-                return match ($method) { 'goto' => null, 'title' => 'title', default => 42 };
+
+                return match ($method) {
+                    'goto' => null, 'title' => 'title', default => 42,
+                };
             }
         };
         $function = new JsFunction('(a, b) => a + b');
@@ -86,8 +90,11 @@ final class TypedWrappersTest extends TestCase
     {
         $browser = new class($this->client(), 1, 'Browser') extends Browser {
             /** @psalm-pure */
-            #[\Override]
-            protected function getRemote(string $name): mixed { return $name === 'connected'; }
+            #[Override]
+            protected function getRemote(string $name): mixed
+            {
+                return 'connected' === $name;
+            }
         };
         self::assertTrue($browser->connected);
     }
@@ -97,7 +104,7 @@ final class TypedWrappersTest extends TestCase
         $client = $this->client();
         $page = new Page($client, 7, 'Page');
         $client->close();
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('QuickJS client is closed');
         $page->__call('pluginSpecificMethod', []);
     }

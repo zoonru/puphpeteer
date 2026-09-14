@@ -1,7 +1,12 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Internal;
 
+use RuntimeException;
+
 /** @internal A peer closed the browser WebSocket. */
-final class TransportClosedException extends \RuntimeException {}
+final class TransportClosedException extends RuntimeException
+{
+}

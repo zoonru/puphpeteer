@@ -1,11 +1,15 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Tests\Support\Puppeteer;
 
 use Amp\ByteStream\ReadableStream;
 use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\Puppeteer\Page;
+use ReflectionProperty;
+use RuntimeException;
 
 /** Deterministic indexed blocks expose missing, duplicated and reordered chunks. */
 final class LargePayload
@@ -43,17 +47,19 @@ final class LargePayload
     public static function expected(int $size, bool $binary = false): string
     {
         $data = '';
-        $pattern = implode('', array_map(static fn(int $i): string => chr(($i * 31) % 256), range(0, 255)));
+        $pattern = implode('', array_map(static fn (int $i): string => chr(($i * 31) % 256), range(0, 255)));
         for ($offset = 0; $offset < $size; $offset += 4096) {
             $length = min(4096, $size - $offset);
-            if ($binary) { $block = pack('N', intdiv($offset, 4096)) . substr(str_repeat($pattern, 16), 4); }
-            else {
+            if ($binary) {
+                $block = pack('N', intdiv($offset, 4096)) . substr(str_repeat($pattern, 16), 4);
+            } else {
                 $header = sprintf('%08x:', intdiv($offset, 4096));
                 $remaining = max(0, $length - strlen($header));
                 $block = $header . str_repeat(self::UNIT, intdiv($remaining, 13)) . str_repeat('x', $remaining % 13);
             }
             $data .= substr($block, 0, $length);
         }
+
         return $data;
     }
 
@@ -61,16 +67,21 @@ final class LargePayload
     public static function client(): Client
     {
         $source = file_get_contents(dirname(__DIR__, 3) . '/resources/puppeteer.js');
-        if ($source === false || preg_match('/var ([\w$]+)=new Map,([\w$]+)=new WeakMap,([\w$]+)=0,([\w$]+)=0,/', $source, $match) !== 1) {
-            throw new \RuntimeException('Cannot instrument guest object registry');
+        if (false === $source || 1 !== preg_match('/var ([\w$]+)=new Map,([\w$]+)=new WeakMap,([\w$]+)=0,([\w$]+)=0,/', $source, $match)) {
+            throw new RuntimeException('Cannot instrument guest object registry');
         }
         $source = preg_replace('/globalThis\.__quickjsDispatch\s*=/', 'globalThis.__payloadObjects=' . $match[1] . ';globalThis.__quickjsDispatch=', $source, 1);
         $file = tempnam(sys_get_temp_dir(), 'quickjs-large-');
-        if ($file === false || $source === null) { throw new \RuntimeException('Cannot create guest fixture'); }
+        if (false === $file || null === $source) {
+            throw new RuntimeException('Cannot create guest fixture');
+        }
         file_put_contents($file, $source);
-        try { $client = new Client($file); }
-        finally { unlink($file); }
-        $js = (new \ReflectionProperty($client, 'js'))->getValue($client);
+        try {
+            $client = new Client($file);
+        } finally {
+            unlink($file);
+        }
+        $js = (new ReflectionProperty($client, 'js'))->getValue($client);
         $js->eval('globalThis.__payloadMake = (' . self::SOURCE . ');');
         $js->eval(<<<'JS'
         globalThis.__payloadObjects.set(-1, {
@@ -89,6 +100,7 @@ final class LargePayload
           },
         });
         JS);
+
         return $client;
     }
 
@@ -101,17 +113,26 @@ final class LargePayload
     /** @return array{bytes:int, sha256:string, chunks:int, max_chunk:int} */
     public static function digest(string|ReadableStream $value): array
     {
-        if (is_string($value)) { return ['bytes' => strlen($value), 'sha256' => hash('sha256', $value), 'chunks' => 1, 'max_chunk' => strlen($value)]; }
+        if (is_string($value)) {
+            return ['bytes' => strlen($value), 'sha256' => hash('sha256', $value), 'chunks' => 1, 'max_chunk' => strlen($value)];
+        }
         $hash = hash_init('sha256');
         $bytes = $chunks = $maximum = 0;
         try {
             while (($chunk = $value->read()) !== null) {
                 $length = strlen($chunk);
-                if ($length > 65536) { throw new \RuntimeException('Stream chunk exceeds 64 KiB'); }
+                if ($length > 65536) {
+                    throw new RuntimeException('Stream chunk exceeds 64 KiB');
+                }
                 hash_update($hash, $chunk);
-                $bytes += $length; $chunks++; $maximum = max($maximum, $length);
+                $bytes += $length;
+                ++$chunks;
+                $maximum = max($maximum, $length);
             }
-        } finally { $value->close(); }
+        } finally {
+            $value->close();
+        }
+
         return ['bytes' => $bytes, 'sha256' => hash_final($hash), 'chunks' => $chunks, 'max_chunk' => $maximum];
     }
 
@@ -119,7 +140,7 @@ final class LargePayload
     public static function verify(array $actual, string $expected, string $label): void
     {
         if ($actual['bytes'] !== strlen($expected) || $actual['sha256'] !== hash('sha256', $expected)) {
-            throw new \RuntimeException($label . ': payload corrupted (length or SHA-256 mismatch)');
+            throw new RuntimeException($label . ': payload corrupted (length or SHA-256 mismatch)');
         }
     }
 }

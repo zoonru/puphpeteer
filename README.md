@@ -433,6 +433,8 @@ After Docker setup, run functional and static checks:
 docker compose run --rm chrome composer test
 ```
 
+PHP style follows Symfony (`PHP CS Fixer`), with spaces around `.` and class imports, including built-in classes. Run `composer cs:check` to check or `composer cs:fix` to format all PHP files (also via `docker compose run --rm php ...`). Generated PHP uses the same rules. Style checks run in `composer test` and CI.
+
 `npm run build` creates minified CDP bundles: `resources/puppeteer-core.js` without plugins and `resources/puppeteer.js` with plugins. `--debug` produces readable JS. Commit resources with source and lock-file changes. `package-lock.json` pins JS dependencies; `composer.lock` stays local, and applications resolve PHP dependency ranges.
 
 Without the extension, only unit tests/Psalm are available: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, then `php vendor/bin/phpunit` and `composer psalm`.

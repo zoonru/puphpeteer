@@ -7,7 +7,10 @@ namespace Nesk\Puphpeteer\Tests\Unit\Puppeteer;
 use Nesk\Puphpeteer\Internal\BrowserExecutable;
 use Nesk\Puphpeteer\Internal\BrowserInstallation;
 use Nesk\Puphpeteer\Tests\Support\Shared\ProcessRunner;
+use Override;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use ZipArchive;
 
 final class BrowserExecutableTest extends TestCase
 {
@@ -16,7 +19,7 @@ final class BrowserExecutableTest extends TestCase
     /** @var array<string, string|false> */
     private array $environment = [];
 
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         foreach (['PUPPETEER_EXECUTABLE_PATH', 'PUPPETEER_CACHE_DIR', 'PUPPETEER_SKIP_DOWNLOAD', 'PUPPETEER_CHROME_SKIP_DOWNLOAD', 'PUPPETEER_SKIP_CHROME_DOWNLOAD'] as $key) {
@@ -31,10 +34,12 @@ final class BrowserExecutableTest extends TestCase
         file_put_contents($this->package . '/upstream/lock.json', '{"package":{"chromeBuildId":"153.0.8010.36"}}');
     }
 
-    #[\Override]
+    #[Override]
     protected function tearDown(): void
     {
-        foreach ($this->environment as $key => $value) { putenv($value === false ? $key : $key . '=' . $value); }
+        foreach ($this->environment as $key => $value) {
+            putenv(false === $value ? $key : $key . '=' . $value);
+        }
         ProcessRunner::removeDirectory($this->root);
     }
 
@@ -79,7 +84,7 @@ final class BrowserExecutableTest extends TestCase
     {
         $installation = new BrowserInstallation($this->package);
         $this->createExecutable(str_replace('153.0.8010.36', '152.0.0.1', $installation->executable()));
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         BrowserExecutable::resolve($this->package);
     }
 
@@ -102,23 +107,25 @@ final class BrowserExecutableTest extends TestCase
         self::assertSame('mac-x64', BrowserInstallation::platform('Darwin', 'x86_64'));
         self::assertSame('win64', BrowserInstallation::platform('Windows', 'AMD64'));
         self::assertSame('win32', BrowserInstallation::platform('Windows', 'i686'));
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         BrowserInstallation::platform('Linux', 'riscv64');
     }
 
     public function testArchivePreservesExecutableAndSymlink(): void
     {
-        if (!class_exists(\ZipArchive::class)) { self::markTestSkipped('Fixture creation requires ext-zip'); }
+        if (!class_exists(ZipArchive::class)) {
+            self::markTestSkipped('Fixture creation requires ext-zip');
+        }
         $installation = new BrowserInstallation($this->package);
         $destination = $this->root . '/unpacked';
         $entry = substr($installation->executable($destination), strlen($destination) + 1);
         $archive = $this->root . '/fixture.zip';
-        $zip = new \ZipArchive();
-        self::assertTrue($zip->open($archive, \ZipArchive::CREATE));
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($archive, ZipArchive::CREATE));
         $zip->addFromString($entry, '#!/bin/sh');
-        $zip->setExternalAttributesName($entry, \ZipArchive::OPSYS_UNIX, 0100755 << 16);
+        $zip->setExternalAttributesName($entry, ZipArchive::OPSYS_UNIX, 0100755 << 16);
         $zip->addFromString('executable-link', $entry);
-        $zip->setExternalAttributesName('executable-link', \ZipArchive::OPSYS_UNIX, 0120777 << 16);
+        $zip->setExternalAttributesName('executable-link', ZipArchive::OPSYS_UNIX, 0120777 << 16);
         $zip->close();
         $installation->extract($archive, $destination);
         self::assertTrue(is_executable($installation->executable($destination)));
@@ -130,7 +137,7 @@ final class BrowserExecutableTest extends TestCase
     {
         $archive = $this->root . '/bad.zip';
         file_put_contents($archive, 'incomplete download');
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Chrome extraction failed');
         (new BrowserInstallation($this->package))->extract($archive, $this->root . '/unpacked');
     }

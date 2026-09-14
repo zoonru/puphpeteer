@@ -6,269 +6,213 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Frame extends \Nesk\Puphpeteer\RemoteObject
+use Closure;
+use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\RemoteObject;
+
+class Frame extends RemoteObject
 {
     /**
-     * @param mixed $selector
-     * @return \Nesk\Puphpeteer\Puppeteer\ElementHandle|null
+     * @return ElementHandle|null
      */
     public function querySelector(mixed $selector): mixed
     {
         return $this->invokeRemote('$', func_get_args());
     }
+
     /**
-     * @param mixed $selector
      * @param (array{isolate: bool})|null $options
-     * @return list<\Nesk\Puphpeteer\Puppeteer\ElementHandle>
+     *
+     * @return list<ElementHandle>
      */
-    public function querySelectorAll(mixed $selector, array|null $options = NULL): mixed
+    public function querySelectorAll(mixed $selector, ?array $options = null): mixed
     {
         return $this->invokeRemote('$$', func_get_args());
     }
-    /**
-     * @param mixed $selector
-     * @param string|\Nesk\Puphpeteer\JsFunction $pageFunction
-     * @param mixed ...$args
-     * @return mixed
-     */
-    public function querySelectorAllEval(mixed $selector, string|\Nesk\Puphpeteer\JsFunction $pageFunction, mixed ...$args): mixed
+
+    public function querySelectorAllEval(mixed $selector, string|JsFunction $pageFunction, mixed ...$args): mixed
     {
         return $this->invokeRemote('$$eval', self::mergeNamedArguments(func_get_args(), $args));
     }
-    /**
-     * @param mixed $selector
-     * @param string|\Nesk\Puphpeteer\JsFunction $pageFunction
-     * @param mixed ...$args
-     * @return mixed
-     */
-    public function querySelectorEval(mixed $selector, string|\Nesk\Puphpeteer\JsFunction $pageFunction, mixed ...$args): mixed
+
+    public function querySelectorEval(mixed $selector, string|JsFunction $pageFunction, mixed ...$args): mixed
     {
         return $this->invokeRemote('$eval', self::mergeNamedArguments(func_get_args(), $args));
     }
+
     /**
      * @param array{content?: string, id?: string, path?: string, type?: string, url?: string} $options
-     * @return \Nesk\Puphpeteer\Puppeteer\ElementHandle
      */
-    public function addScriptTag(array $options): \Nesk\Puphpeteer\Puppeteer\ElementHandle
+    public function addScriptTag(array $options): ElementHandle
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return list<\Nesk\Puphpeteer\Puppeteer\Frame>
+     * @return list<Frame>
      */
     public function childFrames(): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $selector
      * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
-     * @return void
      */
-    public function click(string $selector, array|null $options = NULL): void
+    public function click(string $selector, ?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function content(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @var bool
-     */
     public bool $detached {
         get {
             return $this->getRemote('detached');
         }
     }
-    /**
-     * @param string|\Nesk\Puphpeteer\JsFunction $pageFunction
-     * @param mixed ...$args
-     * @return mixed
-     */
-    public function evaluate(string|\Nesk\Puphpeteer\JsFunction $pageFunction, mixed ...$args): mixed
+
+    public function evaluate(string|JsFunction $pageFunction, mixed ...$args): mixed
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $args));
     }
-    /**
-     * @param string|\Nesk\Puphpeteer\JsFunction $pageFunction
-     * @param mixed ...$args
-     * @return \Nesk\Puphpeteer\Puppeteer\JSHandle
-     */
-    public function evaluateHandle(string|\Nesk\Puphpeteer\JsFunction $pageFunction, mixed ...$args): \Nesk\Puphpeteer\Puppeteer\JSHandle
+
+    public function evaluateHandle(string|JsFunction $pageFunction, mixed ...$args): JSHandle
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $args));
     }
-    /**
-     * @param string $selector
-     * @return void
-     */
+
     public function focus(string $selector): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\ElementHandle
-     */
-    public function frameElement(): null|\Nesk\Puphpeteer\Puppeteer\ElementHandle
+
+    public function frameElement(): ?ElementHandle
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $url
      * @param (array{referer?: string, referrerPolicy?: string, signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|"networkidle0"|"networkidle2"|list<"load"|"domcontentloaded"|"networkidle0"|"networkidle2">})|null $options
-     * @return null|\Nesk\Puphpeteer\Puppeteer\HTTPResponse
      */
-    public function goto(string $url, array|null $options = NULL): null|\Nesk\Puphpeteer\Puppeteer\HTTPResponse
+    public function goto(string $url, ?array $options = null): ?HTTPResponse
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $selector
-     * @return void
-     */
+
     public function hover(string $selector): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function isDetached(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @return int|float
-     */
+
     public function listenerCount(string $type): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function name(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $type
-     * @param (\Closure|\Nesk\Puphpeteer\JsFunction)|null $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\Frame
+     * @param (Closure|JsFunction)|null $handler
      */
-    public function off(string $type, \Closure|\Nesk\Puphpeteer\JsFunction|null $handler = NULL): \Nesk\Puphpeteer\Puppeteer\Frame
+    public function off(string $type, Closure|JsFunction|null $handler = null): Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\Frame
-     */
-    public function on(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\Frame
+
+    public function on(string $type, Closure|JsFunction $handler): Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\Frame
-     */
-    public function once(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\Frame
+
+    public function once(string $type, Closure|JsFunction $handler): Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\Page
-     */
-    public function page(): \Nesk\Puphpeteer\Puppeteer\Page
+
+    public function page(): Page
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\Frame
-     */
-    public function parentFrame(): null|\Nesk\Puphpeteer\Puppeteer\Frame
+
+    public function parentFrame(): ?Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (string)|null $type
-     * @return \Nesk\Puphpeteer\Puppeteer\Frame
      */
-    public function removeAllListeners(string|null $type = NULL): \Nesk\Puphpeteer\Puppeteer\Frame
+    public function removeAllListeners(?string $type = null): Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $selector
      * @param string ...$values
+     *
      * @return list<string>
      */
     public function select(string $selector, mixed ...$values): array
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $values));
     }
+
     /**
-     * @param string $html
      * @param (array{signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|list<"load" | "domcontentloaded">})|null $options
-     * @return void
      */
-    public function setContent(string $html, array|null $options = NULL): void
+    public function setContent(string $html, ?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $selector
-     * @return void
-     */
+
     public function tap(string $selector): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function title(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $selector
-     * @param string $text
      * @param (array{delay?: int|float})|null $options
-     * @return void
      */
-    public function type(string $selector, string $text, array|null $options = NULL): void
+    public function type(string $selector, string $text, ?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function url(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (array{signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|"networkidle0"|"networkidle2"|list<"load"|"domcontentloaded"|"networkidle0"|"networkidle2">})|null $options
-     * @return null|\Nesk\Puphpeteer\Puppeteer\HTTPResponse
      */
-    public function waitForNavigation(array|null $options = NULL): null|\Nesk\Puphpeteer\Puppeteer\HTTPResponse
+    public function waitForNavigation(?array $options = null): ?HTTPResponse
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param mixed $selector
      * @param (array{hidden?: bool, signal?: never, timeout?: int|float, visible?: bool})|null $options
-     * @return \Nesk\Puphpeteer\Puppeteer\ElementHandle|null
+     *
+     * @return ElementHandle|null
      */
-    public function waitForSelector(mixed $selector, array|null $options = NULL): mixed
+    public function waitForSelector(mixed $selector, ?array $options = null): mixed
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }

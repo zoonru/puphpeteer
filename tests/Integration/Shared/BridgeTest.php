@@ -4,24 +4,27 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Integration\Shared;
 
+use Js\Callback;
+use Override;
 use PHPUnit\Framework\TestCase;
+use QuickJS;
 use RuntimeException;
 
 final class BridgeTest extends TestCase
 {
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
-        if (!class_exists(\QuickJS::class) || !method_exists(\Js\Callback::class, 'dispatch')) {
+        if (!class_exists(QuickJS::class) || !method_exists(Callback::class, 'dispatch')) {
             throw new RuntimeException('Integration tests require php-quickjs with Js\\Callback::dispatch().');
         }
     }
 
     public function testBatchPreservesLargeBinaryPayloadAndDrainsMessages(): void
     {
-        $js = new \QuickJS();
+        $js = new QuickJS();
         $dispatch = $js->eval('(kind, value) => { __quickjsEmit(kind, value); }');
-        self::assertInstanceOf(\Js\Callback::class, $dispatch);
+        self::assertInstanceOf(Callback::class, $dispatch);
         $value = "\0\xff\xfe" . str_repeat('x', 65_536);
         $batch = $dispatch->dispatch(['binary', $value]);
         self::assertSame([['binary', $value]], $batch['messages']);
@@ -31,7 +34,7 @@ final class BridgeTest extends TestCase
 
     public function testJobBudgetLeavesPendingWorkAndCanResume(): void
     {
-        $js = new \QuickJS();
+        $js = new QuickJS();
         $dispatch = $js->eval('() => {
             let count = 0;
             const next = () => {
@@ -40,7 +43,7 @@ final class BridgeTest extends TestCase
             };
             Promise.resolve().then(next);
         }');
-        self::assertInstanceOf(\Js\Callback::class, $dispatch);
+        self::assertInstanceOf(Callback::class, $dispatch);
         $first = $dispatch->dispatch([], 1);
         self::assertSame(1, $first['jobs']);
         self::assertTrue($first['pending']);

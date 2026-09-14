@@ -1,18 +1,24 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Tests\Integration\Puppeteer;
 
+use Js\Callback;
 use PHPUnit\Framework\TestCase;
+use QuickJS;
+use RuntimeException;
 
 final class HostStreamsTest extends TestCase
 {
     public function testBundledReadableStreamsSupportPullErrorsAndCancellation(): void
     {
-        $js = new \QuickJS();
-        $js->register('now', static fn(): float => 0.0);
+        $js = new QuickJS();
+        $js->register('now', static fn (): float => 0.0);
         $source = file_get_contents(dirname(__DIR__, 3) . '/resources/puppeteer.js');
-        if ($source === false) { throw new \RuntimeException('Missing bundle'); }
+        if (false === $source) {
+            throw new RuntimeException('Missing bundle');
+        }
         $js->eval($source);
         self::assertSame('Привет, 😀', $js->eval('new TextDecoder().decode(new TextEncoder().encode("Привет, 😀"))'));
         self::assertTrue($js->eval('(() => { try { new TextDecoder("utf-8", {fatal: true}).decode(new Uint8Array([0xc3, 0x28])); return false; } catch (_) { return true; } })()'));
@@ -54,7 +60,7 @@ final class HostStreamsTest extends TestCase
           ]).then(value => __quickjsEmit('result', value), error => __quickjsEmit('error', error.message));
         }
         JS);
-        self::assertInstanceOf(\Js\Callback::class, $dispatch);
+        self::assertInstanceOf(Callback::class, $dispatch);
         $batch = $dispatch->dispatch([], 1000);
         self::assertFalse($batch['pending']);
         self::assertSame([['result', [[1, 2, 3], 'stream failed', ['cancelled', true]]]], $batch['messages']);

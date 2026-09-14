@@ -1,20 +1,26 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Tests\Integration\Shared;
 
+use Amp\CancelledException;
 use Amp\DeferredCancellation;
+use InvalidArgumentException;
 use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\RemoteObject;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class RuntimeLifecycleTest extends TestCase
 {
     private function client(): Client
     {
         $file = tempnam(sys_get_temp_dir(), 'quickjs-runtime-');
-        if ($file === false) { throw new \RuntimeException('Cannot create fixture'); }
+        if (false === $file) {
+            throw new RuntimeException('Cannot create fixture');
+        }
         file_put_contents($file, <<<'JS'
         const functions = new Set();
         globalThis.__quickjsDispatch = (kind, payload) => {
@@ -27,8 +33,11 @@ final class RuntimeLifecycleTest extends TestCase
           __quickjsEmit('result', {id: payload.id, value: payload.args[0] ?? 42});
         };
         JS);
-        try { return new Client($file); }
-        finally { unlink($file); }
+        try {
+            return new Client($file);
+        } finally {
+            unlink($file);
+        }
     }
 
     public function testCancellationRejectsAllPendingOperationsAndClosesClient(): void
@@ -39,8 +48,12 @@ final class RuntimeLifecycleTest extends TestCase
         $second = $client->call(1, 'pending', []);
         $cancellation->cancel();
         foreach ([$first, $second] as $future) {
-            try { $future->await(); self::fail('Cancellation must reject pending calls'); }
-            catch (\Amp\CancelledException) { self::assertTrue(true); }
+            try {
+                $future->await();
+                self::fail('Cancellation must reject pending calls');
+            } catch (CancelledException) {
+                self::assertTrue(true);
+            }
         }
         $this->expectExceptionMessage('QuickJS client is closed');
         $client->call(1, 'next', [])->await();
@@ -55,7 +68,7 @@ final class RuntimeLifecycleTest extends TestCase
         $object->release();
         self::assertFalse($object->belongsTo($client));
         $client->close();
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $object->__call('value', []);
     }
 
@@ -67,15 +80,21 @@ final class RuntimeLifecycleTest extends TestCase
         try {
             $this->expectExceptionMessage('Remote object belongs to another client');
             $client->call(1, 'echo', [$object])->await();
-        } finally { $client->close(); $other->close(); }
+        } finally {
+            $client->close();
+            $other->close();
+        }
     }
 
     public function testProtocolLookingUserDataIsRoundTrippedWithoutInterpretation(): void
     {
         $client = $this->client();
         $data = ['$quickjs' => 'object', 'id' => 123, 'nested' => ['$quickjs' => 'undefined']];
-        try { self::assertSame($data, $client->call(1, 'echo', [$data])->await()); }
-        finally { $client->close(); }
+        try {
+            self::assertSame($data, $client->call(1, 'echo', [$data])->await());
+        } finally {
+            $client->close();
+        }
     }
 
     public function testTransientJsFunctionsReleaseTheirGuestIdentity(): void
@@ -94,7 +113,9 @@ final class RuntimeLifecycleTest extends TestCase
             unset($live);
             \Amp\delay(0);
             self::assertSame(0, $client->call(1, 'functionCount', [])->await());
-        } finally { $client->close(); }
+        } finally {
+            $client->close();
+        }
     }
 
     public function testCyclicInputFailsWithoutClosingTransport(): void
@@ -103,10 +124,16 @@ final class RuntimeLifecycleTest extends TestCase
         $data = [];
         $data['cycle'] = &$data;
         try {
-            try { $client->call(1, 'echo', [$data])->await(); self::fail('Cycle accepted'); }
-            catch (\InvalidArgumentException $error) { self::assertStringContainsString('depth 64', $error->getMessage()); }
+            try {
+                $client->call(1, 'echo', [$data])->await();
+                self::fail('Cycle accepted');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringContainsString('depth 64', $error->getMessage());
+            }
             self::assertSame(42, $client->call(1, 'echo', [42])->await());
-        } finally { $client->close(); }
+        } finally {
+            $client->close();
+        }
     }
 
     public function testCloseRejectsPendingAndIsIdempotent(): void

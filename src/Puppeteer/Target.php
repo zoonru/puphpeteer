@@ -6,50 +6,40 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Target extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class Target extends RemoteObject
 {
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\Page
-     */
-    public function asPage(): \Nesk\Puphpeteer\Puppeteer\Page
+    public function asPage(): Page
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\Browser
-     */
-    public function browser(): \Nesk\Puphpeteer\Puppeteer\Browser
+
+    public function browser(): Browser
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\BrowserContext
-     */
-    public function browserContext(): \Nesk\Puphpeteer\Puppeteer\BrowserContext
+
+    public function browserContext(): BrowserContext
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\CDPSession
-     */
-    public function createCDPSession(): \Nesk\Puphpeteer\Puppeteer\CDPSession
+
+    public function createCDPSession(): CDPSession
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\Target
-     */
-    public function opener(): null|\Nesk\Puphpeteer\Puppeteer\Target
+
+    public function opener(): ?Target
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\Page
-     */
-    public function page(): null|\Nesk\Puphpeteer\Puppeteer\Page
+
+    public function page(): ?Page
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return "page"|"background_page"|"service_worker"|"shared_worker"|"browser"|"webview"|"other"
      */
@@ -57,17 +47,13 @@ class Target extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function url(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\WebWorker
-     */
-    public function worker(): null|\Nesk\Puphpeteer\Puppeteer\WebWorker
+
+    public function worker(): ?WebWorker
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }

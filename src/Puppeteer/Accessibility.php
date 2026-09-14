@@ -6,6 +6,8 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Accessibility extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class Accessibility extends RemoteObject
 {
 }

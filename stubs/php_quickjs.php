@@ -1,63 +1,82 @@
 <?php
 
 namespace {
-
-// Stubs for the php-quickjs extension (IDE / static-analysis aid only).
-// These declarations describe the native classes; they are not loaded at
-// runtime. Contract: README.md#extension-contract. Keep in sync with the
-// hardened https://github.com/xtrime-ru/php-quickjs fork.
-
-/**
- * An embedded QuickJS sandbox with a typed, bidirectional PHP bridge.
- */
-class QuickJS
-{
-    /**
-     * @param int|null $memoryLimit Max heap bytes (0/null = unbounded).
-     * @param int|null $timeoutMs   Per-eval/callback/job-batch wall-clock budget in ms (0/null = unbounded).
-     * @param int|null $maxStack    Max native stack bytes (0/null = engine default).
-     * @param bool     $isolated    Run each eval() in its own fresh global realm.
-     */
-    public function __construct(?int $memoryLimit = null, ?int $timeoutMs = null, ?int $maxStack = null, bool $isolated = false) {}
+    // Stubs for the php-quickjs extension (IDE / static-analysis aid only).
+    // These declarations describe the native classes; they are not loaded at
+    // runtime. Contract: README.md#extension-contract. Keep in sync with the
+    // hardened https://github.com/xtrime-ru/php-quickjs fork.
 
     /**
-     * Register a PHP callable under a flat, dotted capability name, callable
-     * from JS as `php.<dotted.name>(...)`.
-     *
-     * @param string      $name     e.g. "db.query"
-     * @param callable    $callable
-     * @param string|null $types    Optional TypeScript signature for `dts()`.
+     * An embedded QuickJS sandbox with a typed, bidirectional PHP bridge.
      */
-    public function register(string $name, callable $callable, ?string $types = null): void {}
+    class QuickJS
+    {
+        /**
+         * @param int|null $memoryLimit max heap bytes (0/null = unbounded)
+         * @param int|null $timeoutMs   per-eval/callback/job-batch wall-clock budget in ms (0/null = unbounded)
+         * @param int|null $maxStack    max native stack bytes (0/null = engine default)
+         * @param bool     $isolated    run each eval() in its own fresh global realm
+         */
+        public function __construct(?int $memoryLimit = null, ?int $timeoutMs = null, ?int $maxStack = null, bool $isolated = false)
+        {
+        }
 
-    /** Evaluate JS source and marshal the result back to a PHP value. */
-    public function eval(string $code): mixed {}
+        /**
+         * Register a PHP callable under a flat, dotted capability name, callable
+         * from JS as `php.<dotted.name>(...)`.
+         *
+         * @param string      $name  e.g. "db.query"
+         * @param string|null $types optional TypeScript signature for `dts()`
+         */
+        public function register(string $name, callable $callable, ?string $types = null): void
+        {
+        }
 
-    /** The registration manifest: a list of `['name' => string, 'types' => ?string]`. */
-    public function manifest(): array {}
+        /** Evaluate JS source and marshal the result back to a PHP value. */
+        public function eval(string $code): mixed
+        {
+        }
 
-    /** Whether Promise jobs are ready (shared mode only). Does not include host I/O. */
-    public function hasPendingJobs(): bool {}
+        /** The registration manifest: a list of `['name' => string, 'types' => ?string]`. */
+        public function manifest(): array
+        {
+        }
 
-    /** Execute at most maxJobs (> 0) ready jobs without waiting for I/O; returns the count. */
-    public function executePendingJobs(int $maxJobs = 100): int {}
+        /** Whether Promise jobs are ready (shared mode only). Does not include host I/O. */
+        public function hasPendingJobs(): bool
+        {
+        }
 
-    /** Generate a TypeScript `.d.ts` declaration for the `php` global. */
-    public function dts(): string {}
+        /** Execute at most maxJobs (> 0) ready jobs without waiting for I/O; returns the count. */
+        public function executePendingJobs(int $maxJobs = 100): int
+        {
+        }
 
-    /** Grant JS an opaque integer handle to a live PHP value. */
-    public function grant(mixed $resource): int {}
+        /** Generate a TypeScript `.d.ts` declaration for the `php` global. */
+        public function dts(): string
+        {
+        }
 
-    /** Resolve a handle back to its live PHP value (throws if unknown). */
-    public function resolve(int $handle): mixed {}
+        /** Grant JS an opaque integer handle to a live PHP value. */
+        public function grant(mixed $resource): int
+        {
+        }
 
-    /** Revoke a handle, releasing the host-side reference. */
-    public function revoke(int $handle): bool {}
+        /** Resolve a handle back to its live PHP value (throws if unknown). */
+        public function resolve(int $handle): mixed
+        {
+        }
 
-    /** Round-trip a PHP value through JS and back (testing/diagnostics). */
-    public function roundtrip(mixed $value): mixed {}
-}
+        /** Revoke a handle, releasing the host-side reference. */
+        public function revoke(int $handle): bool
+        {
+        }
 
+        /** Round-trip a PHP value through JS and back (testing/diagnostics). */
+        public function roundtrip(mixed $value): mixed
+        {
+        }
+    }
 }
 
 namespace Js {
@@ -66,8 +85,13 @@ namespace Js {
      */
     class Callback
     {
-        public function __invoke(mixed ...$args): mixed {}
-        public function call(mixed ...$args): mixed {}
+        public function __invoke(mixed ...$args): mixed
+        {
+        }
+
+        public function call(mixed ...$args): mixed
+        {
+        }
 
         /**
          * Shared-mode direct dispatch; callback return values are ignored.
@@ -76,16 +100,22 @@ namespace Js {
          * Failures discard partial messages. No host I/O is performed here.
          * Throws on nested dispatch or Fiber switching inside native JS.
          * See README.md#extension-contract for conversion and queue limits.
+         *
          * @param list<mixed>|null $args
+         *
          * @return array{messages: list<array{0: string, 1: mixed}>, pending: bool, jobs: non-negative-int}
          */
-        public function dispatch(?array $args, int $maxJobs = 100): array {}
+        public function dispatch(?array $args, int $maxJobs = 100): array
+        {
+        }
     }
 }
 
 namespace {
     /** Base class for every exception thrown by the extension. */
-    class QuickJSException extends \Exception {}
+    class QuickJSException extends Exception
+    {
+    }
 
     /**
      * A JavaScript/TypeScript error escaped `eval`. `getMessage()` is the clean
@@ -94,15 +124,23 @@ namespace {
     class QuickJSEvalException extends QuickJSException
     {
         /** The JS error constructor name (e.g. "TypeError"), or the PHP class for a re-surfaced host error. */
-        public function getJsName(): string {}
+        public function getJsName(): string
+        {
+        }
 
         /** The stack trace, remapped to TypeScript coordinates and filtered to guest frames. */
-        public function getJsStack(): string {}
+        public function getJsStack(): string
+        {
+        }
     }
 
     /** The wall-clock deadline tripped during `eval`. */
-    class QuickJSTimeoutException extends QuickJSException {}
+    class QuickJSTimeoutException extends QuickJSException
+    {
+    }
 
     /** The memory limit tripped during `eval`. */
-    class QuickJSMemoryException extends QuickJSException {}
+    class QuickJSMemoryException extends QuickJSException
+    {
+    }
 }

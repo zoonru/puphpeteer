@@ -6,22 +6,18 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Generator\Shared;
 
-class GeneratedFixture extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class GeneratedFixture extends RemoteObject
 {
     /**
-     * @param string $selector
      * @param array{timeout?: int}|null $options
-     * @return string
      */
-    public function select(string $selector, ?array $options = NULL): string
+    public function select(string $selector, ?array $options = null): string
     {
         return $this->invokeRemote('$', func_get_args());
     }
-    /**
-     * @param string $expression
-     * @param mixed ...$arguments
-     * @return mixed
-     */
+
     public function evaluate(string $expression, mixed ...$arguments): mixed
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $arguments));

@@ -33,6 +33,7 @@ jobs:
       - name: Install latest supported PHP dependencies
         id: composer-install
         run: composer update --prefer-stable --ignore-platform-req=ext-php_quickjs --no-interaction --no-progress --prefer-dist
+      - run: composer cs:check
       - run: php vendor/bin/phpunit
       - run: composer psalm
         if: ${{ !cancelled() && steps.composer-install.outcome == 'success' }}

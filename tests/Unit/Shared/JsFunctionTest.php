@@ -1,7 +1,10 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Tests\Unit\Shared;
+
+use InvalidArgumentException;
 use Nesk\Puphpeteer\JsFunction;
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +29,7 @@ final class JsFunctionTest extends TestCase
 
     public function testInvalidScopeNamesAreRejected(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         JsFunction::createWithScope(['a;evil()' => 1]);
     }
 }

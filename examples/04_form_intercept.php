@@ -7,6 +7,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use Amp\TimeoutCancellation;
 use Nesk\Puphpeteer\Puppeteer\HTTPRequest;
 use Nesk\Puphpeteer\Puppeteer\Puppeteer;
+
 use function Amp\async;
 
 $url = 'file://' . __DIR__ . '/pages/form.html';
@@ -18,6 +19,7 @@ try {
     $page->on('request', static function (HTTPRequest $request): void {
         if (str_contains($request->url(), 'example.invalid/form-submit')) {
             $request->abort('blockedbyclient');
+
             return;
         }
         $request->continue();
@@ -26,10 +28,10 @@ try {
     $result = [];
     $requestFuture = async(static function () use ($page, &$result): HTTPRequest {
         return $page->waitForRequest(
-            function (HTTPRequest $request) use(&$result): bool {
+            function (HTTPRequest $request) use (&$result): bool {
                 $isMatch = $request->isNavigationRequest()
                     && str_contains($request->url(), 'example.invalid/form-submit')
-                    && $request->method() === 'POST';
+                    && 'POST' === $request->method();
 
                 if ($isMatch) {
                     $result = [

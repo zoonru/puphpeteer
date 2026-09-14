@@ -6,58 +6,41 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class JSHandle extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\RemoteObject;
+
+class JSHandle extends RemoteObject
 {
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\ElementHandle
-     */
-    public function asElement(): null|\Nesk\Puphpeteer\Puppeteer\ElementHandle
+    public function asElement(): ?ElementHandle
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return void
-     */
+
     public function dispose(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string|\Nesk\Puphpeteer\JsFunction $pageFunction
-     * @param mixed ...$args
-     * @return mixed
-     */
-    public function evaluate(string|\Nesk\Puphpeteer\JsFunction $pageFunction, mixed ...$args): mixed
+
+    public function evaluate(string|JsFunction $pageFunction, mixed ...$args): mixed
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $args));
     }
-    /**
-     * @param string|\Nesk\Puphpeteer\JsFunction $pageFunction
-     * @param mixed ...$args
-     * @return \Nesk\Puphpeteer\Puppeteer\JSHandle
-     */
-    public function evaluateHandle(string|\Nesk\Puphpeteer\JsFunction $pageFunction, mixed ...$args): \Nesk\Puphpeteer\Puppeteer\JSHandle
+
+    public function evaluateHandle(string|JsFunction $pageFunction, mixed ...$args): JSHandle
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $args));
     }
-    /**
-     * @param string $propertyName
-     * @return \Nesk\Puphpeteer\Puppeteer\JSHandle
-     */
-    public function getProperty(string $propertyName): \Nesk\Puphpeteer\Puppeteer\JSHandle
+
+    public function getProperty(string $propertyName): JSHandle
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return mixed
-     */
+
     public function jsonValue(): mixed
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function toString(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

@@ -6,26 +6,23 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class FileChooser extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class FileChooser extends RemoteObject
 {
     /**
      * @param list<string> $paths
-     * @return void
      */
     public function accept(array $paths): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return void
-     */
+
     public function cancel(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function isMultiple(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

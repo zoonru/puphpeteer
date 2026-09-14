@@ -11,6 +11,7 @@ npm ci
 npm run build
 php vendor/bin/phpunit
 composer psalm
+composer cs:check
 ```
 
 The extension exception above is for unit tests and Psalm only. Integration
@@ -26,3 +27,5 @@ changing JS sources or build dependencies. Run npm run build to regenerate them;
 CI uses npm run build:check to verify the checked-in files without modifying them.
 composer.lock remains local: CI installs latest supported dependencies on each PHP
 version and runs unit tests and Psalm. Functional tests and the browserless example run in Docker on every push and PR. Load testing and benchmark run only when a GitHub Release is published.
+
+Run `composer cs:fix` before committing PHP changes. Generated files use the same Symfony rules.

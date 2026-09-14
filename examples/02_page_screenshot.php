@@ -2,10 +2,10 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 
-$puppeteer = new Puppeteer;
+$puppeteer = new Puppeteer();
 // Plugins run in QuickJS; enable only the evasions needed by this example.
 $puppeteer->use('stealth', ['enabledEvasions' => [
     'navigator.webdriver',
@@ -26,6 +26,6 @@ $page->goto('file://' . __DIR__ . '/pages/index.html');
 $start = microtime(true);
 $path = 'example.png';
 $page->screenshot(['path' => $path]);
-printf('Screenshot saved. Path: %s; Size: %s bytes; Duration: %s ms; %s', realpath($path), filesize($path), round((microtime(true) - $start) * 1000, 3),  PHP_EOL);
+printf('Screenshot saved. Path: %s; Size: %s bytes; Duration: %s ms; %s', realpath($path), filesize($path), round((microtime(true) - $start) * 1000, 3), PHP_EOL);
 
 $browser->close();

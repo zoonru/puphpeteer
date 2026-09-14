@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Console\Command;
 
+use Override;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class DoctorCommand extends ProcessCommand
 {
-    #[\Override]
-    protected function configure(): void { $this->setDescription('Проверить окружение и готовность bundle'); }
+    #[Override]
+    protected function configure(): void
+    {
+        $this->setDescription('Проверить окружение и готовность bundle');
+    }
 
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -23,16 +27,21 @@ final class DoctorCommand extends ProcessCommand
             ['php-quickjs', $extensionReady ? 'загружен в PHP' : 'не загружен', $extensionReady],
             ['bundle', $this->root . '/resources/puppeteer.js', is_file($this->root . '/resources/puppeteer.js')],
         ];
-        $failed = count(array_filter($checks, static fn(array $check): bool => !$check[2]));
+        $failed = count(array_filter($checks, static fn (array $check): bool => !$check[2]));
         if ($this->jsonOutput) {
-            $this->writeJson($output, ['command' => 'doctor', 'status' => $failed === 0 ? 'ok' : 'error', 'checks' => array_map(static fn(array $check): array => ['name' => $check[0], 'value' => $check[1], 'ok' => $check[2]], $checks)]);
-            return $failed === 0 ? 0 : 1;
+            $this->writeJson($output, ['command' => 'doctor', 'status' => 0 === $failed ? 'ok' : 'error', 'checks' => array_map(static fn (array $check): array => ['name' => $check[0], 'value' => $check[1], 'ok' => $check[2]], $checks)]);
+
+            return 0 === $failed ? 0 : 1;
         }
         $io->title('Проверка окружения');
-        $io->table(['Компонент', 'Значение', 'Статус'], array_map(static fn(array $check): array => [$check[0], $check[1] ?? 'не найден', $check[2] ? '<fg=green>OK</>' : '<fg=red>FAIL</>'], $checks));
-        if ($failed) { $io->warning($failed . ' проверок не пройдено.'); return 1; }
+        $io->table(['Компонент', 'Значение', 'Статус'], array_map(static fn (array $check): array => [$check[0], $check[1] ?? 'не найден', $check[2] ? '<fg=green>OK</>' : '<fg=red>FAIL</>'], $checks));
+        if ($failed) {
+            $io->warning($failed . ' проверок не пройдено.');
+
+            return 1;
+        }
         $io->success('Окружение готово.');
+
         return 0;
     }
-
 }

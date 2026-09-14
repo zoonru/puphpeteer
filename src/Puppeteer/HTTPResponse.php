@@ -6,36 +6,30 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class HTTPResponse extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class HTTPResponse extends RemoteObject
 {
-    /**
-     * @return string
-     */
     public function content(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\Frame
-     */
-    public function frame(): null|\Nesk\Puphpeteer\Puppeteer\Frame
+
+    public function frame(): ?Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function fromCache(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function fromServiceWorker(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return array<string, string>
      */
@@ -43,20 +37,17 @@ class HTTPResponse extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return mixed
-     */
+
     public function json(): mixed
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function ok(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return array{ip?: string, port?: int|float}
      */
@@ -64,51 +55,40 @@ class HTTPResponse extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\HTTPRequest
-     */
-    public function request(): \Nesk\Puphpeteer\Puppeteer\HTTPRequest
+
+    public function request(): HTTPRequest
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\SecurityDetails
-     */
-    public function securityDetails(): null|\Nesk\Puphpeteer\Puppeteer\SecurityDetails
+
+    public function securityDetails(): ?SecurityDetails
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return int|float
-     */
+
     public function status(): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function statusText(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function text(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return null|array{connectEnd: int|float, connectStart: int|float, dnsEnd: int|float, dnsStart: int|float, proxyEnd: int|float, proxyStart: int|float, pushEnd: int|float, pushStart: int|float, receiveHeadersEnd: int|float, receiveHeadersStart: int|float, requestTime: int|float, sendEnd: int|float, sendStart: int|float, sslEnd: int|float, sslStart: int|float, workerCacheLookupStart?: int|float, workerFetchStart: int|float, workerReady: int|float, workerRespondWithSettled: int|float, workerRouterEvaluationStart?: int|float, workerStart: int|float}
+     * @return array{connectEnd: int|float, connectStart: int|float, dnsEnd: int|float, dnsStart: int|float, proxyEnd: int|float, proxyStart: int|float, pushEnd: int|float, pushStart: int|float, receiveHeadersEnd: int|float, receiveHeadersStart: int|float, requestTime: int|float, sendEnd: int|float, sendStart: int|float, sslEnd: int|float, sslStart: int|float, workerCacheLookupStart?: int|float, workerFetchStart: int|float, workerReady: int|float, workerRespondWithSettled: int|float, workerRouterEvaluationStart?: int|float, workerStart: int|float}|null
      */
-    public function timing(): null|array
+    public function timing(): ?array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function url(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

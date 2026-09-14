@@ -6,24 +6,26 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Coverage extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class Coverage extends RemoteObject
 {
     /**
      * @param (array{resetOnNavigation?: bool})|null $options
-     * @return void
      */
-    public function startCSSCoverage(array|null $options = NULL): void
+    public function startCSSCoverage(?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (array{includeRawScriptCoverage?: bool, reportAnonymousScripts?: bool, resetOnNavigation?: bool, useBlockCoverage?: bool})|null $options
-     * @return void
      */
-    public function startJSCoverage(array|null $options = NULL): void
+    public function startJSCoverage(?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return list<array{ranges: list<array{start: int|float, end: int|float}>, text: string, url: string}>
      */
@@ -31,6 +33,7 @@ class Coverage extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return list<array{ranges: list<array{start: int|float, end: int|float}>, rawScriptCoverage?: array{functions: list<array{functionName: string, isBlockCoverage: bool, ranges: list<array{count: int|float, endOffset: int|float, startOffset: int|float}>}>, scriptId: string, url: string}, text: string, url: string}>
      */

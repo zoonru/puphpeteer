@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Console\Command;
 
+use Closure;
+use Override;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressIndicator;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -26,26 +29,28 @@ abstract class ProcessCommand extends Command
         $this->root = dirname(__DIR__, 3);
     }
 
-    #[\Override]
+    #[Override]
     public function getDefinition(): InputDefinition
     {
         $definition = parent::getDefinition();
         if (!$definition->hasOption('json')) {
             $definition->addOption(new InputOption('json', null, InputOption::VALUE_NONE, 'Вывести результат одной JSON-строкой'));
         }
+
         return $definition;
     }
 
-    #[\Override]
+    #[Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        $this->jsonOutput = $input->getOption('json') === true;
+        $this->jsonOutput = true === $input->getOption('json');
     }
 
     /**
-     * @param list<string> $command
-     * @param array<string,string> $environment
-     * @param (\Closure(string, ?ProgressIndicator):void)|null $onLine
+     * @param list<string>                                    $command
+     * @param array<string,string>                            $environment
+     * @param (Closure(string, ?ProgressIndicator):void)|null $onLine
+     *
      * @return array{code:int,stdout:string,stderr:string,elapsed:float}
      */
     protected function runProcess(
@@ -54,7 +59,7 @@ abstract class ProcessCommand extends Command
         array $environment = [],
         string $message = 'Выполняется…',
         bool $indicator = true,
-        ?\Closure $onLine = null,
+        ?Closure $onLine = null,
     ): array {
         $started = microtime(true);
         $pipes = [];
@@ -68,7 +73,7 @@ abstract class ProcessCommand extends Command
             $processEnvironment,
         );
         if (!is_resource($process)) {
-            throw new \RuntimeException('Не удалось запустить: ' . implode(' ', $command));
+            throw new RuntimeException('Не удалось запустить: ' . implode(' ', $command));
         }
 
         stream_set_blocking($pipes[1], false);
@@ -83,14 +88,20 @@ abstract class ProcessCommand extends Command
         try {
             while (true) {
                 $read = [];
-                if (!feof($pipes[1])) { $read[] = $pipes[1]; }
-                if (!feof($pipes[2])) { $read[] = $pipes[2]; }
-                if ($read !== []) {
+                if (!feof($pipes[1])) {
+                    $read[] = $pipes[1];
+                }
+                if (!feof($pipes[2])) {
+                    $read[] = $pipes[2];
+                }
+                if ([] !== $read) {
                     $write = $except = [];
                     @stream_select($read, $write, $except, 0, 100_000);
                     foreach ($read as $stream) {
                         $chunk = stream_get_contents($stream);
-                        if ($chunk === false || $chunk === '') { continue; }
+                        if (false === $chunk || '' === $chunk) {
+                            continue;
+                        }
                         if ($stream === $pipes[1]) {
                             $stdout .= $chunk;
                             $pending .= $chunk;
@@ -117,14 +128,16 @@ abstract class ProcessCommand extends Command
             fclose($pipes[1]);
             fclose($pipes[2]);
             $closedCode = proc_close($process);
-            if ($code === -1 && $closedCode >= 0) { $code = $closedCode; }
+            if (-1 === $code && $closedCode >= 0) {
+                $code = $closedCode;
+            }
         }
 
-        $progress?->finish($code === 0 ? 'Готово' : 'Ошибка');
-        if (!$this->jsonOutput && ($code !== 0 || $io->isVerbose())) {
-            $text = trim($stdout . ($stderr !== '' ? "\n" . $stderr : ''));
-            if ($text !== '') {
-                $io->writeln($code === 0 ? '<fg=gray>' . $this->truncate($text) . '</>' : '<error>' . $text . '</error>');
+        $progress?->finish(0 === $code ? 'Готово' : 'Ошибка');
+        if (!$this->jsonOutput && (0 !== $code || $io->isVerbose())) {
+            $text = trim($stdout . ('' !== $stderr ? "\n" . $stderr : ''));
+            if ('' !== $text) {
+                $io->writeln(0 === $code ? '<fg=gray>' . $this->truncate($text) . '</>' : '<error>' . $text . '</error>');
             }
         }
 
@@ -141,8 +154,12 @@ abstract class ProcessCommand extends Command
     private function truncate(string $text): string
     {
         $lines = preg_split('/\R/', $text) ?: [];
-        if (count($lines) > 24) { $lines = array_slice($lines, -24); array_unshift($lines, '…'); }
-        return implode("\n", array_map(static fn(string $line): string => '  ' . $line, $lines));
+        if (count($lines) > 24) {
+            $lines = array_slice($lines, -24);
+            array_unshift($lines, '…');
+        }
+
+        return implode("\n", array_map(static fn (string $line): string => '  ' . $line, $lines));
     }
 
     /** @psalm-suppress MissingPureAnnotation @return list<string> */

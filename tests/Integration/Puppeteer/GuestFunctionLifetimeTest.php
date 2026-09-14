@@ -1,16 +1,22 @@
 <?php
 
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Tests\Integration\Puppeteer;
 
+use Js\Callback;
 use PHPUnit\Framework\TestCase;
+use QuickJS;
+use RuntimeException;
 
 final class GuestFunctionLifetimeTest extends TestCase
 {
     public function testRealGuestReleasesCacheWithoutInvalidatingRetainedFunction(): void
     {
         $source = file_get_contents(dirname(__DIR__, 3) . '/resources/puppeteer.js');
-        if ($source === false) { throw new \RuntimeException('Missing bundle'); }
+        if (false === $source) {
+            throw new RuntimeException('Missing bundle');
+        }
         $marker = '/globalThis\\.__quickjsDispatch\\s*=\\s*/';
         self::assertSame(1, preg_match($marker, $source), 'Guest instrumentation point must be unique');
         $identifier = '[A-Za-z_$][A-Za-z0-9_$]*';
@@ -26,7 +32,7 @@ final class GuestFunctionLifetimeTest extends TestCase
             . '(?<eventCallbacks>' . $identifier . ')\\s*=\\s*(?:/\\*.*?\\*/\\s*)?' . $constructor . $separator
             . '(?<eventListeners>' . $identifier . ')\\s*=\\s*(?:/\\*.*?\\*/\\s*)?new Map(?:\\(\\))?\\s*;~s';
         self::assertSame(1, preg_match($maps, $source, $match), 'Guest cache declarations must be discoverable');
-        $source = preg_replace_callback($maps, static fn(array $match): string => $match[0]
+        $source = preg_replace_callback($maps, static fn (array $match): string => $match[0]
             . 'globalThis.__quickjsTestObjects=' . $match['objects'] . ';'
             . 'globalThis.__quickjsTestDecodedFunctions=' . $match['decodedFunctions'] . ';', $source, 1);
         self::assertIsString($source);
@@ -38,11 +44,11 @@ final class GuestFunctionLifetimeTest extends TestCase
         globalThis.__quickjsDispatch =
         JS, $source, 1);
         self::assertIsString($source);
-        $js = new \QuickJS();
-        $js->register('now', static fn(): float => 0.0);
+        $js = new QuickJS();
+        $js->register('now', static fn (): float => 0.0);
         $js->eval($source);
         $dispatch = $js->eval('globalThis.__quickjsDispatch');
-        self::assertInstanceOf(\Js\Callback::class, $dispatch);
+        self::assertInstanceOf(Callback::class, $dispatch);
         $request = ['id' => 1, 'object' => -1, 'method' => 'retain', 'args' => [
             ['$quickjs' => 'function', 'id' => 7, 'source' => '() => 42'],
         ]];

@@ -6,20 +6,19 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Tracing extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class Tracing extends RemoteObject
 {
     /**
      * @param (array{bufferSize?: int|float, categories?: list<string>, path?: string, screenshots?: bool})|null $options
-     * @return void
      */
-    public function start(array|null $options = NULL): void
+    public function start(?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|string
-     */
-    public function stop(): null|string
+
+    public function stop(): ?string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }

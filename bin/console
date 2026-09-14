@@ -3,6 +3,8 @@
 
 declare(strict_types=1);
 
+use Nesk\Puphpeteer\Console\ConsoleApplication;
+
 require $_composer_autoload_path ?? dirname(__DIR__) . '/vendor/autoload.php';
 
-exit((new Nesk\Puphpeteer\Console\ConsoleApplication())->run());
+exit((new ConsoleApplication())->run());

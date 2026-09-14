@@ -6,6 +6,11 @@ namespace Nesk\Puphpeteer\Tests\Support\Shared;
 
 use Amp\Process\Process;
 use Amp\TimeoutCancellation;
+use Closure;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+
 use function Amp\async;
 
 /** Utilities for running isolated PHP processes in test and benchmark scripts. */
@@ -14,24 +19,29 @@ final class ProcessRunner
     /**
      * Drain both pipes concurrently so a full stderr pipe cannot block the child.
      *
-     * @param null|\Closure(string):void $onStdout
+     * @param Closure(string):void|null $onStdout
+     *
      * @return array{code:int,stdout:string,stderr:string}
      */
-    public static function collect(Process $child, float $timeout, ?\Closure $onStdout = null, bool $stream = false): array
+    public static function collect(Process $child, float $timeout, ?Closure $onStdout = null, bool $stream = false): array
     {
         $child->getStdin()->close();
         $stdout = $stderr = '';
         $readOut = async(static function () use ($child, &$stdout, $onStdout, $stream): void {
             while (($chunk = $child->getStdout()->read()) !== null) {
                 $stdout .= $chunk;
-                if ($stream) { \Amp\ByteStream\getStdout()->write($chunk); }
+                if ($stream) {
+                    \Amp\ByteStream\getStdout()->write($chunk);
+                }
                 $onStdout?->__invoke($chunk);
             }
         });
         $readErr = async(static function () use ($child, &$stderr, $stream): void {
             while (($chunk = $child->getStderr()->read()) !== null) {
                 $stderr .= $chunk;
-                if ($stream) { \Amp\ByteStream\getStderr()->write($chunk); }
+                if ($stream) {
+                    \Amp\ByteStream\getStderr()->write($chunk);
+                }
             }
         });
         try {
@@ -42,12 +52,15 @@ final class ProcessRunner
             $readOut->await();
             $readErr->await();
         }
+
         return ['code' => $code, 'stdout' => $stdout, 'stderr' => $stderr];
     }
 
     private static function terminate(Process $child): void
     {
-        if (!$child->isRunning()) { return; }
+        if (!$child->isRunning()) {
+            return;
+        }
         try {
             // Killing /usr/bin/time alone leaves its measured PHP child alive.
             if (PHP_OS_FAMILY !== 'Windows') {
@@ -71,18 +84,25 @@ final class ProcessRunner
                     }
                 } while ($changed);
                 foreach (array_reverse(array_keys($selected)) as $pid) {
-                    if ($pid !== $child->getPid()) { posix_kill($pid, 9); }
+                    if ($pid !== $child->getPid()) {
+                        posix_kill($pid, 9);
+                    }
                 }
             }
-        } finally { $child->kill(); }
+        } finally {
+            $child->kill();
+        }
     }
 
     public static function removeDirectory(string $path): void
     {
-        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($files as $file) {
-            if ($file->isDir() && !$file->isLink()) { rmdir($file->getPathname()); }
-            else { unlink($file->getPathname()); }
+            if ($file->isDir() && !$file->isLink()) {
+                rmdir($file->getPathname());
+            } else {
+                unlink($file->getPathname());
+            }
         }
         rmdir($path);
     }

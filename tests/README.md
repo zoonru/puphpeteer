@@ -1,6 +1,6 @@
 # Test suites
 
-`composer test` runs PHP unit/generator, native integration and browser tests, local examples, JS tests, Psalm, generated API and bundle checks. It requires QuickJS, Chrome and npm. For PHP-only unit/generator tests without Chrome or QuickJS, run `php vendor/bin/phpunit`. Native extension stubs are static-analysis declarations only and are
+`composer test` checks Symfony PHP style with PHP CS Fixer, then runs PHP unit/generator, native integration and browser tests, local examples, JS tests, Psalm, generated API and bundle checks. It requires QuickJS, Chrome and npm. For PHP-only unit/generator tests without Chrome or QuickJS, run `php vendor/bin/phpunit`. Native extension stubs are static-analysis declarations only and are
 never loaded as runtime substitutes.
 
 Tests are separated by scope within each suite:

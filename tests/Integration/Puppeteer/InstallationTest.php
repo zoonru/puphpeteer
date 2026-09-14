@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Tests\Integration\Puppeteer;
 
 use Amp\Process\Process;
+use FilesystemIterator;
 use Nesk\Puphpeteer\Tests\Support\Shared\ProcessRunner;
 use PHPUnit\Framework\TestCase;
+use SplFileInfo;
 
 final class InstallationTest extends TestCase
 {
@@ -94,6 +96,7 @@ final class InstallationTest extends TestCase
         $environment['COMPOSER_DISABLE_NETWORK'] = '1';
         $result = ProcessRunner::collect(Process::start($command, $cwd, $environment), 60);
         self::assertSame(0, $result['code'], $result['stdout'] . $result['stderr']);
+
         return $result['stdout'];
     }
 
@@ -101,11 +104,15 @@ final class InstallationTest extends TestCase
     {
         if (is_dir($source)) {
             mkdir($destination, 0777, true);
-            foreach (new \FilesystemIterator($source) as $file) {
-                if ($file instanceof \SplFileInfo) { self::copy($file->getPathname(), $destination . '/' . $file->getFilename()); }
+            foreach (new FilesystemIterator($source) as $file) {
+                if ($file instanceof SplFileInfo) {
+                    self::copy($file->getPathname(), $destination . '/' . $file->getFilename());
+                }
             }
         } else {
-            if (!is_dir(dirname($destination))) { mkdir(dirname($destination), 0777, true); }
+            if (!is_dir(dirname($destination))) {
+                mkdir(dirname($destination), 0777, true);
+            }
             copy($source, $destination);
         }
     }

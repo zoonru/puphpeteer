@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Console\Command;
 
+use Override;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,7 +12,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class GenerateCommand extends ProcessCommand
 {
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this->setDescription('Сгенерировать PHP API из деклараций Puppeteer')
@@ -20,17 +21,23 @@ final class GenerateCommand extends ProcessCommand
             ->addOption('model-only', null, InputOption::VALUE_NONE, 'Обновить только модель API');
     }
 
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $arguments = ['tools/upstream/update.cjs'];
         foreach (['check', 'offline', 'model-only'] as $option) {
-            if ($input->getOption($option)) { $arguments[] = '--' . $option; }
+            if ($input->getOption($option)) {
+                $arguments[] = '--' . $option;
+            }
         }
         $result = $this->runProcess($io, ['node', ...$arguments], message: 'Генерируется PHP API…');
-        if ($this->jsonOutput) { $this->writeJson($output, ['command' => 'generate', 'status' => $result['code'] === 0 ? 'ok' : 'error', 'code' => $result['code'], 'elapsed' => $result['elapsed']]); }
-        elseif ($result['code'] === 0) { $io->success('Генерация завершена.'); }
+        if ($this->jsonOutput) {
+            $this->writeJson($output, ['command' => 'generate', 'status' => 0 === $result['code'] ? 'ok' : 'error', 'code' => $result['code'], 'elapsed' => $result['elapsed']]);
+        } elseif (0 === $result['code']) {
+            $io->success('Генерация завершена.');
+        }
+
         return $result['code'];
     }
 }

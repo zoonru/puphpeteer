@@ -1,8 +1,13 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Tests\Integration\Shared;
+
 use Nesk\Puphpeteer\Client;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+
 final class HostFilesystemBridgeTest extends TestCase
 {
     public function testFilesystemMessagesTransferBinaryDataAndPropagateErrors(): void
@@ -28,10 +33,19 @@ final class HostFilesystemBridgeTest extends TestCase
                 $client->call(1, 'write', [$output])->await();
                 self::assertSame("\0\xffé", file_get_contents($output));
                 self::assertSame(base64_encode("\0\xffé"), $client->call(1, 'read', [$output])->await());
-                try { $client->call(1, 'read', [$output . '/missing'])->await(); self::fail('Expected error'); }
-                catch (\RuntimeException $error) { self::assertStringContainsString('file_get_contents', $error->getMessage()); }
+                try {
+                    $client->call(1, 'read', [$output . '/missing'])->await();
+                    self::fail('Expected error');
+                } catch (RuntimeException $error) {
+                    self::assertStringContainsString('file_get_contents', $error->getMessage());
+                }
                 self::assertSame(base64_encode("\0\xffé"), $client->call(1, 'read', [$output])->await(), 'I/O error must not close the client');
-            } finally { $client->close(); }
-        } finally { unlink($bundle); unlink($output); }
+            } finally {
+                $client->close();
+            }
+        } finally {
+            unlink($bundle);
+            unlink($output);
+        }
     }
 }

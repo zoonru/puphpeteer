@@ -6,102 +6,99 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Mouse extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class Mouse extends RemoteObject
 {
     /**
-     * @param int|float $x
-     * @param int|float $y
      * @param (array{delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
-     * @return void
      */
-    public function click(int|float $x, int|float $y, array|null $options = NULL): void
+    public function click(int|float $x, int|float $y, ?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (array{button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
-     * @return void
      */
-    public function down(array|null $options = NULL): void
+    public function down(?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{x: int|float, y: int|float} $start
      * @param array{x: int|float, y: int|float} $target
+     *
      * @return array{dragOperationsMask: int|float, files?: list<string>, items: list<array{baseURL?: string, data: string, mimeType: string, title?: string}>}
      */
     public function drag(array $start, array $target): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{x: int|float, y: int|float} $start
      * @param array{x: int|float, y: int|float} $target
-     * @param (array{delay?: int|float})|null $options
-     * @return void
+     * @param (array{delay?: int|float})|null   $options
      */
-    public function dragAndDrop(array $start, array $target, array|null $options = NULL): void
+    public function dragAndDrop(array $start, array $target, ?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param array{x: int|float, y: int|float} $target
+     * @param array{x: int|float, y: int|float}                                                                                                                $target
      * @param array{dragOperationsMask: int|float, files?: list<string>, items: list<array{baseURL?: string, data: string, mimeType: string, title?: string}>} $data
-     * @return void
      */
     public function dragEnter(array $target, array $data): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param array{x: int|float, y: int|float} $target
+     * @param array{x: int|float, y: int|float}                                                                                                                $target
      * @param array{dragOperationsMask: int|float, files?: list<string>, items: list<array{baseURL?: string, data: string, mimeType: string, title?: string}>} $data
-     * @return void
      */
     public function dragOver(array $target, array $data): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param array{x: int|float, y: int|float} $target
+     * @param array{x: int|float, y: int|float}                                                                                                                $target
      * @param array{dragOperationsMask: int|float, files?: list<string>, items: list<array{baseURL?: string, data: string, mimeType: string, title?: string}>} $data
-     * @return void
      */
     public function drop(array $target, array $data): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param int|float $x
-     * @param int|float $y
      * @param (array{steps?: int|float})|null $options
-     * @return void
      */
-    public function move(int|float $x, int|float $y, array|null $options = NULL): void
+    public function move(int|float $x, int|float $y, ?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return void
-     */
+
     public function reset(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (array{button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
-     * @return void
      */
-    public function up(array|null $options = NULL): void
+    public function up(?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (array{deltaX?: int|float, deltaY?: int|float})|null $options
-     * @return void
      */
-    public function wheel(array|null $options = NULL): void
+    public function wheel(?array $options = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }

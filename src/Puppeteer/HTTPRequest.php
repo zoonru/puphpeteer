@@ -6,41 +6,42 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class HTTPRequest extends \Nesk\Puphpeteer\RemoteObject
+use Closure;
+use Nesk\Puphpeteer\RemoteObject;
+
+class HTTPRequest extends RemoteObject
 {
     /**
      * @param ("aborted"|"accessdenied"|"addressunreachable"|"blockedbyclient"|"blockedbyresponse"|"connectionaborted"|"connectionclosed"|"connectionfailed"|"connectionrefused"|"connectionreset"|"internetdisconnected"|"namenotresolved"|"timedout"|"failed")|null $errorCode
-     * @param (int|float)|null $priority
-     * @return void
+     * @param (int|float)|null                                                                                                                                                                                                                                        $priority
      */
-    public function abort(string|null $errorCode = NULL, int|float|null $priority = NULL): void
+    public function abort(?string $errorCode = null, int|float|null $priority = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return null|"Failed"|"Aborted"|"TimedOut"|"AccessDenied"|"ConnectionClosed"|"ConnectionReset"|"ConnectionRefused"|"ConnectionAborted"|"ConnectionFailed"|"NameNotResolved"|"InternetDisconnected"|"AddressUnreachable"|"BlockedByClient"|"BlockedByResponse"
+     * @return "Failed"|"Aborted"|"TimedOut"|"AccessDenied"|"ConnectionClosed"|"ConnectionReset"|"ConnectionRefused"|"ConnectionAborted"|"ConnectionFailed"|"NameNotResolved"|"InternetDisconnected"|"AddressUnreachable"|"BlockedByClient"|"BlockedByResponse"|null
      */
-    public function abortErrorReason(): null|string
+    public function abortErrorReason(): ?string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @var \Nesk\Puphpeteer\Puppeteer\CDPSession
-     */
-    public \Nesk\Puphpeteer\Puppeteer\CDPSession $client {
+    public CDPSession $client {
         get {
             return $this->getRemote('client');
         }
     }
+
     /**
      * @param (array{headers?: array<string, string>, method?: string, postData?: string, url?: string})|null $overrides
-     * @param (int|float)|null $priority
-     * @return void
+     * @param (int|float)|null                                                                                $priority
      */
-    public function continue(array|null $overrides = NULL, int|float|null $priority = NULL): void
+    public function continue(?array $overrides = null, int|float|null $priority = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return array{headers?: array<string, string>, method?: string, postData?: string, url?: string}
      */
@@ -48,49 +49,43 @@ class HTTPRequest extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param \Closure():mixed $pendingHandler
-     * @return void
+     * @param Closure():mixed $pendingHandler
      */
-    public function enqueueInterceptAction(\Closure $pendingHandler): void
+    public function enqueueInterceptAction(Closure $pendingHandler): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return null|array{errorText: string}
+     * @return array{errorText: string}|null
      */
-    public function failure(): null|array
+    public function failure(): ?array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|string
-     */
-    public function fetchPostData(): null|string
+
+    public function fetchPostData(): ?string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return void
-     */
+
     public function finalizeInterceptions(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\Frame
-     */
-    public function frame(): null|\Nesk\Puphpeteer\Puppeteer\Frame
+
+    public function frame(): ?Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function hasPostData(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return array<string, string>
      */
@@ -98,6 +93,7 @@ class HTTPRequest extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return array{action: "abort"|"respond"|"continue"|"disabled"|"none"|"already-handled", priority?: int|float}
      */
@@ -105,74 +101,65 @@ class HTTPRequest extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function isInterceptResolutionHandled(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return bool
-     */
+
     public function isNavigationRequest(): bool
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function method(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|string
-     */
-    public function postData(): null|string
+
+    public function postData(): ?string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return list<\Nesk\Puphpeteer\Puppeteer\HTTPRequest>
+     * @return list<HTTPRequest>
      */
     public function redirectChain(): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return "script" | "image" | "document" | "stylesheet" | "media" | "font" | "texttrack" | "xhr" | "fetch" | "prefetch" | "eventsource" | "websocket" | "manifest" | "signedexchange" | "ping" | "cspviolationreport" | "preflight" | "fedcm" | "other"
+     * @return "script"|"image"|"document"|"stylesheet"|"media"|"font"|"texttrack"|"xhr"|"fetch"|"prefetch"|"eventsource"|"websocket"|"manifest"|"signedexchange"|"ping"|"cspviolationreport"|"preflight"|"fedcm"|"other"
      */
     public function resourceType(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{status?: int|float, headers?: array<string, mixed>, contentType?: string, body?: string} $response
-     * @param (int|float)|null $priority
-     * @return void
+     * @param (int|float)|null                                                                               $priority
      */
-    public function respond(array $response, int|float|null $priority = NULL): void
+    public function respond(array $response, int|float|null $priority = null): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return null|\Nesk\Puphpeteer\Puppeteer\HTTPResponse
-     */
-    public function response(): null|\Nesk\Puphpeteer\Puppeteer\HTTPResponse
+
+    public function response(): ?HTTPResponse
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return null|array{status?: int|float, headers?: array<string, mixed>, contentType?: string, body?: string}
+     * @return array{status?: int|float, headers?: array<string, mixed>, contentType?: string, body?: string}|null
      */
-    public function responseForRequest(): null|array
+    public function responseForRequest(): ?array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function url(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

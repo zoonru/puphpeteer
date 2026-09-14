@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Nesk\Puphpeteer\Internal;
 
 use Amp\ByteStream\PendingReadError;
@@ -10,17 +12,24 @@ use Amp\CancelledException;
 use Amp\CompositeCancellation;
 use Amp\DeferredCancellation;
 use Amp\DeferredFuture;
+use Amp\ForbidCloning;
+use Amp\ForbidSerialization;
+use Closure;
+use IteratorAggregate;
 use Nesk\Puphpeteer\Client;
+use Override;
+use Throwable;
+
 use function Amp\delay;
 
-/** @internal A byte stream owned by QuickJS, consumed on demand by PHP.
- * @implements \IteratorAggregate<int, string>
+/** @internal A byte stream owned by QuickJS, consumed on demand by PHP
+ * @implements IteratorAggregate<int, string>
  */
-final class ReadableStream implements \Amp\ByteStream\ReadableStream, \IteratorAggregate
+final class ReadableStream implements \Amp\ByteStream\ReadableStream, IteratorAggregate
 {
     use ReadableStreamIteratorAggregate;
-    use \Amp\ForbidCloning;
-    use \Amp\ForbidSerialization;
+    use ForbidCloning;
+    use ForbidSerialization;
 
     private bool $closed = false;
     private bool $pending = false;
@@ -35,62 +44,98 @@ final class ReadableStream implements \Amp\ByteStream\ReadableStream, \IteratorA
         $this->onClose = new DeferredFuture();
     }
 
-    #[\Override]
+    #[Override]
     public function read(?Cancellation $cancellation = null): ?string
     {
-        if ($this->error !== null) { throw $this->error; }
-        if ($this->pending) { throw new PendingReadError(); }
-        if ($this->closed) { return null; }
+        if (null !== $this->error) {
+            throw $this->error;
+        }
+        if ($this->pending) {
+            throw new PendingReadError();
+        }
+        if ($this->closed) {
+            return null;
+        }
         $this->pending = true;
-        $combined = new CompositeCancellation($this->cancellation->getCancellation(), ...($cancellation === null ? [] : [$cancellation]));
+        $combined = new CompositeCancellation($this->cancellation->getCancellation(), ...(null === $cancellation ? [] : [$cancellation]));
         try {
             // Even buffered JS chunks must let timers and other fibers run.
             delay(0, cancellation: $combined);
             $chunk = $this->client->call($this->id, 'read', [], 'stream', $combined)->await();
-            if ($chunk === null) { $this->finish(); return null; }
-            if (!is_string($chunk) || strlen($chunk) > 65536) { throw new StreamException('Invalid QuickJS stream chunk'); }
+            if (null === $chunk) {
+                $this->finish();
+
+                return null;
+            }
+            if (!is_string($chunk) || strlen($chunk) > 65536) {
+                throw new StreamException('Invalid QuickJS stream chunk');
+            }
+
             return $chunk;
         } catch (CancelledException $error) {
             $closed = $this->closed;
             $this->close();
-            if ($this->error !== null) { throw $this->error; }
-            if ($closed && !($cancellation?->isRequested() ?? false)) { return null; }
+            if (null !== $this->error) {
+                throw $this->error;
+            }
+            if ($closed && !($cancellation?->isRequested() ?? false)) {
+                return null;
+            }
             throw $error;
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $this->error = $error instanceof StreamException ? $error : new StreamException($error->getMessage(), previous: $error);
             $this->close();
             throw $this->error;
-        } finally { $this->pending = false; }
+        } finally {
+            $this->pending = false;
+        }
     }
 
     /** @psalm-mutation-free */
-    #[\Override]
-    public function isReadable(): bool { return !$this->closed; }
-    /** @psalm-mutation-free */
-    #[\Override]
-    public function isClosed(): bool { return $this->closed; }
-    #[\Override]
-    public function onClose(\Closure $onClose): void { $this->onClose->getFuture()->finally($onClose); }
+    #[Override]
+    public function isReadable(): bool
+    {
+        return !$this->closed;
+    }
 
-    #[\Override]
+    /** @psalm-mutation-free */
+    #[Override]
+    public function isClosed(): bool
+    {
+        return $this->closed;
+    }
+
+    #[Override]
+    public function onClose(Closure $onClose): void
+    {
+        $this->onClose->getFuture()->finally($onClose);
+    }
+
+    #[Override]
     public function close(): void
     {
-        if ($this->closed) { return; }
+        if ($this->closed) {
+            return;
+        }
         $this->finish();
         $this->client->cancelStreamLater($this->id);
     }
 
     /** @internal Called by the transport when the browser connection closes. */
-    public function transportClosed(?\Throwable $error): void
+    public function transportClosed(?Throwable $error): void
     {
-        if ($this->closed) { return; }
+        if ($this->closed) {
+            return;
+        }
         $this->error = new StreamException($error?->getMessage() ?? 'QuickJS client closed', previous: $error);
         $this->finish();
     }
 
     private function finish(): void
     {
-        if ($this->closed) { return; }
+        if ($this->closed) {
+            return;
+        }
         $this->closed = true;
         $this->client->forgetStream($this->id);
         $this->cancellation->cancel();
@@ -99,7 +144,9 @@ final class ReadableStream implements \Amp\ByteStream\ReadableStream, \IteratorA
 
     public function __destruct()
     {
-        if ($this->closed) { return; }
+        if ($this->closed) {
+            return;
+        }
         $this->finish();
         $this->client->cancelStreamLater($this->id, onlyIfUnreferenced: true);
     }

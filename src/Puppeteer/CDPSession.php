@@ -6,70 +6,54 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class CDPSession extends \Nesk\Puphpeteer\RemoteObject
+use Closure;
+use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\RemoteObject;
+
+class CDPSession extends RemoteObject
 {
-    /**
-     * @return void
-     */
     public function detach(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @var bool
-     */
     public bool $detached {
         get {
             return $this->getRemote('detached');
         }
     }
-    /**
-     * @return string
-     */
+
     public function id(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @return int|float
-     */
+
     public function listenerCount(string $type): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $type
-     * @param (\Closure|\Nesk\Puphpeteer\JsFunction)|null $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\CDPSession
+     * @param (Closure|JsFunction)|null $handler
      */
-    public function off(string $type, \Closure|\Nesk\Puphpeteer\JsFunction|null $handler = NULL): \Nesk\Puphpeteer\Puppeteer\CDPSession
+    public function off(string $type, Closure|JsFunction|null $handler = null): CDPSession
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\CDPSession
-     */
-    public function on(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\CDPSession
+
+    public function on(string $type, Closure|JsFunction $handler): CDPSession
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\CDPSession
-     */
-    public function once(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\CDPSession
+
+    public function once(string $type, Closure|JsFunction $handler): CDPSession
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (string)|null $type
-     * @return \Nesk\Puphpeteer\Puppeteer\CDPSession
      */
-    public function removeAllListeners(string|null $type = NULL): \Nesk\Puphpeteer\Puppeteer\CDPSession
+    public function removeAllListeners(?string $type = null): CDPSession
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }

@@ -402,6 +402,8 @@ $function = new JsFunction('(element) => element.textContent');
 docker compose run --rm chrome composer test
 ```
 
+Стиль PHP — Symfony (`PHP CS Fixer`) с пробелами вокруг `.` и импортом классов, включая встроенные. Проверка: `composer cs:check`, исправление всех PHP-файлов: `composer cs:fix` (также через `docker compose run --rm php ...`). Генератор применяет те же правила. Проверка включена в `composer test` и CI.
+
 `npm run build` собирает минифицированные CDP bundle: `resources/puppeteer-core.js` без плагинов и `resources/puppeteer.js` с плагинами. `--debug` создаёт читаемый JS. Коммитьте ресурсы вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости; `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
 
 Без расширения доступны только unit-тесты и Psalm: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, затем `php vendor/bin/phpunit` и `composer psalm`.

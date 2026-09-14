@@ -24,9 +24,13 @@ final class ProcessRunnerTest extends TestCase
 
     public function testTimeoutKillsChildAndDescendant(): void
     {
-        if (PHP_OS_FAMILY === 'Windows') { self::markTestSkipped('POSIX process tree cleanup'); }
+        if (PHP_OS_FAMILY === 'Windows') {
+            self::markTestSkipped('POSIX process tree cleanup');
+        }
         $ps = ProcessRunner::collect(Process::start(['/bin/ps', '-p', (string) getmypid()]), 5);
-        if ($ps['code'] !== 0) { self::markTestSkipped('Process inspection is unavailable in this sandbox'); }
+        if (0 !== $ps['code']) {
+            self::markTestSkipped('Process inspection is unavailable in this sandbox');
+        }
         $started = hrtime(true);
         $process = Process::start([PHP_BINARY, '-r', '$p = proc_open([PHP_BINARY, "-r", "sleep(30);"], [STDIN, STDOUT, STDERR], $pipes); echo proc_get_status($p)["pid"], "\\n"; flush(); sleep(30);']);
         $pid = '';
@@ -39,7 +43,7 @@ final class ProcessRunnerTest extends TestCase
             self::assertGreaterThan(0, (int) $pid);
             // An orphan may briefly remain a zombie, but must no longer execute.
             $status = ProcessRunner::collect(Process::start(['/bin/ps', '-o', 'stat=', '-p', trim($pid)]), 5);
-            self::assertTrue(trim($status['stdout']) === '' || str_starts_with(trim($status['stdout']), 'Z'));
+            self::assertTrue('' === trim($status['stdout']) || str_starts_with(trim($status['stdout']), 'Z'));
         }
     }
 }

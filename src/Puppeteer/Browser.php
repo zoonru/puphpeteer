@@ -6,38 +6,40 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Browser extends \Nesk\Puphpeteer\RemoteObject
+use Closure;
+use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\RemoteObject;
+
+class Browser extends RemoteObject
 {
     /**
      * @param array{colorDepth?: int|float, devicePixelRatio?: int|float, height: int|float, isInternal?: bool, label?: string, left: int|float, rotation?: int|float, top: int|float, width: int|float, workAreaInsets?: array{bottom?: int|float, left?: int|float, right?: int|float, top?: int|float}} $params
+     *
      * @return array{availHeight: int|float, availLeft: int|float, availTop: int|float, availWidth: int|float, colorDepth: int|float, devicePixelRatio: int|float, height: int|float, id: string, isExtended: bool, isInternal: bool, isPrimary: bool, label: string, left: int|float, orientation: array{angle: int|float, type: string}, top: int|float, width: int|float}
      */
     public function addScreen(array $params): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return list<\Nesk\Puphpeteer\Puppeteer\BrowserContext>
+     * @return list<BrowserContext>
      */
     public function browserContexts(): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return void
-     */
+
     public function close(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @var bool
-     */
     public bool $connected {
         get {
             return $this->getRemote('connected');
         }
     }
+
     /**
      * @return list<array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string}>
      */
@@ -45,152 +47,137 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (array{downloadBehavior?: array{downloadPath?: string, policy: "deny"|"allow"|"allowAndName"|"default"}, proxyBypassList?: list<string>, proxyServer?: string})|null $options
-     * @return \Nesk\Puphpeteer\Puppeteer\BrowserContext
      */
-    public function createBrowserContext(array|null $options = NULL): \Nesk\Puphpeteer\Puppeteer\BrowserContext
+    public function createBrowserContext(?array $options = null): BrowserContext
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\BrowserContext
-     */
-    public function defaultBrowserContext(): \Nesk\Puphpeteer\Puppeteer\BrowserContext
+
+    public function defaultBrowserContext(): BrowserContext
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{domain: string, expires: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, partitionKeyOpaque?: bool, path: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure: bool, session: bool, size: int|float, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
-     * @return void
      */
     public function deleteCookie(mixed ...$cookies): void
     {
         $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $cookies));
     }
+
     /**
      * @param array{domain?: string, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, url?: string} ...$filters
-     * @return void
      */
     public function deleteMatchingCookies(mixed ...$filters): void
     {
         $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $filters));
     }
-    /**
-     * @return void
-     */
+
     public function disconnect(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{manifestId: string} $options
+     *
      * @return array{badgeCount: int|float, fileHandlers: list<array{accepts: list<array{fileExtensions: list<string>, mediaType: string}>, action: string, displayName: string}>}
      */
     public function getPWAState(array $options): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $windowId
      * @return array{height?: int|float, left?: int|float, top?: int|float, width?: int|float, windowState?: "normal"|"minimized"|"maximized"|"fullscreen"}
      */
     public function getWindowBounds(string $windowId): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $path
      * @param (array{enabledInIncognito: bool})|null $options
-     * @return string
      */
-    public function installExtension(string $path, array|null $options = NULL): string
+    public function installExtension(string $path, ?array $options = null): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{displayMode?: "standalone"|"browser", installUrlOrBundleUrl: string, manifestId: string} $options
-     * @return string
      */
     public function installPWA(array $options): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{manifestId: string, timeout?: int|float, url?: string} $options
-     * @return \Nesk\Puphpeteer\Puppeteer\Page
      */
-    public function launchPWA(array $options): \Nesk\Puphpeteer\Puppeteer\Page
+    public function launchPWA(array $options): Page
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @return int|float
-     */
+
     public function listenerCount(string $type): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (array{type?: "tab", background?: bool}|array{type: "window", windowBounds?: array{height?: int|float, left?: int|float, top?: int|float, width?: int|float, windowState?: "normal"|"minimized"|"maximized"|"fullscreen"}, background?: bool})|null $options
-     * @return \Nesk\Puphpeteer\Puppeteer\Page
      */
-    public function newPage(array|null $options = NULL): \Nesk\Puphpeteer\Puppeteer\Page
+    public function newPage(?array $options = null): Page
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $type
-     * @param (\Closure|\Nesk\Puphpeteer\JsFunction)|null $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\Browser
+     * @param (Closure|JsFunction)|null $handler
      */
-    public function off(string $type, \Closure|\Nesk\Puphpeteer\JsFunction|null $handler = NULL): \Nesk\Puphpeteer\Puppeteer\Browser
+    public function off(string $type, Closure|JsFunction|null $handler = null): Browser
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\Browser
-     */
-    public function on(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\Browser
+
+    public function on(string $type, Closure|JsFunction $handler): Browser
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\Browser
-     */
-    public function once(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\Browser
+
+    public function once(string $type, Closure|JsFunction $handler): Browser
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (bool)|null $includeAll
-     * @return list<\Nesk\Puphpeteer\Puppeteer\Page>
+     *
+     * @return list<Page>
      */
-    public function pages(bool|null $includeAll = NULL): array
+    public function pages(?bool $includeAll = null): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (string)|null $type
-     * @return \Nesk\Puphpeteer\Puppeteer\Browser
      */
-    public function removeAllListeners(string|null $type = NULL): \Nesk\Puphpeteer\Puppeteer\Browser
+    public function removeAllListeners(?string $type = null): Browser
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $screenId
-     * @return void
-     */
+
     public function removeScreen(string $screenId): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return list<array{availHeight: int|float, availLeft: int|float, availTop: int|float, availWidth: int|float, colorDepth: int|float, devicePixelRatio: int|float, height: int|float, id: string, isExtended: bool, isInternal: bool, isPrimary: bool, label: string, left: int|float, orientation: array{angle: int|float, type: string}, top: int|float, width: int|float}>
      */
@@ -198,88 +185,76 @@ class Browser extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{domain: string, expires?: int|float, httpOnly?: bool, name: string, partitionKey?: string|array{hasCrossSiteAncestor?: bool, sourceOrigin: string}, path?: string, priority?: "Low"|"Medium"|"High", sameSite?: "Strict"|"Lax"|"None"|"Default", secure?: bool, sourceScheme?: "Unset"|"NonSecure"|"Secure", value: string} ...$cookies
-     * @return void
      */
     public function setCookie(mixed ...$cookies): void
     {
         $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $cookies));
     }
+
     /**
-     * @param string $origin
      * @param array{permission: array{allowWithoutSanitization?: bool, name: string, panTiltZoom?: bool, sysex?: bool, userVisibleOnly?: bool}, state: "granted"|"denied"|"prompt"} ...$permissions
-     * @return void
      */
     public function setPermission(string $origin, mixed ...$permissions): void
     {
         $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $permissions));
     }
+
     /**
-     * @param string $windowId
      * @param array{height?: int|float, left?: int|float, top?: int|float, width?: int|float, windowState?: "normal"|"minimized"|"maximized"|"fullscreen"} $windowBounds
-     * @return void
      */
     public function setWindowBounds(string $windowId, array $windowBounds): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return \Nesk\Puphpeteer\Puppeteer\Target
-     */
-    public function target(): \Nesk\Puphpeteer\Puppeteer\Target
+
+    public function target(): Target
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @return list<\Nesk\Puphpeteer\Puppeteer\Target>
+     * @return list<Target>
      */
     public function targets(): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $id
-     * @return void
-     */
+
     public function uninstallExtension(string $id): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param array{manifestId: string} $options
-     * @return void
      */
     public function uninstallPWA(array $options): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function userAgent(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function version(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param \Closure(\Nesk\Puphpeteer\Puppeteer\Target):bool $predicate
+     * @param Closure(Target):bool                              $predicate
      * @param (array{signal?: never, timeout?: int|float})|null $options
-     * @return \Nesk\Puphpeteer\Puppeteer\Target
      */
-    public function waitForTarget(\Closure $predicate, array|null $options = NULL): \Nesk\Puphpeteer\Puppeteer\Target
+    public function waitForTarget(Closure $predicate, ?array $options = null): Target
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function wsEndpoint(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

@@ -5,3 +5,4 @@
 composer.lock
 yarn.lock
 /.chrome/
+!/.php-cs-fixer.dist.php

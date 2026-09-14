@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Tests\Unit\Shared;
 
 use Amp\DeferredFuture;
+use Amp\Process\Process;
 use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\Puppeteer\Page;
 use Nesk\Puphpeteer\RemoteObject;
+use Nesk\Puphpeteer\Tests\Support\Shared\ProcessRunner;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
@@ -71,7 +74,7 @@ final class ClientTest extends TestCase
     public function testCallbackAndFunctionIdentityIsStable(): void
     {
         $client = $this->client();
-        $callback = static fn(): int => 42;
+        $callback = static fn (): int => 42;
         $function = new JsFunction('() => 42');
         foreach ([$callback, $function] as $value) {
             self::assertSame($this->codec($client, 'encode', $value), $this->codec($client, 'encode', $value));
@@ -86,7 +89,7 @@ final class ClientTest extends TestCase
         $first = $this->codec($client, 'decode', $reference);
         self::assertInstanceOf(RemoteObject::class, $first);
         self::assertSame($first, $this->codec($client, 'decode', $reference));
-        self::assertSame(\Nesk\Puphpeteer\Puppeteer\Page::class, $first::class);
+        self::assertSame(Page::class, $first::class);
         self::assertSame(9, $first->remoteId());
 
         $client->close();
@@ -110,12 +113,12 @@ final class ClientTest extends TestCase
 
     public function testMissingOptimizedExtensionHasActionableError(): void
     {
-        $process = \Amp\Process\Process::start([PHP_BINARY, '-n', '-r', <<<'CODE'
+        $process = Process::start([PHP_BINARY, '-n', '-r', <<<'CODE'
             require $argv[1];
             try { new Nesk\Puphpeteer\Client(); exit(1); }
             catch (RuntimeException $error) { echo $error->getMessage(); }
             CODE, dirname(__DIR__, 3) . '/src/Client.php']);
-        $result = \Nesk\Puphpeteer\Tests\Support\Shared\ProcessRunner::collect($process, 5);
+        $result = ProcessRunner::collect($process, 5);
         self::assertSame(0, $result['code']);
         self::assertStringContainsString('Js\\Callback::dispatch()', $result['stdout']);
         self::assertSame('', $result['stderr']);

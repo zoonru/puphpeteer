@@ -6,22 +6,20 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class SecurityDetails extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class SecurityDetails extends RemoteObject
 {
-    /**
-     * @return string
-     */
     public function issuer(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function protocol(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return list<string>
      */
@@ -29,23 +27,17 @@ class SecurityDetails extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function subjectName(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return int|float
-     */
+
     public function validFrom(): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return int|float
-     */
+
     public function validTo(): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

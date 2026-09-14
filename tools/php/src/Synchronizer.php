@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Zoon\Puphpeteer\Tooling;
 
+use FilesystemIterator;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
+use SplFileInfo;
 
 /**
  * Synchronizes declarations without loading client classes or executing their code.
@@ -40,6 +44,7 @@ final class Synchronizer
 
     /**
      * @param list<ClassSpec> $classes
+     *
      * @return array{diagnostics:list<Diagnostic>,files:list<array{path:string,content:string,changed:bool}>,deletedFiles:list<string>}
      */
     public function synchronize(string $root, array $classes): array
@@ -47,7 +52,7 @@ final class Synchronizer
         $this->diagnostics = [];
         $this->classSpecs = [];
         $root = realpath($root);
-        if ($root === false) {
+        if (false === $root) {
             throw new RuntimeException('Project root does not exist');
         }
         $destinations = [];
@@ -65,7 +70,7 @@ final class Synchronizer
         foreach ($classes as $spec) {
             $path = $this->path($root, $spec['file']);
             $expectedPaths[$spec['file']] = true;
-            $content = $this->classFile($spec);
+            $content = CodeStyle::format($this->classFile($spec));
             if ($this->lint($content, $spec)) {
                 $files[] = ['path' => $spec['file'], 'content' => $content,
                     'changed' => !is_file($path) || file_get_contents($path) !== $content];
@@ -73,9 +78,9 @@ final class Synchronizer
         }
         $deletedFiles = [];
         if (is_dir($root . '/src')) {
-            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/src', \FilesystemIterator::SKIP_DOTS));
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root . '/src', FilesystemIterator::SKIP_DOTS));
             foreach ($iterator as $file) {
-                if (!$file instanceof \SplFileInfo || !$file->isFile() || $file->getExtension() !== 'php') {
+                if (!$file instanceof SplFileInfo || !$file->isFile() || 'php' !== $file->getExtension()) {
                     continue;
                 }
                 $relative = substr($file->getPathname(), strlen($root) + 1);
@@ -85,13 +90,15 @@ final class Synchronizer
                 }
             }
         }
-        usort($files, static fn(array $a, array $b): int => $a['path'] <=> $b['path']);
+        usort($files, static fn (array $a, array $b): int => $a['path'] <=> $b['path']);
         sort($deletedFiles);
+
         return ['diagnostics' => $this->diagnostics, 'files' => $files, 'deletedFiles' => $deletedFiles];
     }
 
     /**
      * @param ClassSpec $spec
+     *
      * @psalm-mutation-free
      */
     private function overrides(array $spec, string $method): bool
@@ -101,11 +108,11 @@ final class Synchronizer
         while (!isset($visited[strtolower($parent)])) {
             $visited[strtolower($parent)] = true;
             $parentSpec = $this->classSpecs[strtolower(ltrim($parent, '\\'))] ?? null;
-            if ($parentSpec === null) {
+            if (null === $parentSpec) {
                 return false;
             }
             foreach ($parentSpec['members'] as $member) {
-                if ($member['kind'] === 'method' && strcasecmp($member['name'], $method) === 0) {
+                if ('method' === $member['kind'] && 0 === strcasecmp($member['name'], $method)) {
                     return true;
                 }
             }
@@ -143,7 +150,8 @@ final class Synchronizer
                 $this->report('contract.unsupported', $member['id'], $spec['file'], 0, 'representable method', $error->getMessage());
             }
         }
-        return self::HEADER . "\ndeclare(strict_types=1);\n\n" . ($namespace === '' ? '' : "namespace $namespace;\n\n")
+
+        return self::HEADER . "\ndeclare(strict_types=1);\n\n" . ('' === $namespace ? '' : "namespace $namespace;\n\n")
             . $this->printer->prettyPrint([$class]) . "\n";
     }
 
@@ -151,23 +159,26 @@ final class Synchronizer
     private function declaration(array $member): Stmt\ClassMethod|Stmt\Property
     {
         $this->identifier($member['name']);
-        if ($member['kind'] === 'property') {
+        if ('property' === $member['kind']) {
             $name = $member['name'];
             $type = $this->type($member['type'] ?? 'mixed');
             $nodes = $this->parser->parse('<?php class GeneratedDeclaration { public ' . $type . ' $' . $name . ' { get { return $this->getRemote(' . var_export($name, true) . '); } } }');
             $property = $nodes[0]->stmts[0] ?? null;
-            if (!$property instanceof Stmt\Property) { throw new RuntimeException('Invalid generated property'); }
+            if (!$property instanceof Stmt\Property) {
+                throw new RuntimeException('Invalid generated property');
+            }
             $this->updateDoc($property, $this->docLines($member));
+
             return $property;
         }
-        if ($member['kind'] !== 'method' || ($member['static'] ?? false) || str_starts_with($member['name'], '__')) {
+        if ('method' !== $member['kind'] || ($member['static'] ?? false) || str_starts_with($member['name'], '__')) {
             throw new UnrepresentableDeclaration('Only public instance methods can use the remote bridge: ' . $member['id']);
         }
         $parameters = [];
         $variadic = null;
         foreach ($member['parameters'] ?? [] as $parameter) {
             $this->identifier($parameter['name']);
-            if ($variadic !== null) {
+            if (null !== $variadic) {
                 throw new UnrepresentableDeclaration('Variadic parameter must be last');
             }
             $isVariadic = $parameter['variadic'] ?? false;
@@ -186,16 +197,16 @@ final class Synchronizer
             }
         }
         $args = 'func_get_args()';
-        if ($variadic !== null) {
+        if (null !== $variadic) {
             $args = 'self::mergeNamedArguments(func_get_args(), ' . $variadic . ')';
         }
         $jsName = $member['jsName'] ?? $member['name'];
         $method = $jsName === $member['name'] ? '__FUNCTION__' : var_export($jsName, true);
         $returnType = $this->type($member['returnType'] ?? 'mixed');
-        $body = ($returnType === 'void' ? '' : 'return ') . '$this->invokeRemote(' . $method . ', ' . $args . ');';
+        $body = ('void' === $returnType ? '' : 'return ') . '$this->invokeRemote(' . $method . ', ' . $args . ');';
         $declaration = 'public function ' . $member['name'] . '(' . implode(', ', $parameters) . '): ' . $returnType . ' { ' . $body . ' }';
         $nodes = $this->parser->parse('<?php class GeneratedDeclaration { ' . $declaration . ' }');
-        if ($nodes === null || !$nodes[0] instanceof Stmt\Class_) {
+        if (null === $nodes || !$nodes[0] instanceof Stmt\Class_) {
             throw new RuntimeException('Cannot construct declaration');
         }
         $node = $nodes[0]->stmts[0];
@@ -203,24 +214,27 @@ final class Synchronizer
             throw new RuntimeException('Unexpected declaration');
         }
         $this->updateDoc($node, $this->docLines($member));
+
         return $node;
     }
 
     /**
      * @param Member $member
+     *
      * @return list<string>
+     *
      * @psalm-mutation-free
      */
     private function docLines(array $member): array
     {
         $lines = array_merge($this->templateLines($member['templates'] ?? []), $member['generatedDocLines'] ?? []);
-        if ($member['kind'] === 'property') {
+        if ('property' === $member['kind']) {
             $lines[] = '@var ' . ($member['docType'] ?? $member['type'] ?? 'mixed');
         } else {
             foreach ($member['parameters'] ?? [] as $parameter) {
                 $lines[] = '@param ' . ($parameter['docType'] ?? $parameter['type'] ?? 'mixed') . ' ' . (($parameter['variadic'] ?? false) ? '...' : '') . '$' . $parameter['name'];
             }
-            if ($member['name'] !== '__construct') {
+            if ('__construct' !== $member['name']) {
                 $lines[] = '@return ' . ($member['returnDocType'] ?? $member['returnType'] ?? 'mixed');
             }
         }
@@ -229,13 +243,15 @@ final class Synchronizer
                 throw new RuntimeException('Generated annotations must be single safe lines');
             }
         }
+
         return $lines;
     }
 
     /**
      * @param list<Template> $templates
+     *
      * @return list<string>
-
+     *
      * @psalm-mutation-free
      */
     private function templateLines(array $templates): array
@@ -255,13 +271,14 @@ final class Synchronizer
             }
             $lines[] = $line;
         }
+
         return $lines;
     }
 
     /** @param list<string> $lines */
     private function updateDoc(Node $node, array $lines): void
     {
-        if ($lines === []) {
+        if ([] === $lines) {
             return;
         }
         foreach ($lines as $line) {
@@ -286,6 +303,7 @@ final class Synchronizer
         if (!preg_match('/^[?(\\\\a-zA-Z_][\\\\a-zA-Z0-9_|&?()]*$/D', $type)) {
             throw new RuntimeException('Invalid PHP type: ' . $type);
         }
+
         return $type;
     }
 
@@ -298,18 +316,20 @@ final class Synchronizer
                     return false;
                 }
             }
+
             return true;
         }
-        return $value === null || is_scalar($value);
+
+        return null === $value || is_scalar($value);
     }
 
     private function path(string $root, string $relative): string
     {
-        if ($relative === '' || str_starts_with($relative, '/') || str_contains($relative, '\\') || in_array('..', explode('/', $relative), true)) {
+        if ('' === $relative || str_starts_with($relative, '/') || str_contains($relative, '\\') || in_array('..', explode('/', $relative), true)) {
             throw new RuntimeException('Expected a safe relative PHP path');
         }
         $root = realpath($root);
-        if ($root === false) {
+        if (false === $root) {
             throw new RuntimeException('Project root does not exist');
         }
         $path = $root . '/' . $relative;
@@ -318,9 +338,10 @@ final class Synchronizer
             $ancestor = dirname($ancestor);
         }
         $resolved = realpath($ancestor);
-        if ($resolved === false || ($resolved !== $root && !str_starts_with($resolved, $root . '/'))) {
+        if (false === $resolved || ($resolved !== $root && !str_starts_with($resolved, $root . '/'))) {
             throw new RuntimeException('Mapped file escapes the project root');
         }
+
         return $path;
     }
 
@@ -328,11 +349,11 @@ final class Synchronizer
     private function lint(string $content, array $spec): bool
     {
         $path = tempnam(sys_get_temp_dir(), 'puphpeteer-lint-');
-        if ($path === false) {
+        if (false === $path) {
             throw new RuntimeException('Cannot create PHP lint staging file');
         }
         try {
-            if (file_put_contents($path, $content) === false) {
+            if (false === file_put_contents($path, $content)) {
                 throw new RuntimeException('Cannot write PHP lint staging file');
             }
             $process = proc_open([PHP_BINARY, '-l', $path], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['redirect', 1]], $pipes);
@@ -343,10 +364,12 @@ final class Synchronizer
             $output = stream_get_contents($pipes[1]);
             fclose($pipes[1]);
             $code = proc_close($process);
-            if ($code !== 0) {
-                $this->report('contract.conflict', $spec['name'], $spec['file'], 0, 'PHP syntax accepted by php -l', str_replace($path, $spec['file'], trim($output === false ? '' : $output)));
+            if (0 !== $code) {
+                $this->report('contract.conflict', $spec['name'], $spec['file'], 0, 'PHP syntax accepted by php -l', str_replace($path, $spec['file'], trim(false === $output ? '' : $output)));
+
                 return false;
             }
+
             return true;
         } finally {
             unlink($path);

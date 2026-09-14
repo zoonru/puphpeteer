@@ -6,15 +6,18 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class ConsoleMessage extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class ConsoleMessage extends RemoteObject
 {
     /**
-     * @return list<\Nesk\Puphpeteer\Puppeteer\JSHandle>
+     * @return list<JSHandle>
      */
     public function args(): array
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return array{columnNumber?: int|float, lineNumber?: int|float, url?: string}
      */
@@ -22,6 +25,7 @@ class ConsoleMessage extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return list<array{columnNumber?: int|float, lineNumber?: int|float, url?: string}>
      */
@@ -29,13 +33,12 @@ class ConsoleMessage extends \Nesk\Puphpeteer\RemoteObject
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function text(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @return "log"|"debug"|"info"|"error"|"warn"|"dir"|"dirxml"|"table"|"trace"|"clear"|"startGroup"|"startGroupCollapsed"|"endGroup"|"assert"|"profile"|"profileEnd"|"count"|"timeEnd"|"verbose"
      */

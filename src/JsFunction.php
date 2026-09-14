@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer;
 
+use InvalidArgumentException;
+use LogicException;
+
 /** @psalm-immutable */
 final readonly class JsFunction
 {
     /**
-     * @param null|array{parameters:array,body:string,scope:array,async:bool} $definition Factory state; omit when passing source.
+     * @param array{parameters:array,body:string,scope:array,async:bool}|null $definition factory state; omit when passing source
+     *
      * @psalm-mutation-free
      */
-    public function __construct(public string $source, private ?array $definition = null) {}
+    public function __construct(public string $source, private ?array $definition = null)
+    {
+    }
 
     /** @psalm-pure */
     public static function createWithBody(string $body): self
@@ -46,30 +52,48 @@ final readonly class JsFunction
             return self::build([], $parameters, is_array($body) ? $body : $scope, false);
         }
         if (!is_string($body)) {
-            throw new \InvalidArgumentException('Function body must be a string');
+            throw new InvalidArgumentException('Function body must be a string');
         }
+
         return self::build($parameters, $body, $scope, false);
     }
 
     /** @psalm-mutation-free */
-    public function body(string $body): self { return $this->with(['body' => $body]); }
+    public function body(string $body): self
+    {
+        return $this->with(['body' => $body]);
+    }
+
     /** @psalm-mutation-free */
-    public function parameters(array $parameters): self { return $this->with(['parameters' => $parameters]); }
+    public function parameters(array $parameters): self
+    {
+        return $this->with(['parameters' => $parameters]);
+    }
+
     /** @psalm-mutation-free */
-    public function scope(array $scope): self { return $this->with(['scope' => $scope]); }
+    public function scope(array $scope): self
+    {
+        return $this->with(['scope' => $scope]);
+    }
+
     /** @psalm-mutation-free */
-    public function async(bool $isAsync = true): self { return $this->with(['async' => $isAsync]); }
+    public function async(bool $isAsync = true): self
+    {
+        return $this->with(['async' => $isAsync]);
+    }
 
     /**
      * @param array{parameters?:array,body?:string,scope?:array,async?:bool} $changes
+     *
      * @psalm-mutation-free
      */
     private function with(array $changes): self
     {
-        if ($this->definition === null) {
-            throw new \LogicException('Use createWithBody/Parameters/Scope to build a function; raw source cannot be edited');
+        if (null === $this->definition) {
+            throw new LogicException('Use createWithBody/Parameters/Scope to build a function; raw source cannot be edited');
         }
         $definition = array_replace($this->definition, $changes);
+
         return self::build($definition['parameters'], $definition['body'], $definition['scope'], $definition['async']);
     }
 
@@ -88,6 +112,7 @@ final readonly class JsFunction
             $variables .= 'var ' . $name . ' = ' . self::valueSource($value) . ";\n";
         }
         $source = ($async ? 'async ' : '') . 'function(' . implode(', ', $arguments) . ") {\n" . $variables . $body . "\n}";
+
         return new self($source, ['parameters' => $parameters, 'body' => $body, 'scope' => $scope, 'async' => $async]);
     }
 
@@ -95,7 +120,7 @@ final readonly class JsFunction
     private static function identifier(mixed $name): void
     {
         if (!is_string($name) || !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/D', $name)) {
-            throw new \InvalidArgumentException('Invalid JavaScript parameter or scope name');
+            throw new InvalidArgumentException('Invalid JavaScript parameter or scope name');
         }
     }
 
@@ -113,11 +138,13 @@ final readonly class JsFunction
             foreach ($value as $key => $item) {
                 $entries[] = json_encode((string) $key, JSON_THROW_ON_ERROR) . ': ' . self::valueSource($item);
             }
+
             return '{' . implode(', ', $entries) . '}';
         }
-        if ($value !== null && !is_scalar($value)) {
-            throw new \InvalidArgumentException('Function scope/defaults support scalars, arrays and JsFunction; pass remote handles as evaluate arguments');
+        if (null !== $value && !is_scalar($value)) {
+            throw new InvalidArgumentException('Function scope/defaults support scalars, arrays and JsFunction; pass remote handles as evaluate arguments');
         }
+
         return json_encode($value, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION);
     }
 }

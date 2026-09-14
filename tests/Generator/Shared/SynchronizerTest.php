@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Generator\Shared;
 
-use Amp\Future;
+use Override;
 use PHPUnit\Framework\TestCase;
 use Zoon\Puphpeteer\Tooling\Synchronizer;
 
@@ -13,14 +13,14 @@ final class SynchronizerTest extends TestCase
 {
     private string $root;
 
-    #[\Override]
+    #[Override]
     protected function setUp(): void
     {
         $this->root = sys_get_temp_dir() . '/puphpeteer-generator-' . bin2hex(random_bytes(8));
         mkdir($this->root . '/src', 0700, true);
     }
 
-    #[\Override]
+    #[Override]
     protected function tearDown(): void
     {
         foreach (glob($this->root . '/src/*') ?: [] as $file) {
@@ -53,9 +53,9 @@ final class SynchronizerTest extends TestCase
         self::assertSame([], $result['diagnostics']);
         $content = $result['files'][0]['content'];
         self::assertSame(file_get_contents(__DIR__ . '/Fixtures/GeneratedFixture.php'), $content);
-        self::assertStringContainsString('@param array{timeout?: int}|null $options', $content);
-        self::assertStringContainsString('@return string', $content);
-        self::assertStringContainsString('extends \\Nesk\\Puphpeteer\\RemoteObject', $content);
+        self::assertMatchesRegularExpression('/@param array\\{timeout\\?: int\\}\\|null\\s+\\$options/', $content);
+        self::assertStringContainsString('public function select(string $selector, ?array $options = null): string', $content);
+        self::assertStringContainsString('extends RemoteObject', $content);
         self::assertStringNotContainsString('upstream-id:', $content);
         self::assertStringNotContainsString('generated-bridge-sha256', $content);
         self::assertStringNotContainsString('$_remoteResult', $content);
@@ -65,13 +65,18 @@ final class SynchronizerTest extends TestCase
         $object = new class extends GeneratedFixture {
             /** @var list<array{string, array<array-key, mixed>}> */
             public array $calls = [];
-    /** @psalm-mutation-free */
-            public function __construct() {}
+
+            /** @psalm-mutation-free */
+            public function __construct()
+            {
+            }
+
             /** @psalm-external-mutation-free */
-            #[\Override]
+            #[Override]
             protected function invokeRemote(string $method, array $arguments): mixed
             {
                 $this->calls[] = [$method, $arguments];
+
                 return 'result';
             }
         };
@@ -125,8 +130,8 @@ final class SynchronizerTest extends TestCase
         $result = (new Synchronizer())->synchronize($this->root, [$parent, $child]);
         self::assertSame([], $result['diagnostics']);
         $content = $result['files'][0]['content'];
-        self::assertStringContainsString('#[\\Override]', $content);
-        self::assertStringContainsString('@param ' . $literal . ' $selector', $content);
+        self::assertStringContainsString('#[Override]', $content);
+        self::assertMatchesRegularExpression('/@param ' . preg_quote($literal, '/') . '\\s+\\$selector/', $content);
     }
 
     public function testReportsUnsupportedAndDeletedDeclarations(): void

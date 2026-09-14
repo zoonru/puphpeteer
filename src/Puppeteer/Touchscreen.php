@@ -6,29 +6,20 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class Touchscreen extends \Nesk\Puphpeteer\RemoteObject
+use Nesk\Puphpeteer\RemoteObject;
+
+class Touchscreen extends RemoteObject
 {
-    /**
-     * @param int|float $x
-     * @param int|float $y
-     * @return void
-     */
     public function tap(int|float $x, int|float $y): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return void
-     */
+
     public function touchEnd(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param int|float $x
-     * @param int|float $y
-     * @return void
-     */
+
     public function touchMove(int|float $x, int|float $y): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());

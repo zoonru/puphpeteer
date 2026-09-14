@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Console\Command;
 
+use Override;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Helper\TableSeparator;
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class BenchmarkCommand extends ProcessCommand
 {
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this->setDescription('Запустить benchmark QuickJS')
@@ -21,15 +21,19 @@ final class BenchmarkCommand extends ProcessCommand
             ->addOption('iterations', null, InputOption::VALUE_REQUIRED, 'Количество evaluate за прогон', '1000');
     }
 
-    #[\Override]
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $trials = filter_var($input->getOption('trials'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $iterations = filter_var($input->getOption('iterations'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($trials === false || $iterations === false) {
-            if ($this->jsonOutput) { $this->writeJson($output, ['command' => 'benchmark', 'status' => 'error', 'error' => 'trials and iterations must be positive']); }
-            else { $io->error('trials и iterations должны быть положительными.'); }
+        if (false === $trials || false === $iterations) {
+            if ($this->jsonOutput) {
+                $this->writeJson($output, ['command' => 'benchmark', 'status' => 'error', 'error' => 'trials and iterations must be positive']);
+            } else {
+                $io->error('trials и iterations должны быть положительными.');
+            }
+
             return 2;
         }
         $bar = null;
@@ -49,16 +53,24 @@ final class BenchmarkCommand extends ProcessCommand
             'Выполняются прогоны…',
             false,
             function (string $line) use (&$bar): void {
-                if (!isset($bar)) { return; }
+                if (!isset($bar)) {
+                    return;
+                }
                 if (preg_match('/Running quickjs (\d+)\/(\d+)/i', $line, $match)) {
                     $bar->setProgress((int) $match[1]);
                     $bar->setMessage('trial ' . $match[1] . '/' . $match[2]);
                 }
             },
         );
-        if (isset($bar)) { $bar->setMessage($result['code'] === 0 ? 'готово' : 'ошибка'); $bar->finish(); }
-        if ($result['code'] !== 0) {
-            if ($this->jsonOutput) { $this->writeJson($output, ['command' => 'benchmark', 'status' => 'error', 'code' => $result['code'], 'elapsed' => $result['elapsed']]); }
+        if (isset($bar)) {
+            $bar->setMessage(0 === $result['code'] ? 'готово' : 'ошибка');
+            $bar->finish();
+        }
+        if (0 !== $result['code']) {
+            if ($this->jsonOutput) {
+                $this->writeJson($output, ['command' => 'benchmark', 'status' => 'error', 'code' => $result['code'], 'elapsed' => $result['elapsed']]);
+            }
+
             return $result['code'];
         }
         $rows = [];
@@ -66,11 +78,15 @@ final class BenchmarkCommand extends ProcessCommand
         /** @var array<string,float> $totals */
         $totals = [];
         foreach (preg_split('/\R/', trim($result['stdout'])) ?: [] as $line) {
-            if (!str_starts_with($line, '{')) { continue; }
+            if (!str_starts_with($line, '{')) {
+                continue;
+            }
             $data = json_decode($line, true);
-            if (!is_array($data) || !isset($data['phases'], $data['resources'])) { continue; }
+            if (!is_array($data) || !isset($data['phases'], $data['resources'])) {
+                continue;
+            }
             $details[] = $data;
-            $phase = static fn(string $name, string $metric = 'wall_ms'): float => (float) ($data['phases'][$name][$metric] ?? 0);
+            $phase = static fn (string $name, string $metric = 'wall_ms'): float => (float) ($data['phases'][$name][$metric] ?? 0);
             $values = [
                 'setup' => (float) ($data['setup_ms'] ?? 0),
                 'evaluate' => $phase('evaluate'),
@@ -82,7 +98,9 @@ final class BenchmarkCommand extends ProcessCommand
                 'cpu' => (float) ($data['resources']['total_process_tree_cpu_ms'] ?? 0),
                 'rss' => (float) ($data['resources']['sampled_tree_peak_rss_bytes'] ?? 0) / 1048576.0,
             ];
-            foreach ($values as $name => $value) { $totals[$name] = ($totals[$name] ?? 0.0) + $value; }
+            foreach ($values as $name => $value) {
+                $totals[$name] = ($totals[$name] ?? 0.0) + $value;
+            }
             $rows[] = [
                 $data['backend'] ?? 'quickjs',
                 (string) ($data['trial'] ?? count($rows) + 1),
@@ -97,7 +115,7 @@ final class BenchmarkCommand extends ProcessCommand
                 sprintf('%.1f MiB', (float) ($data['resources']['sampled_tree_peak_rss_bytes'] ?? 0) / 1048576.0),
             ];
         }
-        if ($rows !== []) {
+        if ([] !== $rows) {
             $count = (float) count($details);
             $rows[] = new TableSeparator();
             $rows[] = [
@@ -114,11 +132,16 @@ final class BenchmarkCommand extends ProcessCommand
                 sprintf('%.1f MiB', $totals['rss'] / $count),
             ];
         }
-        if ($this->jsonOutput) { $this->writeJson($output, ['command' => 'benchmark', 'status' => 'ok', 'runs' => $details, 'elapsed' => $result['elapsed']]); return 0; }
-        if ($rows !== []) {
+        if ($this->jsonOutput) {
+            $this->writeJson($output, ['command' => 'benchmark', 'status' => 'ok', 'runs' => $details, 'elapsed' => $result['elapsed']]);
+
+            return 0;
+        }
+        if ([] !== $rows) {
             $io->table(['Backend', 'Trial', 'Setup', 'Evaluate', 'Eval p50', 'Eval p95', '64 KiB', '20×25 ms', 'Navigation', 'CPU total', 'Peak RSS'], $rows);
         }
         $io->success(sprintf('Benchmark завершён за %.2f с.', $result['elapsed']));
+
         return 0;
     }
 }

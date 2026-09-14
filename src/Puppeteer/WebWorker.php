@@ -6,87 +6,64 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Puppeteer;
 
-class WebWorker extends \Nesk\Puphpeteer\RemoteObject
+use Closure;
+use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\RemoteObject;
+
+class WebWorker extends RemoteObject
 {
-    /**
-     * @var \Nesk\Puphpeteer\Puppeteer\CDPSession
-     */
-    public \Nesk\Puphpeteer\Puppeteer\CDPSession $client {
+    public CDPSession $client {
         get {
             return $this->getRemote('client');
         }
     }
-    /**
-     * @return void
-     */
+
     public function close(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string|\Nesk\Puphpeteer\JsFunction $func
-     * @param mixed ...$args
-     * @return mixed
-     */
-    public function evaluate(string|\Nesk\Puphpeteer\JsFunction $func, mixed ...$args): mixed
+
+    public function evaluate(string|JsFunction $func, mixed ...$args): mixed
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $args));
     }
-    /**
-     * @param string|\Nesk\Puphpeteer\JsFunction $func
-     * @param mixed ...$args
-     * @return \Nesk\Puphpeteer\Puppeteer\JSHandle
-     */
-    public function evaluateHandle(string|\Nesk\Puphpeteer\JsFunction $func, mixed ...$args): \Nesk\Puphpeteer\Puppeteer\JSHandle
+
+    public function evaluateHandle(string|JsFunction $func, mixed ...$args): JSHandle
     {
         return $this->invokeRemote(__FUNCTION__, self::mergeNamedArguments(func_get_args(), $args));
     }
-    /**
-     * @param string $type
-     * @return int|float
-     */
+
     public function listenerCount(string $type): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
-     * @param string $type
-     * @param (\Closure|\Nesk\Puphpeteer\JsFunction)|null $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\WebWorker
+     * @param (Closure|JsFunction)|null $handler
      */
-    public function off(string $type, \Closure|\Nesk\Puphpeteer\JsFunction|null $handler = NULL): \Nesk\Puphpeteer\Puppeteer\WebWorker
+    public function off(string $type, Closure|JsFunction|null $handler = null): WebWorker
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\WebWorker
-     */
-    public function on(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\WebWorker
+
+    public function on(string $type, Closure|JsFunction $handler): WebWorker
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @param string $type
-     * @param \Closure|\Nesk\Puphpeteer\JsFunction $handler
-     * @return \Nesk\Puphpeteer\Puppeteer\WebWorker
-     */
-    public function once(string $type, \Closure|\Nesk\Puphpeteer\JsFunction $handler): \Nesk\Puphpeteer\Puppeteer\WebWorker
+
+    public function once(string $type, Closure|JsFunction $handler): WebWorker
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
+
     /**
      * @param (string)|null $type
-     * @return \Nesk\Puphpeteer\Puppeteer\WebWorker
      */
-    public function removeAllListeners(string|null $type = NULL): \Nesk\Puphpeteer\Puppeteer\WebWorker
+    public function removeAllListeners(?string $type = null): WebWorker
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
-    /**
-     * @return string
-     */
+
     public function url(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

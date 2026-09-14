@@ -9,6 +9,7 @@ use Nesk\Puphpeteer\RemoteObject;
 
 /**
  * Resolves public guest type names only through the generated public API allowlist.
+ *
  * @psalm-immutable
  */
 final class RemoteObjectFactory
@@ -17,6 +18,7 @@ final class RemoteObjectFactory
     public static function create(Client $client, int $id, string $guestClass): RemoteObject
     {
         $class = GeneratedRegistry::CLASSES[$guestClass] ?? RemoteObject::class;
+
         return new $class($client, $id, $guestClass);
     }
 }

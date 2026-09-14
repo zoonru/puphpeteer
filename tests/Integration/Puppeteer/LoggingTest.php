@@ -6,20 +6,27 @@ namespace Nesk\Puphpeteer\Tests\Integration\Puppeteer;
 
 use Amp\Process\Process;
 use Amp\TimeoutCancellation;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use RuntimeException;
+
 use function Amp\ByteStream\buffer;
 
 final class LoggingTest extends TestCase
 {
     /** @psalm-pure */
-    public static function closingMethods(): array { return [['close'], ['disconnect']]; }
+    public static function closingMethods(): array
+    {
+        return [['close'], ['disconnect']];
+    }
 
     #[DataProvider('closingMethods')]
     public function testSlowLogConsumerDoesNotBlockResultsOrEventLoop(string $closingMethod): void
     {
         $bundle = tempnam(sys_get_temp_dir(), 'quickjs-logging-');
-        if ($bundle === false) { throw new \RuntimeException('Cannot create fixture'); }
+        if (false === $bundle) {
+            throw new RuntimeException('Cannot create fixture');
+        }
         file_put_contents($bundle, <<<'JS'
             globalThis.__quickjsDispatch = (kind, payload) => {
               if (kind !== 'call') return;
@@ -49,25 +56,35 @@ final class LoggingTest extends TestCase
             $logs = buffer($process->getStderr(), new TimeoutCancellation(5));
             self::assertSame(0, $process->join(new TimeoutCancellation(5)));
             $expected = '';
-            for ($i = 0; $i < 32; $i++) { $expected .= '[QuickJS] ' . $i . ':' . str_repeat('x', 16384) . "\n"; }
+            for ($i = 0; $i < 32; ++$i) {
+                $expected .= '[QuickJS] ' . $i . ':' . str_repeat('x', 16384) . "\n";
+            }
             $expected .= "[QuickJS] closed\n";
             self::assertSame($expected, $logs, 'Queued logs must retain their order and complete contents');
         } finally {
-            if ($process !== null) {
-                if ($process->isRunning()) { $process->kill(); }
+            if (null !== $process) {
+                if ($process->isRunning()) {
+                    $process->kill();
+                }
                 $process->join(new TimeoutCancellation(5));
             }
             unlink($bundle);
         }
     }
+
     /** @psalm-pure */
-    public static function unavailableReaders(): array { return [['stalled'], ['closed']]; }
+    public static function unavailableReaders(): array
+    {
+        return [['stalled'], ['closed']];
+    }
 
     #[DataProvider('unavailableReaders')]
     public function testUnavailableReaderKeepsQueueBoundedAndCloseTerminates(string $reader): void
     {
         $bundle = tempnam(sys_get_temp_dir(), 'quickjs-log-bound-');
-        if ($bundle === false) { throw new \RuntimeException('Cannot create fixture'); }
+        if (false === $bundle) {
+            throw new RuntimeException('Cannot create fixture');
+        }
         file_put_contents($bundle, <<<'JS'
             globalThis.__quickjsDispatch = (kind, request) => {
               if (kind !== 'call') return;
@@ -89,7 +106,9 @@ final class LoggingTest extends TestCase
             echo json_encode([$counts,(hrtime(true)-$start)/1e9]);
             CODE, dirname(__DIR__, 3) . '/vendor/autoload.php', $bundle]);
         try {
-            if ($reader === 'closed') { $process->getStderr()->close(); }
+            if ('closed' === $reader) {
+                $process->getStderr()->close();
+            }
             // Never drain stderr: the child must terminate despite backpressure.
             $output = buffer($process->getStdout(), new TimeoutCancellation(4));
             self::assertSame(0, $process->join(new TimeoutCancellation(2)));
@@ -99,10 +118,11 @@ final class LoggingTest extends TestCase
             self::assertGreaterThan(0, $counts[2]);
             self::assertLessThan(2, $elapsed);
         } finally {
-            if ($process->isRunning()) { $process->kill(); }
+            if ($process->isRunning()) {
+                $process->kill();
+            }
             $process->join(new TimeoutCancellation(5));
             unlink($bundle);
         }
     }
-
 }
