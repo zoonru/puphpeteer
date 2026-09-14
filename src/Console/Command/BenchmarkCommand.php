@@ -17,7 +17,6 @@ final class BenchmarkCommand extends ProcessCommand
     protected function configure(): void
     {
         $this->setDescription('Запустить benchmark QuickJS')
-            ->addOption('extension', null, InputOption::VALUE_REQUIRED, 'Путь к php-quickjs')
             ->addOption('trials', null, InputOption::VALUE_REQUIRED, 'Количество прогонов', '5')
             ->addOption('iterations', null, InputOption::VALUE_REQUIRED, 'Количество evaluate за прогон', '1000');
     }
@@ -26,15 +25,9 @@ final class BenchmarkCommand extends ProcessCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $extension = $input->getOption('extension') ?: getenv('QUICKJS_EXTENSION') ?: null;
-        if (!is_string($extension) || $extension === '' || !is_file($extension)) {
-            if ($this->jsonOutput) { $this->writeJson($output, ['command' => 'benchmark', 'status' => 'error', 'error' => 'QUICKJS_EXTENSION is required']); }
-            else { $io->error('Укажите существующий QUICKJS_EXTENSION или --extension.'); }
-            return 2;
-        }
-        $trials = (int) $input->getOption('trials');
-        $iterations = (int) $input->getOption('iterations');
-        if ($trials < 1 || $iterations < 1) {
+        $trials = filter_var($input->getOption('trials'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $iterations = filter_var($input->getOption('iterations'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($trials === false || $iterations === false) {
             if ($this->jsonOutput) { $this->writeJson($output, ['command' => 'benchmark', 'status' => 'error', 'error' => 'trials and iterations must be positive']); }
             else { $io->error('trials и iterations должны быть положительными.'); }
             return 2;
@@ -48,11 +41,11 @@ final class BenchmarkCommand extends ProcessCommand
             $bar->start();
         }
         /** @var list<string> $command */
-        $command = $this->phpCommand('-d', 'extension=' . $extension, 'benchmarks/run.php');
+        $command = $this->phpCommand('benchmarks/run.php', '--trials=' . $trials, '--iterations=' . $iterations);
         $result = $this->runProcess(
             $io,
             $command,
-            ['BENCH_TRIALS' => (string) $trials, 'BENCH_ITERATIONS' => (string) $iterations, 'QUICKJS_EXTENSION' => $extension],
+            [],
             'Выполняются прогоны…',
             false,
             function (string $line) use (&$bar): void {

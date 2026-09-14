@@ -17,11 +17,10 @@ final class DoctorCommand extends ProcessCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $extension = getenv('QUICKJS_EXTENSION') ?: null;
-        $extensionReady = extension_loaded('php_quickjs') || (is_string($extension) && is_file($extension));
+        $extensionReady = extension_loaded('php_quickjs');
         $checks = [
             ['PHP', PHP_VERSION, version_compare(PHP_VERSION, '8.4.0', '>=')],
-            ['php-quickjs', $extensionReady ? ($extension ?: 'загружен в PHP') : ($extension ?: 'не задан'), $extensionReady],
+            ['php-quickjs', $extensionReady ? 'загружен в PHP' : 'не загружен', $extensionReady],
             ['Node.js', $this->binaryPath('node'), $this->binaryPath('node') !== null],
             ['npm', $this->binaryPath('npm'), $this->binaryPath('npm') !== null],
             ['bundle', $this->root . '/resources/puppeteer.js', is_file($this->root . '/resources/puppeteer.js')],

@@ -12,15 +12,12 @@ final class BrowserExecutableTest extends TestCase
 {
     private string $root;
     private string|false $configured;
-    private string|false $legacy;
 
     #[\Override]
     protected function setUp(): void
     {
         $this->configured = getenv('PUPPETEER_EXECUTABLE_PATH');
-        $this->legacy = getenv('CHROME_BIN');
         putenv('PUPPETEER_EXECUTABLE_PATH');
-        putenv('CHROME_BIN');
         $this->root = sys_get_temp_dir() . '/puphpeteer-browser-' . bin2hex(random_bytes(8));
         mkdir($this->root . '/vendor/zoon/puphpeteer/resources', 0777, true);
     }
@@ -29,14 +26,11 @@ final class BrowserExecutableTest extends TestCase
     protected function tearDown(): void
     {
         putenv($this->configured === false ? 'PUPPETEER_EXECUTABLE_PATH' : 'PUPPETEER_EXECUTABLE_PATH=' . $this->configured);
-        putenv($this->legacy === false ? 'CHROME_BIN' : 'CHROME_BIN=' . $this->legacy);
         ProcessRunner::removeDirectory($this->root);
     }
 
     public function testExplicitEnvironmentWins(): void
     {
-        putenv('CHROME_BIN=/explicit/legacy/chrome');
-        self::assertSame('/explicit/legacy/chrome', BrowserExecutable::resolve($this->root));
         putenv('PUPPETEER_EXECUTABLE_PATH=/explicit/chrome');
         self::assertSame('/explicit/chrome', BrowserExecutable::resolve($this->root));
     }

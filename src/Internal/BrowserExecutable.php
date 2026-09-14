@@ -9,7 +9,7 @@ final class BrowserExecutable
 {
     public static function resolve(string $packageRoot): string
     {
-        $configured = getenv('PUPPETEER_EXECUTABLE_PATH') ?: getenv('CHROME_BIN');
+        $configured = getenv('PUPPETEER_EXECUTABLE_PATH');
         if ($configured !== false && $configured !== '') { return $configured; }
 
         $cacheDirectories = [];

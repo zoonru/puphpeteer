@@ -21,8 +21,7 @@ abstract class ProcessCommand extends Command
 
     public function __construct(?string $name = null)
     {
-        $php = getenv('PHP_BIN');
-        $this->phpBinary = (is_string($php) && $php !== '') ? $php : PHP_BINARY;
+        $this->phpBinary = PHP_BINARY;
         parent::__construct($name);
         $this->root = dirname(__DIR__, 3);
     }

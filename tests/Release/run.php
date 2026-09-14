@@ -9,23 +9,23 @@ require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 try {
     $root = dirname(__DIR__, 2);
-    $extension = getenv('QUICKJS_EXTENSION');
-    if (!$extension) { throw new RuntimeException('Set QUICKJS_EXTENSION. See docs/quickjs.md.'); }
-    $php = getenv('PHP_BIN') ?: PHP_BINARY;
+    $options = getopt('', ['cycles:', 'timeout:']);
+    $cycles = filter_var($options['cycles'] ?? '50', FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
+    $timeout = filter_var($options['timeout'] ?? '600', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($cycles === false || $timeout === false) { throw new InvalidArgumentException('--cycles must be >= 2 and --timeout must be positive'); }
+    $php = PHP_BINARY;
     $steps = [
         ['unit and generation', [$php, 'vendor/bin/phpunit'], 180],
-        ['extension contract', [$php, '-n', '-d', 'extension=' . $extension, $root . '/vendor/bin/phpunit', 'tests/Integration'], 180],
+        ['extension contract', [$php, $root . '/vendor/bin/phpunit', 'tests/Integration'], 180],
         ['browser compatibility and examples', [$php, 'tests/Browser/run-smoke.php'], 180],
     ];
-    foreach ($steps as [$name, $command, $timeout]) {
+    foreach ($steps as [$name, $command, $stepTimeout]) {
         echo "Release gate: $name\n";
-        $result = ProcessRunner::collect(Process::start($command, $root), $timeout, stream: true);
+        $result = ProcessRunner::collect(Process::start($command, $root), $stepTimeout, stream: true);
         if ($result['code'] !== 0) { throw new RuntimeException("$name failed ({$result['code']})"); }
     }
     echo "Release gate: repeated browser workload\n";
-    $timeout = filter_var(getenv('RELEASE_TIMEOUT') === false ? '600' : getenv('RELEASE_TIMEOUT'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if ($timeout === false) { throw new InvalidArgumentException('RELEASE_TIMEOUT must be a positive integer'); }
-    $result = ProcessRunner::collect(Process::start([$php, '-n', '-d', 'extension=' . $extension, __DIR__ . '/workload.php'], $root), $timeout, stream: true);
+    $result = ProcessRunner::collect(Process::start([$php, __DIR__ . '/workload.php', '--cycles=' . $cycles], $root), $timeout, stream: true);
     if ($result['code'] !== 0) { throw new RuntimeException('Repeated workload failed (' . $result['code'] . ')'); }
     echo "Release gate PASS\n";
 } catch (Throwable $error) {

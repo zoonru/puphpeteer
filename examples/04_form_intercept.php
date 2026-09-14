@@ -9,7 +9,7 @@ use Nesk\Puphpeteer\HTTPRequest;
 use Nesk\Puphpeteer\Puppeteer;
 use function Amp\async;
 
-$url = getenv('FORM_EXAMPLE_URL') ?: 'file://' . __DIR__ . '/pages/form.html';
+$url = 'file://' . __DIR__ . '/pages/form.html';
 $browser = (new Puppeteer())->launch();
 try {
     $page = $browser->newPage();

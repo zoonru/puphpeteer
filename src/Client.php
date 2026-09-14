@@ -115,8 +115,6 @@ final class Client
     private function deliver(string $kind, mixed $payload): void
     {
         if ($this->closed) { return; }
-        $trace = getenv('QUICKJS_TRACE');
-        if ($trace !== false && $trace !== '' && $trace !== '0' && $kind === 'message') { file_put_contents($trace, '< ' . $payload . "\n", FILE_APPEND); }
         $this->pump([$kind, $payload]);
     }
 
@@ -187,8 +185,6 @@ final class Client
             try {
                 while (!$this->closed && $this->writes) {
                     $message = array_shift($this->writes);
-                    $trace = getenv('QUICKJS_TRACE');
-                    if ($trace !== false && $trace !== '' && $trace !== '0') { file_put_contents($trace, '> ' . $message . "\n", FILE_APPEND); }
                     $socket->sendText($message);
                 }
             } catch (\Throwable $e) { $this->stop($e); }

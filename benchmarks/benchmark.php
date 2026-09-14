@@ -4,8 +4,8 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use function Amp\async;
 use function Amp\Future\await;
 $backend = 'quickjs';
-$count = filter_var(getenv('BENCH_ITERATIONS') === false ? '1000' : getenv('BENCH_ITERATIONS'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-if ($count === false) { throw new InvalidArgumentException('BENCH_ITERATIONS must be a positive integer'); }
+$count = filter_var((getopt('', ['iterations:'])['iterations'] ?? '1000'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if ($count === false) { throw new InvalidArgumentException('--iterations must be a positive integer'); }
 $cpu = static function (): float { $r = getrusage(); return $r['ru_utime.tv_sec'] + $r['ru_utime.tv_usec'] / 1e6 + $r['ru_stime.tv_sec'] + $r['ru_stime.tv_usec'] / 1e6; };
 $started = hrtime(true);
 $puppeteer = new Nesk\Puphpeteer\Puppeteer();

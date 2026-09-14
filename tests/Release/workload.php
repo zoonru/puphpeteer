@@ -14,8 +14,8 @@ function verify(bool $condition, string $message): void
     if (!$condition) { throw new RuntimeException($message); }
 }
 
-$cycles = filter_var(getenv('RELEASE_CYCLES') === false ? '50' : getenv('RELEASE_CYCLES'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
-if ($cycles === false) { throw new InvalidArgumentException('RELEASE_CYCLES must be an integer >= 2'); }
+$cycles = filter_var((getopt('', ['cycles:'])['cycles'] ?? '50'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]);
+if ($cycles === false) { throw new InvalidArgumentException('--cycles must be an integer >= 2'); }
 $started = hrtime(true);
 $memory = [];
 $browser = (new Puppeteer())->launch(['headless' => true, 'args' => ['--no-proxy-server']]);

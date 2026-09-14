@@ -43,17 +43,16 @@ function sample(int $rootPid): array
     return array_values(array_filter($rows, static fn(array $row): bool => $row['pid'] !== $rootPid && isset($selected[$row['pid']])));
 }
 
-function runTrial(int $trial, string $extension): array
+function runTrial(int $trial, int $iterations): array
 {
-    $extensionHash = hash_file('sha256', $extension);
+    $extensionVersion = phpversion('php_quickjs');
     $bundleHash = hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js');
     $browser = (new Puppeteer())->launch(['headless' => true, 'args' => ['--no-proxy-server']]);
     try {
         $endpoint = parse_url($browser->wsEndpoint());
         $response = HttpClientBuilder::buildDefault()->request(new Request('http://' . $endpoint['host'] . ':' . $endpoint['port'] . '/json/version'));
         $version = json_decode(buffer($response->getBody()), true, 512, JSON_THROW_ON_ERROR)['Browser'];
-        $php = getenv('PHP_BIN') ?: PHP_BINARY;
-        $command = [$php, '-n', '-d', 'extension=' . $extension, __DIR__ . '/benchmark.php'];
+        $command = [PHP_BINARY, __DIR__ . '/benchmark.php', '--iterations=' . $iterations];
         $child = Process::start(['/usr/bin/time', ...(PHP_OS_FAMILY === 'Darwin' ? ['-l'] : ['-f', 'PUPHPETEER_TIME %e %U %S']), ...$command], environment: [...getenv(), 'BROWSER_WS' => $browser->wsEndpoint(), 'LC_ALL' => 'C']);
         $active = $started = false;
         $measurement = null;
@@ -94,15 +93,15 @@ function runTrial(int $trial, string $extension): array
         if ($result['code'] !== 0 || $measurement === null) {
             throw new RuntimeException("QuickJS trial $trial failed ({$result['code']}): " . substr($stderr, 0, 1500) . substr($result['stdout'], -1000));
         }
-        if ($extensionHash !== hash_file('sha256', $extension) || $bundleHash !== hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js')) {
-            throw new RuntimeException('Extension or bundle changed during trial; freeze build artifacts before benchmarking.');
+        if ($bundleHash !== hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js')) {
+            throw new RuntimeException('Bundle changed during trial; freeze build artifacts before benchmarking.');
         }
         if ($samplingErrors !== '' || $samples === 0) { throw new RuntimeException('Resource sampler failed or collected no steady-state samples; inspect raw benchmark logs.'); }
         $steadyCpu = 0.0;
         foreach ($seen as $pid => $row) { $steadyCpu += max(0, $row['cpu'] - ($startCpu[$pid] ?? 0)) * 1000; }
         $hasTime = preg_match(PHP_OS_FAMILY === 'Darwin' ? '/([\d.]+) real\s+([\d.]+) user\s+([\d.]+) sys/' : '/PUPHPETEER_TIME ([\d.]+) ([\d.]+) ([\d.]+)/', $stderr, $time);
         if (!$hasTime) { throw new RuntimeException('Cannot parse /usr/bin/time output; inspect raw benchmark logs.'); }
-        return [...$measurement, 'extension_sha256' => $extensionHash, 'bundle_sha256' => $bundleHash, 'trial' => $trial, 'chrome' => $version, 'resources' => [
+        return [...$measurement, 'extension_version' => $extensionVersion, 'bundle_sha256' => $bundleHash, 'trial' => $trial, 'chrome' => $version, 'resources' => [
             'sampled_tree_peak_rss_bytes' => $peakRss,
             'sampled_steady_tree_peak_rss_bytes' => $steadyPeakRss,
             'sampled_steady_tree_cpu_ms' => $steadyCpu,
@@ -114,16 +113,14 @@ function runTrial(int $trial, string $extension): array
 
 try {
     if (!in_array(PHP_OS_FAMILY, ['Darwin', 'Linux'], true)) { throw new RuntimeException('Resource benchmark requires macOS or Linux with /usr/bin/time and ps.'); }
-    $extension = getenv('QUICKJS_EXTENSION');
-    if (!is_string($extension) || $extension === '' || !is_file($extension) || !is_readable($extension)) {
-        throw new RuntimeException('Set QUICKJS_EXTENSION to a readable extension file. See docs/quickjs.md.');
-    }
-    $trials = filter_var(getenv('BENCH_TRIALS') === false ? '5' : getenv('BENCH_TRIALS'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if ($trials === false) { throw new InvalidArgumentException('BENCH_TRIALS must be a positive integer.'); }
+    $options = getopt('', ['trials:', 'iterations:']);
+    $trials = filter_var($options['trials'] ?? '5', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $iterations = filter_var($options['iterations'] ?? '1000', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($trials === false || $iterations === false) { throw new InvalidArgumentException('--trials and --iterations must be positive integers'); }
     $runs = [];
         for ($trial = 0; $trial < $trials; $trial++) {
             echo 'Running quickjs ', $trial + 1, '/', $trials, "\n";
-            $run = runTrial($trial, $extension);
+            $run = runTrial($trial, $iterations);
             $runs[] = $run;
             echo json_encode([
                 'backend' => 'quickjs',

@@ -11,7 +11,7 @@ $browser = (new Puppeteer())->connect(['browserWSEndpoint' => $endpoint]);
 $context = $browser->createBrowserContext();
 try {
     $page = $context->newPage();
-    $page->goto(getenv('EXAMPLE_URL') ?: 'https://example.com');
+    $page->goto('https://example.com');
     print_r($page->evaluate(JsFunction::createWithBody('return {title: document.title, width: innerWidth};')));
 } finally {
     $context->close();
