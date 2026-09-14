@@ -210,9 +210,18 @@ async function call(request) {
     }
   }
 }
+let messageParts = [];
 globalThis.__quickjsDispatch = (kind, payload) => {
+  if (kind === 'messageChunk') { messageParts.push(payload); return; }
+  if (kind === 'messageEnd') {
+    const message = messageParts.join('');
+    messageParts = [];
+    transport.onmessage?.(message);
+    return;
+  }
   if (kind === 'message') { transport.onmessage?.(payload); return; }
   if (kind === 'closed') {
+    messageParts = [];
     transport.onclose?.();
     streams.close();
     for (const pending of callbacks.values()) pending.reject(new Error('PHP transport closed'));

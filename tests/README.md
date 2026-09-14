@@ -39,3 +39,39 @@ checks extraction/type mapping and upstream method/class removal, including read
 `composer psalm` checks `src/`, `tools/php/`, `tests/Generator/`, `tests/Unit/`,
 `tests/Integration/` and `tests/Support/` at level 3 without a baseline. The browser smoke script
 is executed separately and is not included in static analysis.
+
+## Large payload regressions and performance
+
+`tests/Integration/LargePayloadTest.php` uses the real shipped QuickJS bundle:
+indexed UTF-8 strings (including NUL and JSON escapes), all-byte binary data,
+PHP → JS → PHP round trips, 2 MiB boundary cases, 4/8/12 MiB results,
+32 MiB streams, uneven chunks and concurrent readers. Length and SHA-256 must
+match; chunks must not exceed 64 KiB. Stream lifecycle/fairness tests also cover
+cancellation, early close, producer failure and an event loop tick between reads.
+`tests/Browser/large-payload.php`, included in the browser suite, checks real
+`Page::content()` and `JsFunction` results, including concurrent responses.
+The fixture hides its large text to measure transport rather than text layout.
+
+The extension limits a single bridge value to 16 MiB **including conversion
+overhead**. Oversized results must fail explicitly, without silently truncating
+or poisoning the client. Streams can exceed that limit. Large incoming CDP JSON
+is delivered in UTF-8-safe chunks: escaped JSON may be larger than its result.
+This does not make `content()` / `evaluate()` streaming APIs: final JSON parsing
+and returning a whole string still require synchronous work and memory.
+
+```sh
+docker compose run --rm php php vendor/bin/phpunit tests/Integration/LargePayloadTest.php
+docker compose run --rm chrome php tests/Browser/large-payload.php
+docker compose run --rm chrome php benchmarks/payloads.php --sizes=4,8,12 --trials=3
+docker compose run --rm php php benchmarks/payloads.php --mode=stream --sizes=32 --trials=3
+```
+
+The dedicated benchmark reports mean time, PHP + embedded QuickJS CPU,
+throughput and maximum event loop delay measured with a 1 ms timer. Timing
+includes SHA-256 verification (incremental for streams); the PHP hash baseline
+separates verification cost from bridge overhead. Payload creation, browser
+startup and one warm-up per case are excluded. Chrome CPU is excluded. Use
+`--mode=bridge|browser|stream|all` and `--json` for machine-readable output on
+stdout. No benchmark artifacts are written. Compare runs on the same environment;
+absolute timing is deliberately not a CI assertion. The older 64 KiB benchmark
+remains unchanged for historical comparisons.

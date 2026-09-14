@@ -10,7 +10,10 @@ use Nesk\Puphpeteer\Internal\RemoteObjectFactory;
 use Amp\Websocket\Client\WebsocketConnection;
 use Revolt\EventLoop;
 use function Amp\async;
-use function Amp\Websocket\Client\connect;
+use Amp\Websocket\Client\Rfc6455Connector;
+use Amp\Websocket\Client\Rfc6455ConnectionFactory;
+use Amp\Websocket\Client\WebsocketHandshake;
+use Amp\Websocket\Parser\Rfc6455ParserFactory;
 
 /** @internal Async transport over upstream Puppeteer in QuickJS. Use Puppeteer as the public entry point. */
 final class Client
@@ -66,14 +69,24 @@ final class Client
             $timeout = $options['protocolTimeout'] ?? 180000;
             $this->protocolTimeout = $timeout > 0 ? (float) $timeout : null;
             $cancellation ??= $timeout > 0 ? new TimeoutCancellation($timeout / 1000) : null;
-            try { $socket = connect($endpoint, $cancellation); }
+            try {
+                // Match Puppeteer's Node transport without changing the application's global connector.
+                $connector = new Rfc6455Connector(
+                    connectionFactory: new Rfc6455ConnectionFactory(parserFactory: new Rfc6455ParserFactory(
+                        messageSizeLimit: 256 * 1024 * 1024,
+                        frameSizeLimit: 256 * 1024 * 1024,
+                    )),
+                    compressionContextFactory: null,
+                );
+                $socket = $connector->connect(new WebsocketHandshake($endpoint), $cancellation);
+            }
             catch (\Throwable $error) { $this->stop($error); throw $error; }
             if ($this->closed) { $socket->close(); throw new \RuntimeException('QuickJS client closed while connecting'); }
             $this->socket = $socket;
             async(function () use ($socket): void {
                 try {
                     while (!$this->closed && ($message = $socket->receive())) {
-                        $this->deliver('message', $message->buffer());
+                        $this->deliverMessage($message->buffer());
                     }
                     if (!$this->closed) { $this->stop(new \RuntimeException('Browser transport closed')); }
                 } catch (\Throwable $e) { $this->stop($e); }
@@ -113,6 +126,23 @@ final class Client
                 throw $error;
             }
         });
+    }
+
+    private function deliverMessage(string $message): void
+    {
+        $length = strlen($message);
+        if ($length <= 65536) { $this->deliver('message', $message); return; }
+        // CDP JSON can exceed the native single-value budget even when its decoded result fits.
+        for ($offset = 0; $offset < $length;) {
+            $end = min($length, $offset + 65536);
+            // Never split a UTF-8 sequence at the native string conversion boundary.
+            while ($end < $length && (ord($message[$end]) & 0xc0) === 0x80) { $end--; }
+            $this->deliver('messageChunk', substr($message, $offset, $end - $offset));
+            $offset = $end;
+            \Amp\delay(0);
+            if ($this->closed) { return; }
+        }
+        $this->deliver('messageEnd', null);
     }
 
     private function deliver(string $kind, mixed $payload): void
