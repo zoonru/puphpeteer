@@ -12,7 +12,7 @@ try {
     try {
         if (!mkdir($output, 0700)) { throw new RuntimeException('Cannot create example output directory'); }
         $root = dirname(__DIR__, 3);
-        $scripts = [__DIR__ . '/smoke.php', __DIR__ . '/plugins.php', __DIR__ . '/runtime-lifecycle.php', __DIR__ . '/streams.php', __DIR__ . '/large-payload.php', ...array_map(static fn(string $name): string => "$root/examples/$name.php", ['01_page_open', '02_page_screenshot', '04_form_intercept'])];
+        $scripts = [__DIR__ . '/smoke.php', __DIR__ . '/plugins.php', __DIR__ . '/runtime-lifecycle.php', __DIR__ . '/failure-boundaries.php', __DIR__ . '/streams.php', __DIR__ . '/large-payload.php', ...array_map(static fn(string $name): string => "$root/examples/$name.php", ['01_page_open', '02_page_screenshot', '04_form_intercept'])];
         foreach ($scripts as $script) {
             $child = Process::start([PHP_BINARY, $script], $output);
             $result = ProcessRunner::collect($child, 40, stream: true);

@@ -38,4 +38,36 @@ final class BrowserProcessTest extends TestCase
             if (is_dir($profile)) { rmdir($profile); }
         }
     }
+    public function testForcedShutdownKillsDescendantsAndRemovesTemporaryProfile(): void
+    {
+        $profile = sys_get_temp_dir() . '/puphpeteer-owned-test-' . bin2hex(random_bytes(8));
+        mkdir($profile, 0700);
+        file_put_contents($profile . '/Preferences', 'user data');
+        $process = Process::start([PHP_BINARY, '-r', <<<'CODE'
+            $child = proc_open([PHP_BINARY, '-r', 'sleep(60);'], [STDIN, STDOUT, STDERR], $pipes);
+            echo proc_get_status($child)['pid'], "\n";
+            sleep(60);
+            CODE]);
+        $reflection = new \ReflectionClass(BrowserProcess::class);
+        $browser = $reflection->newInstanceWithoutConstructor();
+        $reflection->getProperty('process')->setValue($browser, $process);
+        $reflection->getProperty('temporaryProfile')->setValue($browser, $profile);
+        try {
+            $pid = trim($process->getStdout()->read(new TimeoutCancellation(5)) ?? '');
+            self::assertGreaterThan(0, (int) $pid);
+            $start = hrtime(true);
+            $browser->close();
+            self::assertLessThan(12, (float) (hrtime(true) - $start) / 1e9);
+            self::assertFalse($process->isRunning());
+            $status = \Nesk\Puphpeteer\Tests\Support\Shared\ProcessRunner::collect(Process::start(['/bin/ps', '-o', 'stat=', '-p', $pid]), 5);
+            self::assertTrue(trim($status['stdout']) === '' || str_starts_with(trim($status['stdout']), 'Z'), 'Descendant still running');
+            self::assertDirectoryDoesNotExist($profile);
+        } finally {
+            if ($process->isRunning()) { $process->kill(); }
+            $process->join(new TimeoutCancellation(5));
+            if (is_file($profile . '/Preferences')) { unlink($profile . '/Preferences'); }
+            if (is_dir($profile)) { rmdir($profile); }
+        }
+    }
+
 }

@@ -22,6 +22,11 @@ class RemoteObject
             return null;
         }
         try { $result = $this->client->call($this->id, $method, $arguments)->await(); }
+        catch (Internal\TransportClosedException $error) {
+            // Chrome may close the socket before Puppeteer processes the close response (slowMo).
+            if (!$this instanceof Browser || $method !== 'close') { throw $error; }
+            $result = null;
+        }
         finally {
             if ($this instanceof Browser && $method === 'close') { $this->client->browserClosed(); }
             elseif ($this instanceof Browser && $method === 'disconnect') { $this->client->close(); }

@@ -96,7 +96,7 @@ final class BrowserProcess
                 // Let it finish before removing the profile; kill only an unresponsive process.
                 try { $this->process->join(new TimeoutCancellation(5)); }
                 catch (CancelledException) {
-                    if ($this->process->isRunning()) { $this->process->kill(); }
+                    if ($this->process->isRunning()) { $this->killProcessTree($this->process); }
                     $this->process->join(new TimeoutCancellation(5));
                 }
             }
@@ -108,6 +108,30 @@ final class BrowserProcess
                 $this->removeProfile($profile);
             }
         }
+    }
+
+    private function killProcessTree(Process $process): void
+    {
+        try {
+            if (PHP_OS_FAMILY === 'Windows') { return; }
+            $ps = Process::start(['/bin/ps', '-axo', 'pid=,ppid=']);
+            $rows = \Amp\ByteStream\buffer($ps->getStdout(), new TimeoutCancellation(5));
+            $ps->join(new TimeoutCancellation(5));
+            $parents = [];
+            foreach (explode("\n", $rows) as $row) {
+                if (preg_match('/^\s*(\d+)\s+(\d+)\s*$/', $row, $match)) { $parents[(int) $match[1]] = (int) $match[2]; }
+            }
+            $selected = [$process->getPid() => true];
+            do {
+                $changed = false;
+                foreach ($parents as $pid => $parent) {
+                    if (isset($selected[$parent]) && !isset($selected[$pid])) { $selected[$pid] = true; $changed = true; }
+                }
+            } while ($changed);
+            foreach (array_reverse(array_keys($selected)) as $pid) {
+                if ($pid !== $process->getPid()) { @posix_kill($pid, 9); }
+            }
+        } finally { $process->kill(); }
     }
 
     private function removeProfile(string $path): void

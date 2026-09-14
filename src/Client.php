@@ -95,7 +95,7 @@ final class Client
                     while (!$this->closed && ($message = $socket->receive())) {
                         $this->deliverMessage($message->buffer());
                     }
-                    if (!$this->closed) { $this->stop(new \RuntimeException('Browser transport closed')); }
+                    if (!$this->closed) { $this->stop(new Internal\TransportClosedException('Browser transport closed')); }
                 } catch (\Throwable $e) { $this->stop($e); }
             })->ignore();
             try {
