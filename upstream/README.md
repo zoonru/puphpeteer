@@ -13,16 +13,23 @@ PHP wrappers are fully regenerated; manual edits are overwritten. A single file
 header marks generator-owned wrappers. Removed upstream methods and classes are
 removed from PHP, while runtime files are left intact. `--check` reports pending
 deletions without deleting files. Stale config mappings are reported and ignored.
-The extracted catalog stays in memory. `coverage.json` reports every class
-member as generated or unsupported, including its reasons. These numbers measure
-PHP declarations, not runtime correctness or test coverage. Root exports are
-reported separately. No native-backend implementation or test exclusions carry over.
+The extracted catalog and coverage stay in memory. Generation prints summary counts; `--verbose` also prints diagnostics
+for unsupported declarations; no report or diagnostic baseline
+is saved. Unsupported PHP mappings are skipped with reasons. TypeScript syntax,
+resolution and type errors, invalid config and PHP emitter failures stop generation
+with a nonzero exit code before generated files are written.
 
 ## Contract limitations
 
 * Remote methods return resolved values, not Future. Promise<void> becomes void;
   undefined values become null. Parallel callers use Amp\async().
-* Read-only properties use typed PHP 8.4 getters through the same transport.
+* Properties use typed PHP 8.4 getters and, when writable, setters through the same transport.
+* Compatible overloads merge parameter and return types; incompatible parameter names,
+  generics or rest positions require explicit selection in config.
+* JS static methods use PHP instance methods on the same runtime. Use
+  `getStaticClass(Locator::class)->race($locators)` without constructing a Locator;
+  an existing Locator can call `race()` directly. Puppeteer exposes custom query
+  handler methods directly. Symbols remain unsupported.
 * Browser functions use `JsFunction`; host callbacks use `Closure`.
   `new JsFunction(source)` accepts JS source. Legacy factories `create`,
   `createWithBody`, `createWithParameters`, `createWithScope`, `createWithAsync`
@@ -41,9 +48,8 @@ reported separately. No native-backend implementation or test exclusions carry o
 * `$`, `$$`, `$eval`, `$$eval` use PHP names `querySelector`, `querySelectorAll`,
   `querySelectorEval`, `querySelectorAllEval` and retain the original JS method name.
 * Binary buffers become PHP strings. Readable streams become Amp readable streams.
-  Node process APIs, writable Node streams, writable properties, static methods
-  and unsupported TS types require later bridge work.
-* Unsupported declarations remain visible in the report. The dynamic runtime
+  Node process APIs, writable Node streams and unsupported TS types require later bridge work.
+* Unsupported declarations remain visible with `--verbose`. The dynamic runtime
   escape hatch is not evidence that these APIs are supported or tested.
 
 The framework reuses the TypeScript extractor and structural mapper from the
@@ -52,7 +58,7 @@ The framework reuses the TypeScript extractor and structural mapper from the
 Wrappers and the entry point live in `src/Puppeteer/`, under
 `Nesk\Puphpeteer\Puppeteer`. `JsFunction` and the transport remain in
 `Nesk\Puphpeteer`. `src/compatibility.php` is generated from the same class model:
-it preserves original direct imports, `Resources` imports, the old Puppeteer entry
-point and the Rialto JsFunction alias. Composer loads it through `autoload.files`.
+it preserves only `Nesk\Puphpeteer\Resources\…` imports. The Puppeteer entry
+point and JsFunction require their current namespaces. Composer loads it through `autoload.files`.
 Existing old classes are not replaced. Removing an upstream wrapper removes both
 its PHP file and aliases.

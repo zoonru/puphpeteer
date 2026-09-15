@@ -5,7 +5,7 @@
 
 <img src="https://user-images.githubusercontent.com/817508/100672192-dd258500-3361-11eb-845f-e8b5109752e4.png" style="max-width:100%;" width="190px" align="right">
 
-**English** | [Русский](README-RU.md)
+**English** | [Russian](README-RU.md)
 
 A [Puppeteer](https://github.com/puppeteer/puppeteer) bridge for PHP. Original Puppeteer runs inside the PHP process through **php-quickjs**; Amp handles WebSocket transport, timers and PHP callbacks. Browser operations do not require a Node.js process.
 
@@ -157,6 +157,25 @@ $divs = $page->querySelectorAll('div');
 $headings = $page->querySelectorAll('::-p-xpath(//h2)');
 ```
 
+### Static methods and properties
+
+Call JS static methods through an existing PHP object. Without an instance, `getStaticClass()` returns a typed constructor wrapper in the same QuickJS runtime:
+
+```php
+use Nesk\Puphpeteer\Puppeteer\Locator;
+
+$names = $puppeteer->customQueryHandlerNames();
+$page = $browser->newPage();
+$page->getStaticClass(Locator::class)
+    ->race([$page->locator('#accept'), $page->locator('#continue')])
+    ->click();
+// With an existing Locator: $locator->race([$locator, $other])->click();
+```
+
+The getter is also available on `$puppeteer`: before `launch()`/`connect()` it creates the next connection's runtime; afterwards it uses the latest connection. Do not mix objects from different connections. Use `$browser` or `$page` to select a specific browser's runtime.
+
+Read and assign properties directly (`$object->property = $value`) when upstream permits writing. IDEs see typed PHP 8.4 property hooks. Compatible overloads are merged; Symbol methods and Symbol events remain unsupported.
+
 ### JavaScript functions use JsFunction
 
 Pass a complete function source, or build it using the compatible factories:
@@ -260,38 +279,31 @@ present in the registry. This is build-time dependency resolution: runtime
 
 ### Compatibility limits
 
-- The adapter currently supports CDP Chrome, including browser contexts, existing
-  targets, frames and popups. New client-created pages await `onPageCreated`.
-  Scripts registered with `evaluateOnNewDocument()` cover future navigations and
-  child frames. Existing documents are not reinjected automatically.
-- Popups created by page JavaScript can execute their first document before
-  `targetcreated` handlers finish. This also affects event-based puppeteer-extra
-  integration. Obtain the popup page and navigate after the page is returned if
-  injection must precede document scripts. Do not assume first-popup-document
-  coverage or retroactive modification of already running scripts.
-- Stealth's `user-agent-override` normally depends on a Node plugin that writes
-  Chrome profile preferences. Here the upstream CDP `acceptLanguage` override is
-  enabled for headful and headless browsers. The profile Preferences file is not
-  modified. Locale persistence and HTTP header ordering can differ from the
-  Node implementation.
-- Hook failures during requested operations propagate to PHP. Background target
-  or close hook failures are retained and surfaced by the next client operation.
-  Closing an already closed target during initialization is normal teardown.
-  `close()` and `disconnect()` remain available after plugin failures.
-  User-supplied plugins must return/await their asynchronous work.
-- Browser-side stealth patches evolve independently of Chrome. The integration
-  tests verify concrete properties and lifecycle behavior; they do not promise
-  that a website cannot detect automation.
+1. **Plugins work with Chrome over CDP.** Firefox and the WebDriver BiDi protocol are not supported. For example, use `launch(['headless' => true])` to start Chrome or `connect(['browserWSEndpoint' => $url])` to connect to a Chrome CDP endpoint. A Firefox endpoint will not work.
+
+2. **Page patches take effect when a document loads.** `newPage()` waits for the plugin's `onPageCreated()` handler, so a following `goto()` loads the document with its registered patches. Connecting to an already open page does not change scripts that have already run. For example, if a page read `navigator.webdriver` before you connected with stealth, that earlier result remains unchanged. Reload the page to apply scripts registered with `evaluateOnNewDocument()` to a new document.
+
+3. **The first popup document may load before the plugin is ready.** A site's `window.open('/check')` can run `/check` scripts before stealth finishes preparing the popup. If those scripts need the patches from the start, obtain the popup page and then navigate it to `/check` again. This affects the new load; it does not undo checks or requests from the first load.
+
+4. **Language overrides apply to the browser connection, not saved profile settings.** For example, `use('stealth/evasions/user-agent-override', ['locale' => 'de-DE,de'])` configures the language through CDP in both headless and visible Chrome. It does not write that language to the profile's `Preferences` file: relaunching the same profile without the plugin does not preserve this setting. The order of HTTP headers may also differ from puppeteer-extra running in Node.js.
+
+5. **A plugin error becomes a PHP exception, sometimes on the next call.** For example, if `onPageCreated()` fails while you call `$browser->newPage()`, that call throws. If a hook fails in the background when a popup appears, the next client operation can throw even though it did not create the popup. Keep browser cleanup in `finally`: `close()` and `disconnect()` remain available after plugin failures. A target disappearing during initialization because its page closed is treated as normal cleanup.
+
+6. **Custom plugins must await their asynchronous work.** For example, write `async onPageCreated(page) { await page.evaluateOnNewDocument(patch); }`. If the handler starts that operation but neither awaits nor returns its Promise, `newPage()` can return before the patch is registered, and the adapter cannot reliably report its later failure.
+
+7. **Stealth does not guarantee that a website will accept the browser as human.** For example, hiding `navigator.webdriver` does not prevent a site from showing a CAPTCHA based on the IP address or repeated requests. Our tests check particular browser properties and plugin execution; they do not certify that automation is undetectable.
 
 ## IDE support and API generation
 
 Real PHP classes, methods, property getters, signatures and PHPDoc are generated from the pinned Puppeteer declarations. PhpStorm completion works directly from these classes; Psalm checks their types. JS Promise return types become their resolved PHP types.
 
-Coverage is partial: see [the coverage report](upstream/coverage.json) for skipped declarations and [the generator contract](upstream/README.md) for type limitations. Declaration coverage does not establish runtime support for every method.
+Coverage is partial: generation prints skipped declarations and their reasons only with `--verbose`; see [the generator contract](upstream/README.md) for type limitations. Parsing and TypeScript errors stop generation before files are written.
 
 ```sh
 docker compose run --rm php composer update-php
 docker compose run --rm php composer verify-php
+# Show reasons for skipped declarations
+docker compose run --rm php composer update-php -- --verbose
 ```
 
 The first command regenerates wrappers and compatibility aliases; the second checks them without changing files. Manual edits to generated files are overwritten. Classes, methods and aliases removed from upstream also disappear from the generated output.
@@ -300,7 +312,7 @@ The first command regenerates wrappers and compatibility aliases; the second che
 
 Install PHP 8.4+, the compatible QuickJS extension and Chrome as described above. Node.js is only needed for development.
 
-Composer loads **best-effort aliases**, so existing imports can remain. For new code use:
+Composer loads **best-effort aliases only for `Nesk\Puphpeteer\Resources\…`**. Update the `Puppeteer` and `JsFunction` imports; for new code use:
 
 | v2 import | Current import |
 | --- | --- |
