@@ -55,6 +55,38 @@ class RemoteObject
         return $result;
     }
 
+    /**
+     * @template T of RemoteObject
+     *
+     * @param class-string<T> $class
+     *
+     * @return T
+     */
+    public function getStaticClass(string $class): RemoteObject
+    {
+        $this->assertLive();
+
+        return $this->client->getStaticClass($class);
+    }
+
+    protected function invokeStaticRemote(string $method, array $arguments): mixed
+    {
+        $this->assertLive();
+
+        return $this->client->call($this->id, $method, $arguments, 'static')->await();
+    }
+
+    public function __set(string $name, mixed $value): void
+    {
+        $this->setRemote($name, $value);
+    }
+
+    protected function setRemote(string $name, mixed $value): void
+    {
+        $this->assertLive();
+        $this->client->call($this->id, $name, [$value], 'set')->await();
+    }
+
     /** @internal @psalm-mutation-free */
     public function remoteId(): int
     {

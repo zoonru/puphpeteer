@@ -41,7 +41,7 @@ final class Request
                 }
                 self::strings($member, ['id', 'name', 'kind']);
                 self::optionalStrings($member, ['returnType', 'returnDocType', 'type', 'docType', 'jsName']);
-                self::booleans($member, ['static']);
+                self::booleans($member, ['static', 'remoteStatic', 'writable']);
                 self::lines($member);
                 self::templates($member);
                 $parameters = $member['parameters'] ?? [];

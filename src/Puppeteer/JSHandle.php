@@ -41,6 +41,11 @@ class JSHandle extends RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
 
+    public function move(): JSHandle
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
     public function toString(): string
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());

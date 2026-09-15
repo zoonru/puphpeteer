@@ -1,3 +1,4 @@
+import './abort-controller.js';
 import {ReadableStream} from 'web-streams-polyfill';
 
 globalThis.ReadableStream = ReadableStream;

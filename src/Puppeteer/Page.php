@@ -55,6 +55,14 @@ class Page extends RemoteObject
     }
 
     /**
+     * @param array{content?: string, path?: string}|array{content?: string, path?: string, url?: string} $options
+     */
+    public function addStyleTag(array $options): ElementHandle
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
+    /**
      * @param array{password: string, username: string}|null $credentials
      */
     public function authenticate(?array $credentials): void
@@ -86,7 +94,7 @@ class Page extends RemoteObject
     }
 
     /**
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
      */
     public function click(string $selector, ?array $options = null): void
     {
@@ -326,6 +334,11 @@ class Page extends RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
 
+    public function locator(string|JsFunction $selector): Locator
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
     public function mainFrame(): Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
@@ -415,7 +428,7 @@ class Page extends RemoteObject
     }
 
     /**
-     * @param (array{optimizeForSpeed?: bool, type?: "png"|"jpeg"|"webp", quality?: int|float, fromSurface?: bool, fullPage?: bool, omitBackground?: bool, path?: string, clip?: array{height: int|float, scale?: int|float, width: int|float, x: int|float, y: int|float}, encoding?: "base64"|"binary", captureBeyondViewport?: bool})|null $options
+     * @param (array{optimizeForSpeed?: bool, type?: "webp"|"jpeg"|"png", quality?: int|float, fromSurface?: bool, fullPage?: bool, omitBackground?: bool, path?: string, clip?: array{height: int|float, scale?: int|float, width: int|float, x: int|float, y: int|float}, encoding?: "base64"|"binary", captureBeyondViewport?: bool})|null $options
      */
     public function screenshot(?array $options = null): string
     {

@@ -93,7 +93,7 @@ class BrowserContext extends RemoteObject
     }
 
     /**
-     * @param list<"accelerometer"|"ambient-light-sensor"|"background-sync"|"camera"|"clipboard-read"|"clipboard-sanitized-write"|"clipboard-write"|"geolocation"|"gyroscope"|"idle-detection"|"keyboard-lock"|"magnetometer"|"microphone"|"midi-sysex"|"midi"|"notifications"|"payment-handler"|"persistent-storage"|"pointer-lock"> $permissions
+     * @param list<"camera"|"geolocation"|"microphone"|"midi"|"notifications"|"persistent-storage"|"accelerometer"|"gyroscope"|"magnetometer"|"ambient-light-sensor"|"clipboard-read"|"clipboard-write"|"idle-detection"|"background-sync"|"clipboard-sanitized-write"|"keyboard-lock"|"midi-sysex"|"payment-handler"|"pointer-lock"> $permissions
      */
     public function overridePermissions(string $origin, array $permissions): void
     {
@@ -127,7 +127,7 @@ class BrowserContext extends RemoteObject
     }
 
     /**
-     * @param array{permission: array{allowWithoutSanitization?: bool, name: string, panTiltZoom?: bool, sysex?: bool, userVisibleOnly?: bool}, state: "granted"|"denied"|"prompt"} ...$permissions
+     * @param array{permission: array{allowWithoutSanitization?: bool, name: string, panTiltZoom?: bool, sysex?: bool, userVisibleOnly?: bool}, state: "denied"|"granted"|"prompt"} ...$permissions
      */
     public function setPermission(string $origin, mixed ...$permissions): void
     {

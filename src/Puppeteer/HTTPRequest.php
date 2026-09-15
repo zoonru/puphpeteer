@@ -12,7 +12,7 @@ use Nesk\Puphpeteer\RemoteObject;
 class HTTPRequest extends RemoteObject
 {
     /**
-     * @param ("aborted"|"accessdenied"|"addressunreachable"|"blockedbyclient"|"blockedbyresponse"|"connectionaborted"|"connectionclosed"|"connectionfailed"|"connectionrefused"|"connectionreset"|"internetdisconnected"|"namenotresolved"|"timedout"|"failed")|null $errorCode
+     * @param ("failed"|"aborted"|"accessdenied"|"addressunreachable"|"blockedbyclient"|"blockedbyresponse"|"connectionaborted"|"connectionclosed"|"connectionfailed"|"connectionrefused"|"connectionreset"|"internetdisconnected"|"namenotresolved"|"timedout")|null $errorCode
      * @param (int|float)|null                                                                                                                                                                                                                                        $priority
      */
     public function abort(?string $errorCode = null, int|float|null $priority = null): void
@@ -131,7 +131,7 @@ class HTTPRequest extends RemoteObject
     }
 
     /**
-     * @return "script"|"image"|"document"|"stylesheet"|"media"|"font"|"texttrack"|"xhr"|"fetch"|"prefetch"|"eventsource"|"websocket"|"manifest"|"signedexchange"|"ping"|"cspviolationreport"|"preflight"|"fedcm"|"other"
+     * @return "media"|"other"|"font"|"script"|"image"|"document"|"manifest"|"fetch"|"ping"|"preflight"|"xhr"|"eventsource"|"prefetch"|"stylesheet"|"texttrack"|"websocket"|"signedexchange"|"cspviolationreport"|"fedcm"
      */
     public function resourceType(): string
     {

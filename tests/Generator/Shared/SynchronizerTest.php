@@ -6,6 +6,7 @@ namespace Nesk\Puphpeteer\Tests\Generator\Shared;
 
 use Override;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use Zoon\Puphpeteer\Tooling\Synchronizer;
 
 /** @psalm-import-type ClassSpec from Synchronizer */
@@ -94,7 +95,52 @@ final class SynchronizerTest extends TestCase
         ], $object->calls);
         $repeat = (new Synchronizer())->synchronize($this->root, [$this->fixture()]);
         self::assertSame([], $repeat['diagnostics']);
-        self::assertFalse($repeat['files'][0]['changed']);
+        self::assertSame($content, $repeat['files'][0]['content']);
+    }
+
+    public function testWritableHooksAndStaticRoutingExecuteGeneratedCode(): void
+    {
+        $spec = ['name' => 'MutableFixture', 'fqcn' => __NAMESPACE__ . '\\MutableFixture', 'file' => 'src/MutableFixture.php', 'members' => [
+            ['id' => 'MutableFixture.value', 'name' => 'value', 'kind' => 'property', 'type' => 'int', 'writable' => true],
+            ['id' => 'MutableFixture::size', 'name' => 'size', 'kind' => 'method', 'remoteStatic' => true, 'returnType' => 'int'],
+        ]];
+        $result = (new Synchronizer())->synchronize($this->root, [$spec]);
+        self::assertSame([], $result['diagnostics']);
+        file_put_contents($this->root . '/src/MutableFixture.php', $result['files'][0]['content']);
+        require $this->root . '/src/MutableFixture.php';
+        $object = new class extends MutableFixture {
+            private int $stored = 1;
+
+            /** @psalm-mutation-free */
+            public function __construct()
+            {
+            }
+
+            /** @psalm-mutation-free */
+            #[Override]
+            protected function getRemote(string $name): mixed
+            {
+                return $this->stored;
+            }
+
+            /** @psalm-external-mutation-free */
+            #[Override]
+            protected function setRemote(string $name, mixed $value): void
+            {
+                $this->stored = $value;
+            }
+
+            /** @psalm-pure */
+            #[Override]
+            protected function invokeStaticRemote(string $method, array $arguments): mixed
+            {
+                return 42;
+            }
+        };
+        self::assertSame(1, $object->value);
+        $object->value = 7;
+        self::assertSame(7, (new ReflectionProperty($object, 'value'))->getValue($object));
+        self::assertSame(42, $object->size());
     }
 
     public function testRegeneratesWholeClassIncludingManualEdits(): void

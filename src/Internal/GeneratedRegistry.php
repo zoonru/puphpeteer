@@ -8,6 +8,7 @@ use Nesk\Puphpeteer\Puppeteer\Accessibility;
 use Nesk\Puphpeteer\Puppeteer\Browser;
 use Nesk\Puphpeteer\Puppeteer\BrowserContext;
 use Nesk\Puphpeteer\Puppeteer\CDPSession;
+use Nesk\Puphpeteer\Puppeteer\Connection;
 use Nesk\Puphpeteer\Puppeteer\ConsoleMessage;
 use Nesk\Puphpeteer\Puppeteer\Coverage;
 use Nesk\Puphpeteer\Puppeteer\Dialog;
@@ -18,6 +19,7 @@ use Nesk\Puphpeteer\Puppeteer\HTTPRequest;
 use Nesk\Puphpeteer\Puppeteer\HTTPResponse;
 use Nesk\Puphpeteer\Puppeteer\JSHandle;
 use Nesk\Puphpeteer\Puppeteer\Keyboard;
+use Nesk\Puphpeteer\Puppeteer\Locator;
 use Nesk\Puphpeteer\Puppeteer\Mouse;
 use Nesk\Puphpeteer\Puppeteer\Page;
 use Nesk\Puphpeteer\Puppeteer\SecurityDetails;
@@ -40,6 +42,7 @@ final class GeneratedRegistry
         'Browser' => Browser::class,
         'BrowserContext' => BrowserContext::class,
         'CDPSession' => CDPSession::class,
+        'Connection' => Connection::class,
         'ConsoleMessage' => ConsoleMessage::class,
         'Coverage' => Coverage::class,
         'Dialog' => Dialog::class,
@@ -50,6 +53,7 @@ final class GeneratedRegistry
         'HTTPResponse' => HTTPResponse::class,
         'JSHandle' => JSHandle::class,
         'Keyboard' => Keyboard::class,
+        'Locator' => Locator::class,
         'Mouse' => Mouse::class,
         'Page' => Page::class,
         'SecurityDetails' => SecurityDetails::class,

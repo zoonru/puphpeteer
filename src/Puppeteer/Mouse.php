@@ -11,7 +11,7 @@ use Nesk\Puphpeteer\RemoteObject;
 class Mouse extends RemoteObject
 {
     /**
-     * @param (array{delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
+     * @param (array{delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
      */
     public function click(int|float $x, int|float $y, ?array $options = null): void
     {
@@ -19,7 +19,7 @@ class Mouse extends RemoteObject
     }
 
     /**
-     * @param (array{button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
+     * @param (array{button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
      */
     public function down(?array $options = null): void
     {
@@ -88,7 +88,7 @@ class Mouse extends RemoteObject
     }
 
     /**
-     * @param (array{button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
+     * @param (array{button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
      */
     public function up(?array $options = null): void
     {

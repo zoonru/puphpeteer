@@ -5,18 +5,21 @@ import {PluginAdapter} from './plugins/adapter.js';
 import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
-  Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
+  Connection, Locator, Puppeteer, Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
 } from 'puppeteer-core/lib/puppeteer/puppeteer-core-browser.js';
 
 // Public prototype identity survives bundler renaming and implementation subclasses.
 // Walk nearest-first so ElementHandle retains its more specific type than JSHandle.
-const publicTypes = new Map(Object.entries({
+const publicConstructors = {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
-  Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
-}).map(([name, type]) => [type.prototype, name]));
+  Connection, Locator, Puppeteer, Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
+};
+const constructorNames = new Map(Object.entries(publicConstructors).map(([name, type]) => [type, name]));
+const publicTypes = new Map(Object.entries(publicConstructors).map(([name, type]) => [type.prototype, name]));
 const remoteClasses = new WeakMap();
 function remoteClass(value) {
+  if (constructorNames.has(value)) return constructorNames.get(value);
   const cached = remoteClasses.get(value);
   if (cached !== undefined) return cached;
   let name;
@@ -87,7 +90,7 @@ function encode(value, ancestors) {
     if (Object.is(value, -0)) return {$quickjs: 'number', value: '-0'};
     return value;
   }
-  if (type !== 'object' || value === null) return value;
+  if ((type !== 'object' && !constructorNames.has(value)) || value === null) return value;
   if (value instanceof Uint8Array) return {$quickjs: 'bytes', value};
   if (value instanceof ReadableStream) return streams.encode(value);
   const prototype = Object.getPrototypeOf(value);
@@ -166,9 +169,23 @@ async function call(request) {
   if (method === 'connect' && request.object === 0) {
     return plugins.connect(puppeteer, decode(request.args[0] || {}), transport);
   }
-  const object = objects.get(request.object);
+  if (request.object === 0 && method === 'staticClass') {
+    const constructor = publicConstructors[request.args[0]];
+    if (!Object.hasOwn(publicConstructors, request.args[0])) throw new Error('Unknown public constructor');
+    return constructor;
+  }
+  if (request.object === 0 && request.operation === 'static') {
+    if (!['registerCustomQueryHandler', 'unregisterCustomQueryHandler', 'customQueryHandlerNames', 'clearCustomQueryHandlers'].includes(method)) throw new Error('Unknown Puppeteer static method');
+    return Reflect.apply(Puppeteer[method], Puppeteer, request.args.map(item => decode(item)));
+  }
+  let object = objects.get(request.object);
   if (!object) throw new Error(`Unknown remote object ${request.object}`);
+  if (request.operation === 'static') object = publicConstructors[remoteClass(object)];
   if (request.operation === 'get') return object[method];
+  if (request.operation === 'set') {
+    if (!Reflect.set(object, method, decode(request.args[0]))) throw new TypeError(`Property is not writable: ${method}`);
+    return undefined;
+  }
   const fn = object[method];
   if (typeof fn !== 'function') throw new Error(`Not a method: ${request.method}`);
   const [event, handler] = request.args;

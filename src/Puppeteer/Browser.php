@@ -49,7 +49,7 @@ class Browser extends RemoteObject
     }
 
     /**
-     * @param (array{downloadBehavior?: array{downloadPath?: string, policy: "deny"|"allow"|"allowAndName"|"default"}, proxyBypassList?: list<string>, proxyServer?: string})|null $options
+     * @param (array{downloadBehavior?: array{downloadPath?: string, policy: "default"|"allow"|"deny"|"allowAndName"}, proxyBypassList?: list<string>, proxyServer?: string})|null $options
      */
     public function createBrowserContext(?array $options = null): BrowserContext
     {
@@ -109,7 +109,7 @@ class Browser extends RemoteObject
     }
 
     /**
-     * @param array{displayMode?: "standalone"|"browser", installUrlOrBundleUrl: string, manifestId: string} $options
+     * @param array{displayMode?: "browser"|"standalone", installUrlOrBundleUrl: string, manifestId: string} $options
      */
     public function installPWA(array $options): string
     {
@@ -195,7 +195,7 @@ class Browser extends RemoteObject
     }
 
     /**
-     * @param array{permission: array{allowWithoutSanitization?: bool, name: string, panTiltZoom?: bool, sysex?: bool, userVisibleOnly?: bool}, state: "granted"|"denied"|"prompt"} ...$permissions
+     * @param array{permission: array{allowWithoutSanitization?: bool, name: string, panTiltZoom?: bool, sysex?: bool, userVisibleOnly?: bool}, state: "denied"|"granted"|"prompt"} ...$permissions
      */
     public function setPermission(string $origin, mixed ...$permissions): void
     {

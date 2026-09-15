@@ -40,6 +40,12 @@ try {
         }, $pages));
         $page = $pages[0];
         check('PuPHPeteer example' === $page->title(), 'Navigation/title');
+        $style = $page->addStyleTag(['content' => ':root { --bridge-style: page; }']);
+        check($style instanceof ElementHandle && 'STYLE' === $style->evaluate(new JS('element => element.tagName')), 'Page.addStyleTag content overload');
+        $link = $page->mainFrame()->addStyleTag(['url' => 'data:text/css,:root{--bridge-style:frame}']);
+        check($link instanceof ElementHandle && 'LINK' === $link->evaluate(new JS('element => element.tagName')), 'Frame.addStyleTag URL overload');
+        check('frame' === $page->evaluate('getComputedStyle(document.documentElement).getPropertyValue("--bridge-style").trim()'), 'Injected stylesheet applied');
+
         check(42 === $page->evaluate(new JS('(a,b) => a+b'), 20, 22), 'Raw JsFunction');
         check('PuPHPeteer example' === $page->evaluate(JS::createWithBody('return document.title;')), 'Old JsFunction factory');
         check(42 === $page->evaluate(JS::createWithParameters(['a', 'b' => 2])->scope(['offset' => 3])->body('return a+b+offset;')->async(), 37), 'Factory defaults/scope/async');

@@ -22,7 +22,7 @@ use SplFileInfo;
  *
  * @psalm-type Parameter = array{name:string,type?:string,docType?:string,optional?:bool,default?:mixed,variadic?:bool}
  * @psalm-type Template = array{name:string,constraint?:string,default?:string}
- * @psalm-type Member = array{id:string,name:string,kind:string,jsName?:string,static?:bool,parameters?:list<Parameter>,returnType?:string,returnDocType?:string,type?:string,docType?:string,generatedDocLines?:list<string>,templates?:list<Template>}
+ * @psalm-type Member = array{id:string,name:string,kind:string,jsName?:string,static?:bool,remoteStatic?:bool,writable?:bool,parameters?:list<Parameter>,returnType?:string,returnDocType?:string,type?:string,docType?:string,generatedDocLines?:list<string>,templates?:list<Template>}
  * @psalm-type ClassSpec = array{name:string,fqcn:string,file:string,extends?:string,members:list<Member>,generatedDocLines?:list<string>,templates?:list<Template>}
  * @psalm-type Diagnostic = array{code:string,componentId:string,symbolId:string,phpPath:string,phpLine:int,expected:mixed,actual:mixed}
  */
@@ -162,7 +162,8 @@ final class Synchronizer
         if ('property' === $member['kind']) {
             $name = $member['name'];
             $type = $this->type($member['type'] ?? 'mixed');
-            $nodes = $this->parser->parse('<?php class GeneratedDeclaration { public ' . $type . ' $' . $name . ' { get { return $this->getRemote(' . var_export($name, true) . '); } } }');
+            $setter = ($member['writable'] ?? false) ? ' set { $this->setRemote(' . var_export($name, true) . ', $value); }' : '';
+            $nodes = $this->parser->parse('<?php class GeneratedDeclaration { public ' . $type . ' $' . $name . ' { get { return $this->getRemote(' . var_export($name, true) . '); }' . $setter . ' } }');
             $property = $nodes[0]->stmts[0] ?? null;
             if (!$property instanceof Stmt\Property) {
                 throw new RuntimeException('Invalid generated property');
@@ -203,7 +204,8 @@ final class Synchronizer
         $jsName = $member['jsName'] ?? $member['name'];
         $method = $jsName === $member['name'] ? '__FUNCTION__' : var_export($jsName, true);
         $returnType = $this->type($member['returnType'] ?? 'mixed');
-        $body = ('void' === $returnType ? '' : 'return ') . '$this->invokeRemote(' . $method . ', ' . $args . ');';
+        $invoke = ($member['remoteStatic'] ?? false) ? 'invokeStaticRemote' : 'invokeRemote';
+        $body = ('void' === $returnType ? '' : 'return ') . '$this->' . $invoke . '(' . $method . ', ' . $args . ');';
         $declaration = 'public function ' . $member['name'] . '(' . implode(', ', $parameters) . '): ' . $returnType . ' { ' . $body . ' }';
         $nodes = $this->parser->parse('<?php class GeneratedDeclaration { ' . $declaration . ' }');
         if (null === $nodes || !$nodes[0] instanceof Stmt\Class_) {

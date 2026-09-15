@@ -45,6 +45,11 @@ class ElementHandle extends JSHandle
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
 
+    public function asLocator(): Locator
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
     public function backendNodeId(): int|float
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
@@ -67,7 +72,7 @@ class ElementHandle extends JSHandle
     }
 
     /**
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
      */
     public function click(?array $options = null): void
     {
@@ -80,6 +85,14 @@ class ElementHandle extends JSHandle
      * @return array{x: int|float, y: int|float}
      */
     public function clickablePoint(?array $offset = null): array
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
+    /**
+     * @return Frame|Frame|null
+     */
+    public function contentFrame(): ?Frame
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
@@ -181,8 +194,14 @@ class ElementHandle extends JSHandle
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
 
+    #[Override]
+    public function move(): ElementHandle
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
     /**
-     * @param "*"|" "|"\n"|"\r"|"a"|"b"|"i"|"p"|"q"|"s"|"u"|"g"|"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"Power"|"Eject"|"Abort"|"Help"|"Backspace"|"Tab"|"Numpad5"|"NumpadEnter"|"Enter"|"ShiftLeft"|"ShiftRight"|"ControlLeft"|"ControlRight"|"AltLeft"|"AltRight"|"Pause"|"CapsLock"|"Escape"|"Convert"|"NonConvert"|"Space"|"Numpad9"|"PageUp"|"Numpad3"|"PageDown"|"End"|"Numpad1"|"Home"|"Numpad7"|"ArrowLeft"|"Numpad4"|"Numpad8"|"ArrowUp"|"ArrowRight"|"Numpad6"|"Numpad2"|"ArrowDown"|"Select"|"Open"|"PrintScreen"|"Insert"|"Numpad0"|"Delete"|"NumpadDecimal"|"Digit0"|"Digit1"|"Digit2"|"Digit3"|"Digit4"|"Digit5"|"Digit6"|"Digit7"|"Digit8"|"Digit9"|"KeyA"|"KeyB"|"KeyC"|"KeyD"|"KeyE"|"KeyF"|"KeyG"|"KeyH"|"KeyI"|"KeyJ"|"KeyK"|"KeyL"|"KeyM"|"KeyN"|"KeyO"|"KeyP"|"KeyQ"|"KeyR"|"KeyS"|"KeyT"|"KeyU"|"KeyV"|"KeyW"|"KeyX"|"KeyY"|"KeyZ"|"MetaLeft"|"MetaRight"|"ContextMenu"|"NumpadMultiply"|"NumpadAdd"|"NumpadSubtract"|"NumpadDivide"|"F1"|"F2"|"F3"|"F4"|"F5"|"F6"|"F7"|"F8"|"F9"|"F10"|"F11"|"F12"|"F13"|"F14"|"F15"|"F16"|"F17"|"F18"|"F19"|"F20"|"F21"|"F22"|"F23"|"F24"|"NumLock"|"ScrollLock"|"AudioVolumeMute"|"AudioVolumeDown"|"AudioVolumeUp"|"MediaTrackNext"|"MediaTrackPrevious"|"MediaStop"|"MediaPlayPause"|"Semicolon"|"Equal"|"NumpadEqual"|"Comma"|"Minus"|"Period"|"Slash"|"Backquote"|"BracketLeft"|"Backslash"|"BracketRight"|"Quote"|"AltGraph"|"Props"|"Cancel"|"Clear"|"Shift"|"Control"|"Alt"|"Accept"|"ModeChange"|"Print"|"Execute"|"\u0000"|"c"|"d"|"e"|"f"|"h"|"j"|"k"|"l"|"m"|"n"|"o"|"r"|"t"|"v"|"w"|"x"|"y"|"z"|"Meta"|"+"|"-"|"/"|";"|"="|","|"."|"`"|"["|"\\"|"]"|"'"|"Attn"|"CrSel"|"ExSel"|"EraseEof"|"Play"|"ZoomOut"|")"|"!"|"@"|"#"|"$"|"%"|"^"|"&"|"("|"A"|"B"|"C"|"D"|"E"|"F"|"G"|"H"|"I"|"J"|"K"|"L"|"M"|"N"|"O"|"P"|"Q"|"R"|"S"|"T"|"U"|"V"|"W"|"X"|"Y"|"Z"|":"|"<"|"_"|">"|"?"|"~"|"{"|"|"|"}"|"\""|"SoftLeft"|"SoftRight"|"Camera"|"Call"|"EndCall"|"VolumeDown"|"VolumeUp" $key
+     * @param "Q"|"d"|"r"|"x"|"y"|"a"|"b"|"i"|"p"|"q"|"s"|"u"|"g"|"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"Accept"|"f"|"A"|"\\"|"/"|";"|":"|"C"|"L"|"O"|"Meta"|" "|"\n"|"\r"|">"|"~"|"+"|"c"|"e"|"h"|"l"|"n"|"o"|"t"|"v"|"w"|"\""|"'"|"*"|"j"|"k"|"m"|"z"|"D"|"R"|"X"|"Y"|"B"|"I"|"P"|"S"|"U"|"G"|"F"|"E"|"H"|"N"|"T"|"V"|"W"|"J"|"K"|"M"|"Z"|"-"|"_"|"Power"|"Eject"|"Abort"|"Help"|"Backspace"|"Tab"|"Numpad5"|"NumpadEnter"|"Enter"|"ShiftLeft"|"ShiftRight"|"ControlLeft"|"ControlRight"|"AltLeft"|"AltRight"|"Pause"|"CapsLock"|"Escape"|"Convert"|"NonConvert"|"Space"|"Numpad9"|"PageUp"|"Numpad3"|"PageDown"|"End"|"Numpad1"|"Home"|"Numpad7"|"ArrowLeft"|"Numpad4"|"Numpad8"|"ArrowUp"|"ArrowRight"|"Numpad6"|"Numpad2"|"ArrowDown"|"Select"|"Open"|"PrintScreen"|"Insert"|"Numpad0"|"Delete"|"NumpadDecimal"|"Digit0"|"Digit1"|"Digit2"|"Digit3"|"Digit4"|"Digit5"|"Digit6"|"Digit7"|"Digit8"|"Digit9"|"KeyA"|"KeyB"|"KeyC"|"KeyD"|"KeyE"|"KeyF"|"KeyG"|"KeyH"|"KeyI"|"KeyJ"|"KeyK"|"KeyL"|"KeyM"|"KeyN"|"KeyO"|"KeyP"|"KeyQ"|"KeyR"|"KeyS"|"KeyT"|"KeyU"|"KeyV"|"KeyW"|"KeyX"|"KeyY"|"KeyZ"|"MetaLeft"|"MetaRight"|"ContextMenu"|"NumpadMultiply"|"NumpadAdd"|"NumpadSubtract"|"NumpadDivide"|"F1"|"F2"|"F3"|"F4"|"F5"|"F6"|"F7"|"F8"|"F9"|"F10"|"F11"|"F12"|"F13"|"F14"|"F15"|"F16"|"F17"|"F18"|"F19"|"F20"|"F21"|"F22"|"F23"|"F24"|"NumLock"|"ScrollLock"|"AudioVolumeMute"|"AudioVolumeDown"|"AudioVolumeUp"|"MediaTrackNext"|"MediaTrackPrevious"|"MediaStop"|"MediaPlayPause"|"Semicolon"|"Equal"|"NumpadEqual"|"Comma"|"Minus"|"Period"|"Slash"|"Backquote"|"BracketLeft"|"Backslash"|"BracketRight"|"Quote"|"AltGraph"|"Props"|"Cancel"|"Clear"|"Shift"|"Control"|"Alt"|"ModeChange"|"Print"|"Execute"|"\u0000"|"="|","|"."|"`"|"["|"]"|"Attn"|"CrSel"|"ExSel"|"EraseEof"|"Play"|"ZoomOut"|")"|"!"|"@"|"#"|"$"|"%"|"^"|"&"|"("|"<"|"?"|"{"|"|"|"}"|"SoftLeft"|"SoftRight"|"Camera"|"Call"|"EndCall"|"VolumeDown"|"VolumeUp" $key
      * @param (array{text?: string, commands?: list<string>, delay?: int|float})|null                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         $options
      */
     public function press(string $key, ?array $options = null): void
@@ -191,7 +210,7 @@ class ElementHandle extends JSHandle
     }
 
     /**
-     * @param (array{optimizeForSpeed?: bool, type?: "png"|"jpeg"|"webp", quality?: int|float, fromSurface?: bool, fullPage?: bool, omitBackground?: bool, path?: string, clip?: array{height: int|float, scale?: int|float, width: int|float, x: int|float, y: int|float}, encoding?: "base64"|"binary", captureBeyondViewport?: bool})|null $options
+     * @param (array{optimizeForSpeed?: bool, type?: "webp"|"jpeg"|"png", quality?: int|float, fromSurface?: bool, fullPage?: bool, omitBackground?: bool, path?: string, clip?: array{height: int|float, scale?: int|float, width: int|float, x: int|float, y: int|float}, encoding?: "base64"|"binary", captureBeyondViewport?: bool})|null $options
      */
     public function screenshot(?array $options = null): string
     {

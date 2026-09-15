@@ -40,7 +40,7 @@ class ConsoleMessage extends RemoteObject
     }
 
     /**
-     * @return "log"|"debug"|"info"|"error"|"warn"|"dir"|"dirxml"|"table"|"trace"|"clear"|"startGroup"|"startGroupCollapsed"|"endGroup"|"assert"|"profile"|"profileEnd"|"count"|"timeEnd"|"verbose"
+     * @return "error"|"clear"|"table"|"dir"|"assert"|"info"|"warn"|"count"|"log"|"debug"|"dirxml"|"trace"|"startGroup"|"startGroupCollapsed"|"endGroup"|"profile"|"profileEnd"|"timeEnd"|"verbose"
      */
     public function type(): string
     {

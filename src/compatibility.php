@@ -7,6 +7,7 @@ use Nesk\Puphpeteer\Accessibility;
 use Nesk\Puphpeteer\Browser;
 use Nesk\Puphpeteer\BrowserContext;
 use Nesk\Puphpeteer\CDPSession;
+use Nesk\Puphpeteer\Connection;
 use Nesk\Puphpeteer\ConsoleMessage;
 use Nesk\Puphpeteer\Coverage;
 use Nesk\Puphpeteer\Dialog;
@@ -18,6 +19,7 @@ use Nesk\Puphpeteer\HTTPResponse;
 use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\JSHandle;
 use Nesk\Puphpeteer\Keyboard;
+use Nesk\Puphpeteer\Locator;
 use Nesk\Puphpeteer\Mouse;
 use Nesk\Puphpeteer\Page;
 use Nesk\Puphpeteer\Puppeteer;
@@ -57,6 +59,14 @@ if (!class_exists(CDPSession::class)) {
 
 if (!class_exists(Nesk\Puphpeteer\Resources\CDPSession::class)) {
     class_alias(Puppeteer\CDPSession::class, Nesk\Puphpeteer\Resources\CDPSession::class);
+}
+
+if (!class_exists(Connection::class)) {
+    class_alias(Puppeteer\Connection::class, Connection::class);
+}
+
+if (!class_exists(Nesk\Puphpeteer\Resources\Connection::class)) {
+    class_alias(Puppeteer\Connection::class, Nesk\Puphpeteer\Resources\Connection::class);
 }
 
 if (!class_exists(ConsoleMessage::class)) {
@@ -137,6 +147,14 @@ if (!class_exists(Keyboard::class)) {
 
 if (!class_exists(Nesk\Puphpeteer\Resources\Keyboard::class)) {
     class_alias(Puppeteer\Keyboard::class, Nesk\Puphpeteer\Resources\Keyboard::class);
+}
+
+if (!class_exists(Locator::class)) {
+    class_alias(Puppeteer\Locator::class, Locator::class);
+}
+
+if (!class_exists(Nesk\Puphpeteer\Resources\Locator::class)) {
+    class_alias(Puppeteer\Locator::class, Nesk\Puphpeteer\Resources\Locator::class);
 }
 
 if (!class_exists(Mouse::class)) {

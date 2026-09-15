@@ -33,7 +33,8 @@ function validateConfig(config) {
         if (typeof value.native !== 'string' || typeof value.psalm !== 'string') throw new Error(`Invalid type mapping: ${name}`);
     }
     for (const [name, value] of Object.entries(config.members || {})) {
-        fields(value, ['name', 'overload', 'parameters', 'returnType', 'unsupported'], `members.${name}`);
+        fields(value, ['name', 'overload', 'parameters', 'returnType', 'unsupported', 'runtime'], `members.${name}`);
+        if (value.runtime !== undefined && typeof value.runtime !== 'boolean') throw new Error(`Invalid runtime mapping: ${name}`);
         if (value.overload !== undefined && (!Number.isInteger(value.overload) || value.overload < 0)) throw new Error(`Invalid overload mapping: ${name}`);
         if (value.parameters !== undefined && !Array.isArray(value.parameters)) throw new Error(`Invalid parameters mapping: ${name}`);
     }

@@ -12,6 +12,11 @@ use Nesk\Puphpeteer\RemoteObject;
 
 class CDPSession extends RemoteObject
 {
+    public function connection(): ?Connection
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
     public function detach(): void
     {
         $this->invokeRemote(__FUNCTION__, func_get_args());

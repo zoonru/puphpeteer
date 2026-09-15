@@ -22,7 +22,9 @@
     "Dialog",
     "WebWorker",
     "SecurityDetails",
-    "Tracing"
+    "Tracing",
+    "Locator",
+    "Connection"
   ],
   "types": {
     "ReadableStream<Uint8Array>": {
@@ -803,6 +805,206 @@
           "psalm": "string"
         }
       ]
+    },
+    "Locator::race": {
+      "parameters": [
+        {
+          "native": "array",
+          "psalm": "list<\\Nesk\\Puphpeteer\\Puppeteer\\Locator>"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Locator",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Locator"
+      }
+    },
+    "Page.locator": {
+      "overload": 0,
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Locator",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Locator"
+      }
+    },
+    "Frame.locator": {
+      "overload": 0,
+      "parameters": [
+        {
+          "native": "string|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "string|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Locator",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Locator"
+      }
+    },
+    "Locator.filter": {
+      "parameters": [
+        {
+          "native": "\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ]
+    },
+    "Locator.map": {
+      "parameters": [
+        {
+          "native": "\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ]
+    },
+    "Locator.waitHandle": {
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\JSHandle"
+      }
+    },
+    "Locator.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
+      }
+    },
+    "Locator.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
+      }
+    },
+    "Locator.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
+      }
+    },
+    "Locator.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Locator.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Connection.on": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
+      }
+    },
+    "Connection.once": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
+      }
+    },
+    "Connection.off": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        },
+        {
+          "native": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction",
+          "psalm": "\\Closure|\\Nesk\\Puphpeteer\\JsFunction"
+        }
+      ],
+      "returnType": {
+        "native": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser",
+        "psalm": "\\Nesk\\Puphpeteer\\Puppeteer\\Browser"
+      }
+    },
+    "Connection.listenerCount": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Connection.removeAllListeners": {
+      "parameters": [
+        {
+          "native": "string",
+          "psalm": "string"
+        }
+      ]
+    },
+    "Puppeteer::registerCustomQueryHandler": {
+      "runtime": true
+    },
+    "Puppeteer::unregisterCustomQueryHandler": {
+      "runtime": true
+    },
+    "Puppeteer::customQueryHandlerNames": {
+      "runtime": true
+    },
+    "Puppeteer::clearCustomQueryHandlers": {
+      "runtime": true
     }
   }
 }

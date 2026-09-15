@@ -49,6 +49,14 @@ class Frame extends RemoteObject
     }
 
     /**
+     * @param array{content?: string, path?: string}|array{content?: string, path?: string, url?: string} $options
+     */
+    public function addStyleTag(array $options): ElementHandle
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
+    /**
      * @return list<Frame>
      */
     public function childFrames(): array
@@ -57,7 +65,7 @@ class Frame extends RemoteObject
     }
 
     /**
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"back"|"forward"})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
      */
     public function click(string $selector, ?array $options = null): void
     {
@@ -113,6 +121,11 @@ class Frame extends RemoteObject
     }
 
     public function listenerCount(string $type): int|float
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
+    public function locator(string|JsFunction $selector): Locator
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }

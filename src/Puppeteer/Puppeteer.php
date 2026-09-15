@@ -13,6 +13,7 @@ use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\Internal;
 use Nesk\Puphpeteer\Internal\BrowserProcess;
 use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\RemoteObject;
 use RuntimeException;
 use Throwable;
 use UnexpectedValueException;
@@ -22,6 +23,83 @@ final class Puppeteer
 {
     /** @var array<string,array> */
     private array $plugins = [];
+    private ?Client $client = null;
+    private bool $clientConnected = false;
+    /** @var array<string,array{queryOne?:JsFunction,queryAll?:JsFunction}> */
+    private array $queryHandlers = [];
+
+    private function staticClient(): Client
+    {
+        if (null === $this->client || $this->client->isClosed()) {
+            // A getter may precede use(); keep the plugin registry available in this runtime.
+            $this->client = $this->newClient($this->options['bundle'] ?? dirname(__DIR__, 2) . '/resources/puppeteer.js');
+            $this->clientConnected = false;
+        }
+
+        return $this->client;
+    }
+
+    private function newClient(string $bundle): Client
+    {
+        $client = new Client($bundle);
+        foreach ($this->queryHandlers as $name => $handler) {
+            $client->call(0, 'registerCustomQueryHandler', [$name, $handler], 'static')->await();
+        }
+
+        return $client;
+    }
+
+    private function browserClient(): Client
+    {
+        if (null === $this->client || $this->client->isClosed() || $this->clientConnected) {
+            $this->client = $this->newClient($this->bundle());
+        }
+        $this->clientConnected = true;
+
+        return $this->client;
+    }
+
+    /**
+     * @template T of RemoteObject
+     *
+     * @param class-string<T> $class
+     *
+     * @return T
+     */
+    public function getStaticClass(string $class): RemoteObject
+    {
+        return $this->staticClient()->getStaticClass($class);
+    }
+
+    /** @param array{queryOne?:JsFunction,queryAll?:JsFunction} $handler */
+    public function registerCustomQueryHandler(string $name, array $handler): void
+    {
+        foreach ($handler as $query) {
+            if (!$query instanceof JsFunction) {
+                throw new InvalidArgumentException('Custom query handlers run in the browser and must use JsFunction');
+            }
+        }
+        $this->staticClient()->call(0, __FUNCTION__, func_get_args(), 'static')->await();
+        $this->queryHandlers[$name] = $handler;
+    }
+
+    public function unregisterCustomQueryHandler(string $name): void
+    {
+        $this->staticClient()->call(0, __FUNCTION__, func_get_args(), 'static')->await();
+        unset($this->queryHandlers[$name]);
+    }
+
+    /** @return list<string> */
+    public function customQueryHandlerNames(): array
+    {
+        return $this->staticClient()->call(0, __FUNCTION__, [], 'static')->await();
+    }
+
+    public function clearCustomQueryHandlers(): void
+    {
+        $this->staticClient()->call(0, __FUNCTION__, [], 'static')->await();
+        $this->queryHandlers = [];
+    }
 
     /**
      * Register a factory from the compiled plugin registry for future browsers.
@@ -85,7 +163,7 @@ final class Puppeteer
     private function connectClient(array $options, ?Client $client = null): array
     {
         if (null === $client && [] !== $this->plugins) {
-            $client = new Client($this->bundle());
+            $client = $this->browserClient();
             try {
                 $options = $this->preparePlugins($client, $options, 'connect');
             } catch (Throwable $error) {
@@ -118,7 +196,7 @@ final class Puppeteer
             if (isset($this->options['read_timeout'])) {
                 $options['protocolTimeout'] ??= (float) $this->options['read_timeout'] * 1000.0;
             }
-            $client ??= new Client($this->bundle());
+            $client ??= $this->browserClient();
             $browser = $client->connect($endpoint, $options)->await();
 
             return [$client, $browser];
@@ -136,7 +214,7 @@ final class Puppeteer
         $process = null;
         try {
             if ([] !== $this->plugins) {
-                $client = new Client($this->bundle());
+                $client = $this->browserClient();
                 $options = $this->preparePlugins($client, $options, 'launch');
                 self::validateOptions($options, ['executablePath', 'headless', 'args', 'ignoreDefaultArgs', 'userDataDir', 'env', 'dumpio', 'devtools', 'timeout', 'defaultViewport', 'protocolTimeout', 'slowMo', 'acceptInsecureCerts', 'ignoreHTTPSErrors']);
             }

@@ -39,7 +39,7 @@ class Dialog extends RemoteObject
     }
 
     /**
-     * @return "prompt"|"alert"|"confirm"|"beforeunload"
+     * @return "beforeunload"|"prompt"|"alert"|"confirm"
      */
     public function type(): string
     {

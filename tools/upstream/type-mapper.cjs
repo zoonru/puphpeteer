@@ -41,7 +41,7 @@ function createTypeMapper({types, config, classMap, requireClass, report}) {
         if (!type) return unsupported(id, type, 'type.unresolved');
         if (typeof type === 'string') type = {text: type};
         const text = type.text;
-        if (config.types?.[text]) return config.types[text];
+        if (typeof text === 'string' && Object.hasOwn(config.types || {}, text)) return config.types[text];
         const primitive = {string: 'string', boolean: 'bool', number: 'int|float', null: 'null', void: 'void', never: 'never', any: 'mixed', unknown: 'mixed', object: 'object'};
         if (primitive[text]) return result(primitive[text]);
         if (text === 'true' || text === 'false') return result('bool', text);
@@ -54,7 +54,7 @@ function createTypeMapper({types, config, classMap, requireClass, report}) {
         if (type.kind === 'typeParameter') {
             const template = context.templates.get(text);
             if (!template) return unsupported(id, type, 'type.unbound-template');
-            if (template.substitution) return map(template.substitution, id, context);
+            if (template.substitution) return map(template.substitution, id, {...context, templates: new Map([...context.templates].filter(([name]) => name !== text))});
             return result(template.constraint ? map(template.constraint, id, {...context, templates: new Map([...context.templates].filter(([name]) => name !== text))}).native : 'mixed', text);
         }
         const children = type.types || type.children;
@@ -125,7 +125,7 @@ function createTypeMapper({types, config, classMap, requireClass, report}) {
             if (context.seen.has(name)) return unsupported(id, type, 'type.recursive');
             const next = {...context, seen: new Set([...context.seen, name]), templates: new Map(context.templates)};
             for (const [index, template] of (definition.typeParameters || []).entries()) {
-                next.templates.set(template.name, {substitution: args[index] || template.default || template.constraint || {text: 'unknown'}});
+                next.templates.set(template.name, {substitution: substitute(args[index] || template.default || template.constraint || {text: 'unknown'}, context)});
             }
             if (definition.type) return map(definition.type, id, next);
             if (definition.kind === 'enum') return map({kind: 'union', types: definition.values.map(item => ({kind: 'literal', text: JSON.stringify(item.value), value: item.value}))}, id, next);

@@ -79,6 +79,27 @@ final class Client
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
     }
 
+    /**
+     * @template T of RemoteObject
+     *
+     * @param class-string<T> $class
+     *
+     * @return T
+     */
+    public function getStaticClass(string $class): RemoteObject
+    {
+        $name = array_search($class, Internal\GeneratedRegistry::CLASSES, true);
+        if (false === $name) {
+            throw new InvalidArgumentException('Unknown generated class: ' . $class);
+        }
+        $object = $this->call(0, 'staticClass', [$name])->await();
+        if (!$object instanceof $class) {
+            throw new UnexpectedValueException('Unexpected static class: ' . $name);
+        }
+
+        return $object;
+    }
+
     /** @return Future<Browser> */
     public function connect(string $endpoint, array $options = [], ?Cancellation $cancellation = null): Future
     {
