@@ -31,7 +31,7 @@ final class ExtensionContractTest extends TestCase
     {
         $js = new QuickJS();
         $dispatch = $this->jsCallback($js, '(value) => __quickjsEmit("data", value)');
-        $value = [null, true, false, 42, 1.25, 9_007_199_254_740_991, "nul\0Привет", "\xff\xfe", [], ['name' => 'value'], ['$__jsfn' => 12]];
+        $value = [null, true, false, 42, 1.25, 9_007_199_254_740_991, "nul\0\u{41f}\u{440}\u{438}\u{432}\u{435}\u{442}", "\xff\xfe", [], ['name' => 'value'], ['$__jsfn' => 12]];
         self::assertSame([['data', $value]], $dispatch->dispatch([$value])['messages']);
         $types = $this->jsCallback($js, '(text, bytes) => __quickjsEmit("types", [typeof text, bytes instanceof Uint8Array])');
         self::assertSame([['types', ['string', true]]], $types->dispatch(['hello', "\xff"])['messages']);

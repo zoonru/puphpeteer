@@ -15,10 +15,10 @@ final class BuildCommand extends ProcessCommand
     #[Override]
     protected function configure(): void
     {
-        $this->setDescription('Собрать JavaScript bundle для QuickJS')
-            ->addOption('check', null, InputOption::VALUE_NONE, 'Только проверить воспроизводимость сборки')
-            ->addOption('debug', null, InputOption::VALUE_NONE, 'Собрать читаемый debug bundle')
-            ->addOption('plugins', null, InputOption::VALUE_REQUIRED, 'Файл с custom plugins');
+        $this->setDescription('Build the JavaScript bundle for QuickJS')
+            ->addOption('check', null, InputOption::VALUE_NONE, 'Check build reproducibility without writing files')
+            ->addOption('debug', null, InputOption::VALUE_NONE, 'Build a readable debug bundle')
+            ->addOption('plugins', null, InputOption::VALUE_REQUIRED, 'Custom plugin registry file');
     }
 
     #[Override]
@@ -26,7 +26,7 @@ final class BuildCommand extends ProcessCommand
     {
         $io = new SymfonyStyle($input, $output);
         if (!$this->jsonOutput) {
-            $io->title('Сборка PuPHPeteer');
+            $io->title('PuPHPeteer build');
         }
         if (!$this->jsonOutput) {
             $io->progressStart(3);
@@ -43,7 +43,7 @@ final class BuildCommand extends ProcessCommand
         if (($plugins = $input->getOption('plugins')) !== null) {
             $arguments[] = '--plugins=' . $plugins;
         }
-        $result = $this->runProcess($io, ['node', ...$arguments], message: 'Собирается bundle…', indicator: false);
+        $result = $this->runProcess($io, ['node', ...$arguments], message: 'Building the bundle…', indicator: false);
         if (!$this->jsonOutput) {
             $io->progressAdvance();
             $io->progressAdvance();
@@ -63,12 +63,12 @@ final class BuildCommand extends ProcessCommand
 
             return 0;
         }
-        $io->table(['Режим', 'Bundle', 'Время'], [[
+        $io->table(['Mode', 'Bundle', 'Time'], [[
             $input->getOption('debug') ? 'debug' : 'production',
             false === $size ? '—' : self::formatBytes($size),
-            sprintf('%.2f с', $result['elapsed']),
+            sprintf('%.2f s', $result['elapsed']),
         ]]);
-        $io->success($input->getOption('check') ? 'Bundle актуален.' : 'Bundle собран.');
+        $io->success($input->getOption('check') ? 'Bundle is up to date.' : 'Bundle built.');
 
         return 0;
     }

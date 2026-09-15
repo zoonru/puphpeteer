@@ -34,7 +34,7 @@ abstract class ProcessCommand extends Command
     {
         $definition = parent::getDefinition();
         if (!$definition->hasOption('json')) {
-            $definition->addOption(new InputOption('json', null, InputOption::VALUE_NONE, 'Вывести результат одной JSON-строкой'));
+            $definition->addOption(new InputOption('json', null, InputOption::VALUE_NONE, 'Print the result as a single JSON line'));
         }
 
         return $definition;
@@ -57,9 +57,10 @@ abstract class ProcessCommand extends Command
         SymfonyStyle $io,
         array $command,
         array $environment = [],
-        string $message = 'Выполняется…',
+        string $message = 'Running…',
         bool $indicator = true,
         ?Closure $onLine = null,
+        bool $displayOutput = true,
     ): array {
         $started = microtime(true);
         $pipes = [];
@@ -73,7 +74,7 @@ abstract class ProcessCommand extends Command
             $processEnvironment,
         );
         if (!is_resource($process)) {
-            throw new RuntimeException('Не удалось запустить: ' . implode(' ', $command));
+            throw new RuntimeException('Cannot start: ' . implode(' ', $command));
         }
 
         stream_set_blocking($pipes[1], false);
@@ -105,11 +106,6 @@ abstract class ProcessCommand extends Command
                         if ($stream === $pipes[1]) {
                             $stdout .= $chunk;
                             $pending .= $chunk;
-                            while (($position = strpos($pending, "\n")) !== false) {
-                                $line = rtrim(substr($pending, 0, $position), "\r");
-                                $pending = substr($pending, $position + 1);
-                                $onLine?->__invoke($line, $progress);
-                            }
                         } else {
                             $stderr .= $chunk;
                         }
@@ -117,9 +113,22 @@ abstract class ProcessCommand extends Command
                 }
                 $status = proc_get_status($process);
                 if (!$status['running']) {
-                    $stdout .= stream_get_contents($pipes[1]) ?: '';
+                    $tail = stream_get_contents($pipes[1]) ?: '';
+                    $stdout .= $tail;
+                    $pending .= $tail;
                     $stderr .= stream_get_contents($pipes[2]) ?: '';
                     $code = $status['exitcode'];
+                }
+                // Deliver both streamed output and the final drain through the same handler.
+                while (($position = strpos($pending, "\n")) !== false) {
+                    $line = rtrim(substr($pending, 0, $position), "\r");
+                    $pending = substr($pending, $position + 1);
+                    $onLine?->__invoke($line, $progress);
+                }
+                if (!$status['running']) {
+                    if ('' !== $pending) {
+                        $onLine?->__invoke(rtrim($pending, "\r"), $progress);
+                    }
                     break;
                 }
                 $progress?->advance();
@@ -133,8 +142,8 @@ abstract class ProcessCommand extends Command
             }
         }
 
-        $progress?->finish(0 === $code ? 'Готово' : 'Ошибка');
-        if (!$this->jsonOutput && (0 !== $code || $io->isVerbose())) {
+        $progress?->finish(0 === $code ? 'Done' : 'Error');
+        if ($displayOutput && !$this->jsonOutput && (0 !== $code || $io->isVerbose())) {
             $text = trim($stdout . ('' !== $stderr ? "\n" . $stderr : ''));
             if ('' !== $text) {
                 $io->writeln(0 === $code ? '<fg=gray>' . $this->truncate($text) . '</>' : '<error>' . $text . '</error>');

@@ -74,3 +74,70 @@ test('public API extraction tolerates structural terminal base types', () => {
         fs.rmSync(root, {recursive: true, force: true});
     }
 });
+
+for (const [name, declaration, expected] of [
+    ['syntax error', 'export declare class Page { broken(: string; }', /api\.d\.ts\(1,\d+\): error TS\d+/],
+    ['unknown type', 'export declare class Page { value(): MissingType; }', /Cannot find name 'MissingType'/],
+    ['unresolved import', 'import {Missing} from "./missing.js"; export declare class Page { value(): Missing; }', /Cannot find module/],
+]) {
+    test(`generation fails before writing on ${name}, including model-only mode`, () => {
+        const root = fs.mkdtempSync(path.join(os.tmpdir(), 'quickjs-invalid-'));
+        try {
+            fs.mkdirSync(path.join(root, 'upstream'));
+            fs.mkdirSync(path.join(root, 'src'));
+            fs.writeFileSync(path.join(root, 'upstream/config.json'), JSON.stringify({schemaVersion:1, namespace:'Nesk\\Puphpeteer\\Puppeteer', wrapperClasses:['Page']}));
+            fs.writeFileSync(path.join(root, 'upstream/lock.json'), 'unchanged lock');
+            fs.writeFileSync(path.join(root, 'src/Page.php'), 'unchanged wrapper');
+            fs.writeFileSync(path.join(root, 'api.d.ts'), declaration);
+            for (const args of [[], ['--check'], ['--model-only']]) {
+                const result = fixtureGeneration(root, args);
+                assert.equal(result.status, 2, result.stdout + result.stderr);
+                assert.match(result.stderr, expected);
+                const summary = JSON.parse(result.stdout);
+                assert.equal(summary.errors, [...result.stderr.matchAll(/error TS\d+:/g)].length);
+                assert.equal(summary.warnings, 0);
+                assert.equal(fs.readFileSync(path.join(root, 'upstream/lock.json'), 'utf8'), 'unchanged lock');
+                assert.equal(fs.readFileSync(path.join(root, 'src/Page.php'), 'utf8'), 'unchanged wrapper');
+                assert.equal(fs.existsSync(path.join(root, 'upstream/coverage.json')), false);
+            }
+        } finally { fs.rmSync(root, {recursive:true, force:true}); }
+    });
+}
+
+test('unsupported PHP mapping is reported without saving coverage or a baseline', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'quickjs-unsupported-'));
+    try {
+        fs.mkdirSync(path.join(root, 'upstream'));
+        fs.writeFileSync(path.join(root, 'upstream/config.json'), JSON.stringify({schemaVersion:1, namespace:'Nesk\\Puphpeteer\\Puppeteer', wrapperClasses:['Page']}));
+        fs.writeFileSync(path.join(root, 'api.d.ts'), 'export declare class Page { value(): symbol; }');
+        const quiet = fixtureGeneration(root, []);
+        assert.equal(quiet.status, 0, quiet.stderr);
+        assert.deepEqual(JSON.parse(quiet.stdout).diagnostics, []);
+        const result = fixtureGeneration(root, ['--verbose']);
+        assert.equal(result.status, 0, result.stderr);
+        const verbose = JSON.parse(result.stdout);
+        const summary = JSON.parse(quiet.stdout);
+        assert.ok(verbose.diagnostics.length > 0);
+        assert.equal(summary.errors, 0);
+        assert.equal(summary.warnings, verbose.diagnostics.length);
+        assert.equal(summary.warnings, verbose.warnings);
+        const progress = fixtureGeneration(root, ['--progress', '--model-only']);
+        assert.equal(progress.status, 0, progress.stderr);
+        const lines = progress.stdout.split('\n');
+        const events = lines.filter(line => line.startsWith('@progress ')).map(line => JSON.parse(line.slice(10)));
+        assert.deepEqual(events.map(event => event.step), [1,2,3,4,5,6]);
+        const report = JSON.parse(lines.filter(line => !line.startsWith('@progress ')).join('\n'));
+        assert.equal(report.warnings, summary.warnings);
+        assert.deepEqual(report.diagnostics, []);
+
+        assert.equal(fs.existsSync(path.join(root, 'upstream/coverage.json')), false);
+    } finally { fs.rmSync(root, {recursive:true, force:true}); }
+});
+
+function fixtureGeneration(root, args) {
+    // Only source fetching is replaced: exercise the actual parser, generator and CLI error handler.
+    return spawnSync(process.execPath, ['-e', `
+        require(${JSON.stringify(path.resolve(__dirname, '../../../tools/upstream/source-resolver.cjs'))}).resolveSources = async () => ({entry: ${JSON.stringify(path.join(root, 'api.d.ts'))}, lock: {}});
+        require(${JSON.stringify(path.resolve(__dirname, '../../../tools/upstream/update.cjs'))}).runCli(${JSON.stringify(root)}, ${JSON.stringify(args)});
+    `], {encoding:'utf8', timeout:60000});
+}

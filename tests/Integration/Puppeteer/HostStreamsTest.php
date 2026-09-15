@@ -20,7 +20,7 @@ final class HostStreamsTest extends TestCase
             throw new RuntimeException('Missing bundle');
         }
         $js->eval($source);
-        self::assertSame('Привет, 😀', $js->eval('new TextDecoder().decode(new TextEncoder().encode("Привет, 😀"))'));
+        self::assertSame("\u{41f}\u{440}\u{438}\u{432}\u{435}\u{442}, 😀", $js->eval('new TextDecoder().decode(new TextEncoder().encode("\u041f\u0440\u0438\u0432\u0435\u0442, 😀"))'));
         self::assertTrue($js->eval('(() => { try { new TextDecoder("utf-8", {fatal: true}).decode(new Uint8Array([0xc3, 0x28])); return false; } catch (_) { return true; } })()'));
         $dispatch = $js->eval(<<<'JS'
         () => {

@@ -26,10 +26,10 @@ function extractPublicApi(entry, options = {}) {
         moduleResolution: ts.ModuleResolutionKind.NodeNext, skipLibCheck: false,
         strictNullChecks: true, noEmit: true,
     });
-    const errors = program.getSyntacticDiagnostics();
-    if (errors.length) throw new Error(ts.formatDiagnostics(errors, {
+    const errors = ts.getPreEmitDiagnostics(program).filter(item => item.category === ts.DiagnosticCategory.Error);
+    if (errors.length) throw Object.assign(new Error(ts.formatDiagnostics(errors, {
         getCanonicalFileName: file => file, getCurrentDirectory: () => root, getNewLine: () => '\n',
-    }));
+    })), {errors:errors.length});
     const checker = program.getTypeChecker();
     const sourceFile = program.getSourceFile(entry);
     const moduleSymbol = sourceFile && checker.getSymbolAtLocation(sourceFile);
@@ -250,12 +250,6 @@ function extractPublicApi(entry, options = {}) {
         else if (ts.isTypeAliasDeclaration(node)) type.type = typeModel(checker.getTypeAtLocation(node.type), node.type);
         else type.values = node.members.map(member => ({name: memberName(member), value: checker.getConstantValue(member) ?? null}));
         types.push(type);
-    }
-    // Any semantic error can invalidate the generated PHP model. Keep the full
-    // diagnostic set so update/verify can fail instead of silently drifting.
-    for (const diagnostic of program.getSemanticDiagnostics()) {
-        diagnostics.push({code: `typescript-${diagnostic.code}`, message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
-            ...(diagnostic.file ? {path: relative(diagnostic.file.fileName)} : {})});
     }
     return {schemaVersion: 1, classes: classes.sort((a, b) => compare(a.name, b.name)), exports: exports.sort(compare),
         declarations: declarations.sort((a, b) => compare(a.name, b.name)), types: types.sort((a, b) => compare(a.name, b.name)), diagnostics};

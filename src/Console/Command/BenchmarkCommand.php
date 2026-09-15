@@ -16,9 +16,9 @@ final class BenchmarkCommand extends ProcessCommand
     #[Override]
     protected function configure(): void
     {
-        $this->setDescription('Запустить benchmark QuickJS')
-            ->addOption('trials', null, InputOption::VALUE_REQUIRED, 'Количество прогонов', '5')
-            ->addOption('iterations', null, InputOption::VALUE_REQUIRED, 'Количество evaluate за прогон', '1000');
+        $this->setDescription('Run the QuickJS benchmark')
+            ->addOption('trials', null, InputOption::VALUE_REQUIRED, 'Number of trials', '5')
+            ->addOption('iterations', null, InputOption::VALUE_REQUIRED, 'Number of evaluate calls per trial', '1000');
     }
 
     #[Override]
@@ -31,7 +31,7 @@ final class BenchmarkCommand extends ProcessCommand
             if ($this->jsonOutput) {
                 $this->writeJson($output, ['command' => 'benchmark', 'status' => 'error', 'error' => 'trials and iterations must be positive']);
             } else {
-                $io->error('trials и iterations должны быть положительными.');
+                $io->error('trials and iterations must be positive.');
             }
 
             return 2;
@@ -41,7 +41,7 @@ final class BenchmarkCommand extends ProcessCommand
             $io->title('Benchmark QuickJS');
             $bar = $io->createProgressBar($trials);
             $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%%  %message%');
-            $bar->setMessage('подготовка');
+            $bar->setMessage('preparing');
             $bar->start();
         }
         /** @var list<string> $command */
@@ -50,7 +50,7 @@ final class BenchmarkCommand extends ProcessCommand
             $io,
             $command,
             [],
-            'Выполняются прогоны…',
+            'Running trials…',
             false,
             function (string $line) use (&$bar): void {
                 if (!isset($bar)) {
@@ -63,7 +63,7 @@ final class BenchmarkCommand extends ProcessCommand
             },
         );
         if (isset($bar)) {
-            $bar->setMessage(0 === $result['code'] ? 'готово' : 'ошибка');
+            $bar->setMessage(0 === $result['code'] ? 'done' : 'error');
             $bar->finish();
         }
         if (0 !== $result['code']) {
@@ -140,7 +140,7 @@ final class BenchmarkCommand extends ProcessCommand
         if ([] !== $rows) {
             $io->table(['Backend', 'Trial', 'Setup', 'Evaluate', 'Eval p50', 'Eval p95', '64 KiB', '20×25 ms', 'Navigation', 'CPU total', 'Peak RSS'], $rows);
         }
-        $io->success(sprintf('Benchmark завершён за %.2f с.', $result['elapsed']));
+        $io->success(sprintf('Benchmark completed in %.2f s.', $result['elapsed']));
 
         return 0;
     }

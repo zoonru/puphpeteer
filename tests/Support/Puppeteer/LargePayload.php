@@ -14,13 +14,13 @@ use RuntimeException;
 /** Deterministic indexed blocks expose missing, duplicated and reordered chunks. */
 final class LargePayload
 {
-    public const UNIT = 'Ab9éЖ😀_Z';
+    public const UNIT = "Ab9é\u{416}😀_Z";
     public const SUFFIX = "\0\"\\\r\n\tEND";
     public const HTML_START = '<!DOCTYPE html><html><head></head><body style="display: none;">';
     public const HTML_END = '</body></html>';
     public const SOURCE = <<<'JS'
     (size, binary = false) => {
-      const unit = 'Ab9éЖ😀_Z';
+      const unit = 'Ab9é\u0416😀_Z';
       if (!binary) {
         const blocks = [];
         for (let offset = 0; offset < size; offset += 4096) {

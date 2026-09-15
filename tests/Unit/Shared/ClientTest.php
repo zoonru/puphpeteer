@@ -57,7 +57,7 @@ final class ClientTest extends TestCase
     public function testNestedDataRoundTripsWithoutChangingBinaryOrScalarValues(): void
     {
         $client = $this->client();
-        $data = ['text' => 'Привет 👋', 'binary' => "\0\xff\xfe", 'values' => [null, false, 42, 3.5, []]];
+        $data = ['text' => "\u{41f}\u{440}\u{438}\u{432}\u{435}\u{442} 👋", 'binary' => "\0\xff\xfe", 'values' => [null, false, 42, 3.5, []]];
         self::assertSame($data, $this->codec($client, 'decode', $this->codec($client, 'encode', $data)));
     }
 

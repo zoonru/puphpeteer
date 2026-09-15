@@ -71,7 +71,7 @@
     "browser:install": "@php bin/console browser:install",
     "test-release": "@php tests/Release/Puppeteer/run.php",
     "benchmark": "@php bin/console benchmark",
-    "update-php": "node tools/upstream/update.cjs",
+    "update-php": "@php bin/console generate",
     "verify-php": "node tools/upstream/update.cjs --check",
     "post-install-cmd": "@php tools/install-browser.php",
     "post-update-cmd": "@php tools/install-browser.php",

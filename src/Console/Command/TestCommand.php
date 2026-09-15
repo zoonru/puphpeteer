@@ -25,12 +25,12 @@ final class TestCommand extends ProcessCommand
     #[Override]
     protected function configure(): void
     {
-        $this->setDescription('Запустить unit, integration, browser или release проверки');
+        $this->setDescription('Run unit, integration, browser or release checks');
         if (null === $this->fixedSuite) {
-            $this->addArgument('suite', InputArgument::OPTIONAL, 'Набор проверок: all, unit, integration, browser, release');
+            $this->addArgument('suite', InputArgument::OPTIONAL, 'Test suite: all, unit, integration, browser, release');
         }
-        $this->addOption('cycles', null, InputOption::VALUE_REQUIRED, 'Количество циклов release', '50');
-        $this->addOption('timeout', null, InputOption::VALUE_REQUIRED, 'Таймаут release workload в секундах', '600');
+        $this->addOption('cycles', null, InputOption::VALUE_REQUIRED, 'Number of release cycles', '50');
+        $this->addOption('timeout', null, InputOption::VALUE_REQUIRED, 'Release workload timeout in seconds', '600');
     }
 
     #[Override]
@@ -40,7 +40,7 @@ final class TestCommand extends ProcessCommand
         $suite = $this->fixedSuite ?? $input->getArgument('suite');
         if (!is_string($suite) || '' === $suite) {
             $suite = $input->isInteractive()
-                ? $io->askQuestion(new ChoiceQuestion('Что запустить?', ['all', 'unit', 'integration', 'browser', 'release'], 'all'))
+                ? $io->askQuestion(new ChoiceQuestion('Which suite should run?', ['all', 'unit', 'integration', 'browser', 'release'], 'all'))
                 : 'all';
         }
         $allowed = ['all', 'unit', 'integration', 'browser', 'release'];
@@ -48,14 +48,14 @@ final class TestCommand extends ProcessCommand
             if ($this->jsonOutput) {
                 $this->writeJson($output, ['command' => 'test', 'status' => 'error', 'error' => 'Unknown suite', 'suite' => $suite]);
             } else {
-                $io->error('Неизвестный набор: ' . $suite);
+                $io->error('Unknown suite: ' . $suite);
             }
 
             return 2;
         }
         $suites = 'all' === $suite ? ['unit', 'integration', 'browser'] : [$suite];
         if (!$this->jsonOutput) {
-            $io->title('Проверки PuPHPeteer');
+            $io->title('PuPHPeteer checks');
             $io->progressStart(count($suites));
         }
         $results = [];
@@ -75,7 +75,7 @@ final class TestCommand extends ProcessCommand
             if (0 !== $result['code']) {
                 if (!$this->jsonOutput) {
                     $io->progressFinish();
-                    $io->error($current . ' завершён с ошибкой.');
+                    $io->error($current . ' failed.');
                 } else {
                     $this->writeJson($output, ['command' => $this->getName() ?? 'test', 'status' => 'error', 'results' => $results]);
                 }
@@ -89,7 +89,7 @@ final class TestCommand extends ProcessCommand
             return 0;
         }
         $io->progressFinish();
-        $io->success('Все выбранные проверки пройдены.');
+        $io->success('All selected checks passed.');
 
         return 0;
     }

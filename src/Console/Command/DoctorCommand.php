@@ -14,7 +14,7 @@ final class DoctorCommand extends ProcessCommand
     #[Override]
     protected function configure(): void
     {
-        $this->setDescription('Проверить окружение и готовность bundle');
+        $this->setDescription('Check the environment and bundle availability');
     }
 
     #[Override]
@@ -24,7 +24,7 @@ final class DoctorCommand extends ProcessCommand
         $extensionReady = extension_loaded('php_quickjs');
         $checks = [
             ['PHP', PHP_VERSION, version_compare(PHP_VERSION, '8.4.0', '>=')],
-            ['php-quickjs', $extensionReady ? 'загружен в PHP' : 'не загружен', $extensionReady],
+            ['php-quickjs', $extensionReady ? 'loaded in PHP' : 'not loaded', $extensionReady],
             ['bundle', $this->root . '/resources/puppeteer.js', is_file($this->root . '/resources/puppeteer.js')],
         ];
         $failed = count(array_filter($checks, static fn (array $check): bool => !$check[2]));
@@ -33,14 +33,14 @@ final class DoctorCommand extends ProcessCommand
 
             return 0 === $failed ? 0 : 1;
         }
-        $io->title('Проверка окружения');
-        $io->table(['Компонент', 'Значение', 'Статус'], array_map(static fn (array $check): array => [$check[0], $check[1] ?? 'не найден', $check[2] ? '<fg=green>OK</>' : '<fg=red>FAIL</>'], $checks));
+        $io->title('Environment check');
+        $io->table(['Component', 'Value', 'Status'], array_map(static fn (array $check): array => [$check[0], $check[1] ?? 'not found', $check[2] ? '<fg=green>OK</>' : '<fg=red>FAIL</>'], $checks));
         if ($failed) {
-            $io->warning($failed . ' проверок не пройдено.');
+            $io->warning($failed . ' checks failed.');
 
             return 1;
         }
-        $io->success('Окружение готово.');
+        $io->success('Environment is ready.');
 
         return 0;
     }
