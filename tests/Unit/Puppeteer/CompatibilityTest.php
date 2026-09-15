@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Tests\Unit\Puppeteer;
 
 use Nesk\Puphpeteer\Internal\GeneratedRegistry;
-use Nesk\Puphpeteer\JsFunction;
-use Nesk\Puphpeteer\Puppeteer;
 use Nesk\Puphpeteer\Puppeteer\Page;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -35,23 +33,12 @@ final class CompatibilityTest extends TestCase
         self::assertSame($page, $accept($page));
     }
 
-    public function testOriginalImportsReferToTheNamespacedPuppeteerApi(): void
+    public function testOnlyResourceAliasesAreRegistered(): void
     {
-        self::assertSame(Puppeteer\Puppeteer::class, $this->canonicalName('Nesk\\Puphpeteer\\Puppeteer'));
         foreach (GeneratedRegistry::CLASSES as $name => $class) {
-            self::assertSame('Nesk\\Puphpeteer\\Puppeteer', (new ReflectionClass($class))->getNamespaceName());
-            self::assertSame($class, $this->canonicalName('Nesk\\Puphpeteer\\' . $name));
+            self::assertFalse(class_exists('Nesk\\Puphpeteer\\' . $name));
         }
-        $legacy = new Puppeteer();
-        self::assertInstanceOf(Puppeteer\Puppeteer::class, $legacy);
-        self::assertSame((new Puppeteer\Puppeteer())->defaultArgs(), $legacy->defaultArgs());
-    }
-
-    public function testOldJsFunctionImportSupportsFactoriesAndTypeHints(): void
-    {
-        $function = \Nesk\Rialto\Data\JsFunction::createWithBody('return 42;');
-        self::assertInstanceOf(JsFunction::class, $function);
-        self::assertInstanceOf(\Nesk\Rialto\Data\JsFunction::class, new JsFunction('() => 42'));
-        self::assertSame(JsFunction::createWithBody('return 42;')->source, $function->source);
+        self::assertFalse(class_exists('Nesk\\Puphpeteer\\Puppeteer'));
+        self::assertFalse(class_exists('Nesk\\Rialto\\Data\\JsFunction'));
     }
 }

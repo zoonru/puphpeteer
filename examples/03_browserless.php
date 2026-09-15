@@ -2,8 +2,8 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\Puppeteer\Puppeteer;
-use Nesk\Rialto\Data\JsFunction;
 
 // Start Browserless separately and provide its complete endpoint, including token.
 $endpoint = getenv('BROWSER_WS') ?: throw new RuntimeException('Set BROWSER_WS');

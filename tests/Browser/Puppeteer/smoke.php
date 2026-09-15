@@ -4,6 +4,7 @@ declare(strict_types=1);
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 use Amp\DeferredFuture;
 use Amp\TimeoutCancellation;
+use Nesk\Puphpeteer\JsFunction as JS;
 use Nesk\Puphpeteer\Puppeteer\Browser;
 use Nesk\Puphpeteer\Puppeteer\ElementHandle;
 use Nesk\Puphpeteer\Puppeteer\Frame;
@@ -13,7 +14,6 @@ use Nesk\Puphpeteer\Puppeteer\Mouse;
 use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use Nesk\Puphpeteer\Resources\ConsoleMessage;
 use Nesk\Puphpeteer\Resources\Page;
-use Nesk\Rialto\Data\JsFunction as JS;
 
 use function Amp\async;
 use function Amp\Future\await;

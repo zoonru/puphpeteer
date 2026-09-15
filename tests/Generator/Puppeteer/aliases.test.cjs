@@ -12,15 +12,14 @@ test('aliases follow current generated classes, including removal', () => {
     assert.ok(first.includes('Resources\\Browser'));
     assert.ok(!second.includes('Resources\\Browser'));
     assert.ok(second.includes('Resources\\Page'));
-    assert.ok(second.includes('Nesk\\Rialto\\Data\\JsFunction'));
-    assert.ok(first.includes('Nesk\\Puphpeteer\\Browser::class'));
-    assert.ok(!second.includes('Nesk\\Puphpeteer\\Browser::class'));
-    assert.ok(second.includes('Nesk\\Puphpeteer\\Puppeteer\\Puppeteer::class'));
+    const targets = [...first.matchAll(/class_alias\([^,]+, \\([^:]+)::class\)/g)].map(match => match[1]);
+    assert.deepEqual(targets, ['Nesk\\Puphpeteer\\Resources\\Page', 'Nesk\\Puphpeteer\\Resources\\Browser']);
+
 });
 
 test('best effort aliases do not replace a class already provided by the application', () => {
     const autoload = JSON.stringify(path.resolve(__dirname, '../../../vendor/autoload.php'));
-    const result = spawnSync('php', ['-r', `namespace Nesk\\Rialto\\Data { class JsFunction { const ORIGINAL = true; } } namespace { require ${autoload}; if (!\\Nesk\\Rialto\\Data\\JsFunction::ORIGINAL) { exit(1); } }`], {encoding:'utf8'});
+    const result = spawnSync('php', ['-r', `namespace Nesk\\Puphpeteer\\Resources { class Page { const ORIGINAL = true; } } namespace { require ${autoload}; if (!\\Nesk\\Puphpeteer\\Resources\\Page::ORIGINAL) { exit(1); } }`], {encoding:'utf8'});
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stderr, '');
 });

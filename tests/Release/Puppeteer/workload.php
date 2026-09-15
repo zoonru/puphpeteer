@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use Nesk\Puphpeteer\RemoteObject;
 use Nesk\Puphpeteer\Resources\Page;
-use Nesk\Rialto\Data\JsFunction;
 
 use function Amp\async;
 use function Amp\Future\await;
