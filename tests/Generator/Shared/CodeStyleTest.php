@@ -19,7 +19,11 @@ final class CodeStyleTest extends TestCase
                 public function press(string $key): void { throw new \RuntimeException('key:'.$key); }
             }
             CODE;
-        $formatted = CodeStyle::format($source);
+        $batch = CodeStyle::formatMany(['first' => $source, 'second' => '<?php namespace Other; class Second { public function run(): void { throw new \\LogicException(); } }']);
+        self::assertSame(['first', 'second'], array_keys($batch));
+        self::assertStringContainsString('use LogicException;', $batch['second']);
+        self::assertSame([], CodeStyle::formatMany([]));
+        $formatted = $batch['first'];
         self::assertStringContainsString('use RuntimeException;', $formatted);
         self::assertStringContainsString('use Vendor\BaseClass;', $formatted);
         self::assertStringContainsString(trim(explode("\n", $source)[3]), $formatted);

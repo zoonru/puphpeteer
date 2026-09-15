@@ -70,7 +70,7 @@ final class Synchronizer
         foreach ($classes as $spec) {
             $path = $this->path($root, $spec['file']);
             $expectedPaths[$spec['file']] = true;
-            $content = CodeStyle::format($this->classFile($spec));
+            $content = $this->classFile($spec);
             if ($this->lint($content, $spec)) {
                 $files[] = ['path' => $spec['file'], 'content' => $content,
                     'changed' => !is_file($path) || file_get_contents($path) !== $content];

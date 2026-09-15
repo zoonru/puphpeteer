@@ -7,6 +7,7 @@ namespace Nesk\Puphpeteer\Tests\Generator\Shared;
 use Override;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
+use Zoon\Puphpeteer\Tooling\CodeStyle;
 use Zoon\Puphpeteer\Tooling\Synchronizer;
 
 /** @psalm-import-type ClassSpec from Synchronizer */
@@ -31,6 +32,24 @@ final class SynchronizerTest extends TestCase
         rmdir($this->root);
     }
 
+    /**
+     * @param list<ClassSpec> $classes
+     *
+     * @return array{diagnostics:list<array>,files:list<array{path:string,content:string,changed:bool}>,deletedFiles:list<string>}
+     */
+    private function synchronize(array $classes): array
+    {
+        $result = (new Synchronizer())->synchronize($this->root, $classes);
+        $formatted = CodeStyle::formatMany(array_column($result['files'], 'content'));
+        foreach ($formatted as $index => $content) {
+            $result['files'][$index]['content'] = $content;
+        }
+
+        $result['files'] = array_values($result['files']);
+
+        return $result;
+    }
+
     /** @return ClassSpec
      * @psalm-pure
      */
@@ -50,7 +69,7 @@ final class SynchronizerTest extends TestCase
 
     public function testEmitsExecutableTypedBridgeWithOptionalAndVariadicArguments(): void
     {
-        $result = (new Synchronizer())->synchronize($this->root, [$this->fixture()]);
+        $result = $this->synchronize([$this->fixture()]);
         self::assertSame([], $result['diagnostics']);
         $content = $result['files'][0]['content'];
         self::assertSame(file_get_contents(__DIR__ . '/Fixtures/GeneratedFixture.php'), $content);
@@ -93,7 +112,7 @@ final class SynchronizerTest extends TestCase
             ['evaluate', ['x', 1, 'two']], ['evaluate', ['y', 3, 4]],
             ['evaluate', ['z', 5, 6]], ['evaluate', ['empty']],
         ], $object->calls);
-        $repeat = (new Synchronizer())->synchronize($this->root, [$this->fixture()]);
+        $repeat = $this->synchronize([$this->fixture()]);
         self::assertSame([], $repeat['diagnostics']);
         self::assertSame($content, $repeat['files'][0]['content']);
     }
@@ -104,7 +123,7 @@ final class SynchronizerTest extends TestCase
             ['id' => 'MutableFixture.value', 'name' => 'value', 'kind' => 'property', 'type' => 'int', 'writable' => true],
             ['id' => 'MutableFixture::size', 'name' => 'size', 'kind' => 'method', 'remoteStatic' => true, 'returnType' => 'int'],
         ]];
-        $result = (new Synchronizer())->synchronize($this->root, [$spec]);
+        $result = $this->synchronize([$spec]);
         self::assertSame([], $result['diagnostics']);
         file_put_contents($this->root . '/src/MutableFixture.php', $result['files'][0]['content']);
         require $this->root . '/src/MutableFixture.php';
@@ -146,18 +165,18 @@ final class SynchronizerTest extends TestCase
     public function testRegeneratesWholeClassIncludingManualEdits(): void
     {
         $spec = $this->fixture();
-        $first = (new Synchronizer())->synchronize($this->root, [$spec]);
+        $first = $this->synchronize([$spec]);
         $path = $this->root . '/src/GeneratedFixture.php';
         file_put_contents($path, $first['files'][0]['content']);
         $spec['members'][0]['jsName'] = 'newSelector';
-        $second = (new Synchronizer())->synchronize($this->root, [$spec]);
+        $second = $this->synchronize([$spec]);
         self::assertSame([], $second['diagnostics']);
         self::assertStringContainsString("invokeRemote('newSelector'", $second['files'][0]['content']);
         // Synchronization only proposes changes and must not mutate source files.
         self::assertSame($first['files'][0]['content'], file_get_contents($path));
         $manual = str_replace("invokeRemote('$'", "invokeRemote('custom'", $first['files'][0]['content']);
         file_put_contents($path, $manual);
-        $third = (new Synchronizer())->synchronize($this->root, [$spec]);
+        $third = $this->synchronize([$spec]);
         self::assertSame([], $third['diagnostics']);
         self::assertStringNotContainsString("invokeRemote('custom'", $third['files'][0]['content']);
         self::assertStringContainsString("invokeRemote('newSelector'", $third['files'][0]['content']);
@@ -173,7 +192,7 @@ final class SynchronizerTest extends TestCase
         $child['extends'] = '\\' . $parent['fqcn'];
         $literal = "'\\\\'";
         $child['members'][0]['parameters'][0]['docType'] = $literal;
-        $result = (new Synchronizer())->synchronize($this->root, [$parent, $child]);
+        $result = $this->synchronize([$parent, $child]);
         self::assertSame([], $result['diagnostics']);
         $content = $result['files'][0]['content'];
         self::assertStringContainsString('#[Override]', $content);
@@ -183,10 +202,10 @@ final class SynchronizerTest extends TestCase
     public function testReportsUnsupportedAndDeletedDeclarations(): void
     {
         $spec = $this->fixture();
-        $first = (new Synchronizer())->synchronize($this->root, [$spec]);
+        $first = $this->synchronize([$spec]);
         file_put_contents($this->root . '/src/GeneratedFixture.php', $first['files'][0]['content']);
         $spec['members'] = [['id' => 'GeneratedFixture.static', 'name' => 'create', 'kind' => 'method', 'static' => true]];
-        $result = (new Synchronizer())->synchronize($this->root, [$spec]);
+        $result = $this->synchronize([$spec]);
         self::assertContains('contract.unsupported', array_column($result['diagnostics'], 'code'));
         self::assertStringNotContainsString('function create', $result['files'][0]['content']);
         self::assertStringNotContainsString('function select', $result['files'][0]['content']);
