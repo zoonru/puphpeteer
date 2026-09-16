@@ -19,7 +19,17 @@ use function Amp\async;
 /** @internal Owns only the Chrome process and temporary profile created by launch(). */
 final class BrowserProcess
 {
+    private const string POSIX_LAUNCHER = <<<'PHP'
+        $processGroupId = posix_setsid();
+        if ($processGroupId === -1) {
+            throw new RuntimeException('Cannot create process session');
+        }
+        fwrite(STDERR, "PuPHPeteer process group: $processGroupId\n");
+        pcntl_exec($argv[1], array_slice($argv, 2));
+        throw new RuntimeException('Cannot execute browser');
+        PHP;
     private ?Process $process = null;
+    private ?int $processGroupId = null;
     private ?string $temporaryProfile = null;
     public readonly string $endpoint;
 
@@ -42,7 +52,13 @@ final class BrowserProcess
             foreach ($options['env'] ?? [] as $name => $value) {
                 $environment[(string) $name] = (string) $value;
             }
-            $this->process = Process::start([$executable, ...$arguments], environment: $environment);
+            $command = [$executable, ...$arguments];
+            $usesProcessGroup = false;
+            if (PHP_OS_FAMILY !== 'Windows' && function_exists('pcntl_exec') && function_exists('posix_setsid') && function_exists('posix_kill')) {
+                $command = [PHP_BINARY, '-r', self::POSIX_LAUNCHER, $executable, ...$arguments];
+                $usesProcessGroup = true;
+            }
+            $this->process = Process::start($command, environment: $environment);
             $this->process->getStdin()->close();
             $stdout = $this->process->getStdout();
             $dump = $options['dumpio'] ?? false;
@@ -62,6 +78,9 @@ final class BrowserProcess
                     \Amp\ByteStream\getStderr()->write($chunk);
                 }
                 $buffer .= $chunk;
+                if ($usesProcessGroup && preg_match('/PuPHPeteer process group: (\d+)/', $buffer, $processGroup)) {
+                    $this->processGroupId = (int) $processGroup[1];
+                }
                 if (preg_match('~DevTools listening on (ws://[^\s]+)~', $buffer, $match)) {
                     $this->endpoint = $match[1];
                     async(static function () use ($stderr, $dump): void {
@@ -127,6 +146,8 @@ final class BrowserProcess
 
     public function close(): void
     {
+        $profile = $this->temporaryProfile;
+        $processGroupId = $this->processGroupId;
         try {
             if (null !== $this->process) {
                 // Browser.close responds before Chrome finishes shutting down its children.
@@ -135,54 +156,58 @@ final class BrowserProcess
                     $this->process->join(new TimeoutCancellation(5));
                 } catch (CancelledException) {
                     if ($this->process->isRunning()) {
-                        $this->killProcessTree($this->process);
+                        $this->killProcess($this->process, $processGroupId);
                     }
                     $this->process->join(new TimeoutCancellation(5));
                 }
             }
         } finally {
+            if (null !== $processGroupId) {
+                $this->killProcessGroup($processGroupId);
+            }
             $this->process = null;
-            if (null !== $this->temporaryProfile) {
-                $profile = $this->temporaryProfile;
-                $this->temporaryProfile = null;
+            $this->processGroupId = null;
+            if (null !== $profile) {
                 $this->removeProfile($profile);
+                $this->temporaryProfile = null;
             }
         }
     }
 
-    private function killProcessTree(Process $process): void
+    private function killProcess(Process $process, ?int $processGroupId): void
     {
-        try {
-            if (PHP_OS_FAMILY === 'Windows') {
+        if (null === $processGroupId) {
+            $process->kill();
+
+            return;
+        }
+        $this->signalProcessGroup($processGroupId, 9);
+    }
+
+    private function killProcessGroup(int $processGroupId): void
+    {
+        if (!$this->signalProcessGroup($processGroupId, 9)) {
+            return;
+        }
+        for ($attempt = 0; $attempt < 50; ++$attempt) {
+            usleep(20000);
+            if (!$this->signalProcessGroup($processGroupId, 0)) {
                 return;
             }
-            $ps = Process::start(['/bin/ps', '-axo', 'pid=,ppid=']);
-            $rows = \Amp\ByteStream\buffer($ps->getStdout(), new TimeoutCancellation(5));
-            $ps->join(new TimeoutCancellation(5));
-            $parents = [];
-            foreach (explode("\n", $rows) as $row) {
-                if (preg_match('/^\s*(\d+)\s+(\d+)\s*$/', $row, $match)) {
-                    $parents[(int) $match[1]] = (int) $match[2];
-                }
-            }
-            $selected = [$process->getPid() => true];
-            do {
-                $changed = false;
-                foreach ($parents as $pid => $parent) {
-                    if (isset($selected[$parent]) && !isset($selected[$pid])) {
-                        $selected[$pid] = true;
-                        $changed = true;
-                    }
-                }
-            } while ($changed);
-            foreach (array_reverse(array_keys($selected)) as $pid) {
-                if ($pid !== $process->getPid()) {
-                    @posix_kill($pid, 9);
-                }
-            }
-        } finally {
-            $process->kill();
         }
+        throw new RuntimeException('Cannot terminate Chrome process group');
+    }
+
+    private function signalProcessGroup(int $processGroupId, int $signal): bool
+    {
+        if (posix_kill(-$processGroupId, $signal)) {
+            return true;
+        }
+        $error = posix_get_last_error();
+        if (PCNTL_ESRCH === $error) {
+            return false;
+        }
+        throw new RuntimeException(sprintf('Cannot signal Chrome process group: %s', posix_strerror($error)));
     }
 
     private function removeProfile(string $path): void
