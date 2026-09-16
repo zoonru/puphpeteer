@@ -20,6 +20,7 @@ use Js\Callback;
 use LogicException;
 use Nesk\Puphpeteer\Internal\RemoteObjectFactory;
 use Nesk\Puphpeteer\Puppeteer\Browser;
+use Psr\Log\LoggerInterface;
 use QuickJS;
 use Revolt\EventLoop;
 use RuntimeException;
@@ -37,11 +38,6 @@ final class Client
     private Callback $dispatch;
     private ?WebsocketConnection $socket = null;
     private array $writes = [];
-    /** @var array<int, Future<void>> */
-    private array $logs = [];
-    private int $logSequence = 0;
-    private int $logBytes = 0;
-    private int $droppedLogs = 0;
     private bool $writing = false;
     private ?string $pumpWatcher = null;
     private bool $connecting = false;
@@ -63,12 +59,14 @@ final class Client
     /** @var array<int, WeakReference<Internal\ReadableStream>> */
     private array $streams = [];
     private ?Internal\HostFilesystem $filesystem = null;
+    private LoggerInterface $logger;
 
-    public function __construct(?string $bundle = null)
+    public function __construct(?string $bundle = null, ?LoggerInterface $logger = null)
     {
         if (!method_exists(Callback::class, 'dispatch')) {
             throw new RuntimeException('Load the php-quickjs fork with Js\\Callback::dispatch().');
         }
+        $this->logger = $logger ?? new Internal\StderrLogger();
         $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, timeoutMs: 2000, maxStack: 512 * 1024);
         $this->js->register('now', static fn (): float => (float) hrtime(true) / 1e6);
         $source = file_get_contents($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
@@ -250,24 +248,9 @@ final class Client
                 continue;
             }
             if ('log' === $kind) {
-                // A slow log consumer must not suspend processing the rest of this native batch.
-                $line = '[QuickJS] ' . substr($payload, 0, 65536) . "\n";
-                $bytes = strlen($line);
-                // Diagnostics must not retain unlimited memory when stderr is stalled.
-                if (count($this->logs) >= 64 || $this->logBytes + $bytes > 1048576) {
-                    ++$this->droppedLogs;
-                    continue;
-                }
-                $log = ++$this->logSequence;
-                $this->logBytes += $bytes;
-                $this->logs[$log] = async(function () use ($log, $line, $bytes): void {
-                    try {
-                        \Amp\ByteStream\getStderr()->write($line);
-                    } finally {
-                        unset($this->logs[$log]);
-                        $this->logBytes -= $bytes;
-                    }
-                })->ignore();
+                $level = is_array($payload) ? (string) ($payload['level'] ?? 'info') : 'info';
+                $message = is_array($payload) ? (string) ($payload['message'] ?? '') : (string) $payload;
+                $this->logger->log($level, $message);
                 continue;
             }
             if ('clearTimer' === $kind) {
@@ -568,14 +551,6 @@ final class Client
     public function close(): void
     {
         $this->stop();
-        // Flush queued diagnostics on explicit close without letting a stuck reader prevent shutdown.
-        if ([] === $this->logs) {
-            return;
-        }
-        try {
-            \Amp\Future\awaitAll($this->logs, new TimeoutCancellation(1));
-        } catch (CancelledException) {
-        }
     }
 
     private function stop(?Throwable $error = null): void

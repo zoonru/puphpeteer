@@ -383,7 +383,7 @@ $function = new JsFunction('(element) => element.textContent');
 
 Другие изменения поведения:
 
-- Настройки Node, старый logger и `js_extra` вызывают исключение. Локальный запуск использует установленный Chrome, `executablePath` или `PUPPETEER_EXECUTABLE_PATH`; системный Chrome автоматически не выбирается.
+- Настройки Node, параметр logger из v2 и `js_extra` вызывают исключение. PSR-3 логгер передаётся как `new Puppeteer(logger: $logger)`. Локальный запуск использует установленный Chrome, `executablePath` или `PUPPETEER_EXECUTABLE_PATH`; системный Chrome автоматически не выбирается.
 - Scope и значения параметров функции по умолчанию принимают скаляры, массивы и `JsFunction`; remote handles передавайте отдельными аргументами `evaluate()`. PHP callbacks должны быть объектами `Closure`. Для конкурентности используйте `Amp\async()`; вручную вызывать `await()` для публичных результатов не нужно.
 - `undefined` превращается в `null`, бинарные результаты — в PHP-строки. Файловые операции скриншотов, PDF, загрузки скриптов и стилей выполняются на PHP-хосте. Скриншот в base64 возвращается без записи в `path`.
 - Firefox, pipe transport, Node.js writable streams, старый API `screencast()` и `followSymlinks: false` не поддерживаются.
@@ -460,11 +460,17 @@ docker compose run --rm chrome composer test
 
 ## Жизненный цикл runtime
 
-Диагностика QuickJS записывается асинхронно: очередь ограничена 64 сообщениями / 1 МиБ, payload сообщения — 64 КиБ. При переполнении сообщения отбрасываются. Явное закрытие ждёт дописывания логов не больше секунды.
+Диагностика QuickJS использует PSR-3. По умолчанию PuPHPeteer асинхронно пишет её в stderr. Любой PSR-3 логгер, включая Monolog, можно передать вторым аргументом конструктора:
+
+```php
+$puppeteer = new Puppeteer(logger: $logger);
+```
+
+JavaScript-методы `console.debug`, `console.log`/`console.info`, `console.warn` и `console.error` соответствуют уровням PSR-3 `debug`, `info`, `warning` и `error`.
 
 - Закрывайте страницы/контексты через `close()`, JS handles — через `dispose()`, желательно в `finally`. `release()` удаляет только ссылку моста. Не передавайте объекты между клиентами.
 - `on()`, `once()` и `off()` сохраняют идентичность обработчика. Последняя снятая регистрация освобождает callback; остальные callbacks, например `exposeFunction()`, удерживаются до закрытия соединения.
-- Ошибки event callbacks пишутся в stderr; callbacks с возвращаемым результатом отклоняют JS Promise. Логи записываются через Amp; `close()`/`disconnect()` ожидают дописывания до одной секунды.
+- Ошибки event callbacks отправляются в логгер; callbacks с возвращаемым результатом отклоняют JS Promise.
 - Обычные JS-ошибки и таймауты операций не закрывают соединение. Сбой транспорта очищает вызовы, таймеры и реестры; после него создайте новое соединение.
 - `undefined` становится `null`, binary — PHP-строкой, пустые JS object и array — `[]`. Точные целые должны укладываться в ±9 007 199 254 740 991. BigInt/non-finite результаты — tagged-массивы; циклические и слишком глубокие данные отклоняются.
 - Поддерживается CDP Chrome. Firefox/BiDi, публичный `AbortSignal` и произвольные Node API недоступны.

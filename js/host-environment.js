@@ -175,7 +175,8 @@ globalThis.setInterval = (fn, milliseconds = 0, ...args) => {
 };
 globalThis.clearInterval = globalThis.clearTimeout;
 globalThis.performance = {now: () => php.now()};
-globalThis.console = Object.fromEntries(['log', 'warn', 'error', 'debug', 'info'].map(level => [level, (...args) => __quickjsEmit('log', args.map(String).join(' '))]));
+const logLevels = {log: 'info', warn: 'warning', error: 'error', debug: 'debug', info: 'info'};
+globalThis.console = Object.fromEntries(Object.entries(logLevels).map(([method, level]) => [method, (...args) => __quickjsEmit('log', {level, message: args.map(String).join(' ')})]));
 export function fireTimer(id) {
   const timer = timers.get(id);
   if (!timer) return;

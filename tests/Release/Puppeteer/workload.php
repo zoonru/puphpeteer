@@ -102,12 +102,11 @@ try {
         gc_collect_cycles();
         Amp\delay(0.01);
         $counts = [];
-        foreach (['objects', 'callbacks', 'pending', 'timers', 'streams', 'logs'] as $name) {
+        foreach (['objects', 'callbacks', 'pending', 'timers', 'streams'] as $name) {
             $counts[$name] = count((new ReflectionProperty($client, $name))->getValue($client));
         }
         $filesystem = (new ReflectionProperty($client, 'filesystem'))->getValue($client);
         $counts['fileHandles'] = null === $filesystem ? 0 : count((new ReflectionProperty($filesystem, 'handles'))->getValue($filesystem));
-        $counts['logBytes'] = (new ReflectionProperty($client, 'logBytes'))->getValue($client);
         if (null === $registryBaseline) {
             $registryBaseline = $counts;
         }

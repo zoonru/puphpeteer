@@ -14,6 +14,7 @@ use Nesk\Puphpeteer\Internal;
 use Nesk\Puphpeteer\Internal\BrowserProcess;
 use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\RemoteObject;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Throwable;
 use UnexpectedValueException;
@@ -41,7 +42,7 @@ final class Puppeteer
 
     private function newClient(string $bundle): Client
     {
-        $client = new Client($bundle);
+        $client = new Client($bundle, $this->logger);
         foreach ($this->queryHandlers as $name => $handler) {
             $client->call(0, 'registerCustomQueryHandler', [$name, $handler], 'static')->await();
         }
@@ -148,7 +149,7 @@ final class Puppeteer
      *
      * @psalm-mutation-free
      */
-    public function __construct(private array $options = [])
+    public function __construct(private array $options = [], private ?LoggerInterface $logger = null)
     {
         self::validateOptions($options, ['bundle', 'read_timeout']);
     }

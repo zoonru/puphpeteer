@@ -200,7 +200,7 @@ async function call(request) {
     entry.wrapper = (...args) => {
       const result = callback(...args);
       if (method === 'once') dropEvent(entry);
-      result.catch(error => emit('log', `PHP event callback failed: ${error.message}`));
+      result.catch(error => emit('log', {level: 'error', message: `PHP event callback failed: ${error.message}`}));
     };
     object.on(event, entry.wrapper);
     if (!eventListeners.has(request.object)) eventListeners.set(request.object, new Set());
@@ -263,7 +263,7 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   if (kind === 'releaseFunction') { decodedFunctions.delete(`function:${request.id}`); return; }
   if (kind === 'release') {
     const object = objects.get(request.id);
-    if (object instanceof ScreenRecording) recordings.discard(object).catch(error => emit('log', `Recording cleanup failed: ${error.message}`));
+    if (object instanceof ScreenRecording) recordings.discard(object).catch(error => emit('log', {level: 'warning', message: `Recording cleanup failed: ${error.message}`}));
     clearEvents(request.id); objects.delete(request.id); return;
   }
   if (kind === 'callbackResult') {

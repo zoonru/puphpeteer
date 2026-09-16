@@ -106,5 +106,5 @@ docker compose up -d browserless
 docker compose run --rm php php tests/Browser/Puppeteer/browserless.php
 ```
 
-Release retention checks include streams, filesystem handles and pending log messages/bytes,
+Release retention checks include streams and filesystem handles,
 in addition to object, callback, request and timer registries.

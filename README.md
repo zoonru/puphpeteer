@@ -398,7 +398,7 @@ $function = new JsFunction('(element) => element.textContent');
 
 Other behavior changes:
 
-- Node options, the old logger and `js_extra` throw an exception. Local launch uses installed Chrome, `executablePath` or `PUPPETEER_EXECUTABLE_PATH`; system Chrome is not selected automatically.
+- Node options, the v2 logger option and `js_extra` throw an exception. Inject a PSR-3 logger as `new Puppeteer(logger: $logger)`. Local launch uses installed Chrome, `executablePath` or `PUPPETEER_EXECUTABLE_PATH`; system Chrome is not selected automatically.
 - Function scope/defaults accept scalars, arrays and `JsFunction`; pass remote handles as separate `evaluate()` arguments. PHP callbacks must be `Closure` objects. Use `Amp\async()` for concurrency; public results need no manual `await()`.
 - `undefined` becomes `null`; binary results are PHP strings. Screenshot, PDF and script/style filesystem operations run on the PHP host. A base64 screenshot returns without writing `path`.
 - Firefox, pipe transport, Node.js writable streams, the old `screencast()` API and `followSymlinks: false` are unsupported.
@@ -475,11 +475,17 @@ CLI help: `docker compose run --rm php php bin/console`. `doctor` checks the env
 
 ## Runtime lifecycle
 
-QuickJS diagnostics use a bounded asynchronous queue: at most 64 pending messages / 1 MiB, with each payload limited to 64 KiB. Overflow is dropped when the reader cannot keep up. Explicit close waits at most one second for pending logs.
+QuickJS diagnostics use PSR-3. By default, PuPHPeteer writes them asynchronously to stderr. Pass any PSR-3 logger, including Monolog, as the second constructor argument:
+
+```php
+$puppeteer = new Puppeteer(logger: $logger);
+```
+
+JavaScript `console.debug`, `console.log`/`console.info`, `console.warn` and `console.error` map to the PSR-3 `debug`, `info`, `warning` and `error` levels.
 
 - Close pages/contexts with `close()` and JS handles with `dispose()`, preferably in `finally`. `release()` only drops the bridge reference. Do not pass objects between clients.
 - `on()`, `once()` and `off()` preserve handler identity. Removing the last registration releases the callback; other callbacks, such as `exposeFunction()`, remain until disconnect.
-- Event callback errors go to stderr; callbacks returning a result reject their JS Promise on failure. Logs use Amp streams; `close()`/`disconnect()` allow up to one second to flush pending messages.
+- Event callback errors are sent to the logger; callbacks returning a result reject their JS Promise on failure.
 - Ordinary JS errors and operation timeouts leave the connection usable. Transport failure clears calls, timers and registries; create a new connection afterward.
 - `undefined` becomes `null`, binary becomes a PHP string, empty JS objects and arrays both become `[]`. Exact integers must fit ±9,007,199,254,740,991. BigInt/non-finite results use tagged arrays; cyclic or excessively deep data is rejected.
 - CDP Chrome is supported. Firefox/BiDi, public `AbortSignal` and arbitrary Node APIs are unavailable.
