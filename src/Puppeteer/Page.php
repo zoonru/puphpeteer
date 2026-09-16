@@ -394,6 +394,14 @@ class Page extends RemoteObject
     }
 
     /**
+     * @param (array{path?: string, overwrite?: bool, audio?: bool, maxWidth?: int|float, maxHeight?: int|float, frameRate?: int|float, fps?: int|float})|null $options
+     */
+    public function record(?array $options = null): ScreenRecording
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
+    /**
      * @param (array{ignoreCache?: bool, signal?: never, timeout?: int|float, waitUntil?: "load"|"domcontentloaded"|"networkidle0"|"networkidle2"|list<"load"|"domcontentloaded"|"networkidle0"|"networkidle2">})|null $options
      */
     public function reload(?array $options = null): ?HTTPResponse

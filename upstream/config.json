@@ -24,7 +24,8 @@
     "SecurityDetails",
     "Tracing",
     "Locator",
-    "Connection"
+    "Connection",
+    "ScreenRecording"
   ],
   "types": {
     "ReadableStream<Uint8Array>": {

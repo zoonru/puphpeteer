@@ -14,7 +14,7 @@ function buildPhpModel({api, config}) {
     const mapper = createTypeMapper({types: api.types, config, classMap, report, requireClass: () => {}});
     const classes = [], coverage = [];
     for (const item of api.classes) {
-        const output = {name: item.name, ...classMap.get(item.name), members: [], generatedDocLines: [], ...(item.name === 'ElementHandle' ? {extends: `${config.namespace}\\JSHandle`} : {})};
+        const output = {name: item.name, ...classMap.get(item.name), members: [], generatedDocLines: [], ...(item.name === 'ScreenRecording' ? {extends:'Nesk\\Puphpeteer\\Internal\\ScreenRecordingStream'} : {}), ...(item.name === 'ElementHandle' ? {extends: `${config.namespace}\\JSHandle`} : {})};
         for (const declaration of item.members) {
             const member = declaration.kind === 'property' && declaration.type?.kind === 'function'
                 ? {...declaration, kind:'method', signatures:declaration.type.signatures} : declaration;
@@ -23,6 +23,7 @@ function buildPhpModel({api, config}) {
             const omit = reason => {report('member.unsupported', member.id, 'Supported async bridge contract', reason);};
             if (rule.runtime) { coverage.push({id:member.id, status:'runtime', diagnostics:[]}); continue; }
             if (!selected.has(item.name)) omit('Class is not yet supported by typed hydration');
+            else if (item.name === 'ScreenRecording' && member.name !== 'stop') omit('Readable stream operations use the Amp stream interface');
             else if (!member.static && member.kind === 'property') {
                 if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(member.name)) { omit('Symbol properties are not supported'); coverage.push({id:member.id,status:'unsupported',diagnostics:diagnostics.slice(start)}); continue; }
                 const returns = mapper.map(member.type, member.id, {templates:new Map()});

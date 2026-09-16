@@ -217,6 +217,17 @@ try {
 
 Поддерживаются Amp `pipe()` и `buffer()` (последний намеренно собирает данные целиком). Отмена через `read($cancellation)` закрывает только этот поток. Ранний `close()` также освобождает CDP-handle PDF. Node.js writable streams — отдельный интерфейс, этот адаптер их не реализует.
 
+### Запись видео
+
+`$page->record()` использует экспериментальный CDP-метод Chrome
+`Page.startScreenRecording` и возвращает читаемый поток Amp. Потоковая запись MP4
+через `pipe()` показана в [05_video_stream.php](examples/05_video_stream.php).
+
+Ограничения: браузер должен поддерживать этот экспериментальный CDP-метод;
+доступен только MP4 без выбора кодека и контейнера; первый фрагмент может прийти
+с задержкой; для завершения потока обязателен `stop()`. При использовании `path`
+это путь в файловой системе PHP-приложения, в том числе при работе через Browserless.
+
 ## Плагины Puppeteer
 
 Зарегистрируйте встроенный плагин перед запуском или подключением:
@@ -375,7 +386,7 @@ $function = new JsFunction('(element) => element.textContent');
 - Настройки Node, старый logger и `js_extra` вызывают исключение. Локальный запуск использует установленный Chrome, `executablePath` или `PUPPETEER_EXECUTABLE_PATH`; системный Chrome автоматически не выбирается.
 - Scope и значения параметров функции по умолчанию принимают скаляры, массивы и `JsFunction`; remote handles передавайте отдельными аргументами `evaluate()`. PHP callbacks должны быть объектами `Closure`. Для конкурентности используйте `Amp\async()`; вручную вызывать `await()` для публичных результатов не нужно.
 - `undefined` превращается в `null`, бинарные результаты — в PHP-строки. Файловые операции скриншотов, PDF, загрузки скриптов и стилей выполняются на PHP-хосте. Скриншот в base64 возвращается без записи в `path`.
-- Firefox, pipe transport, Node.js writable streams, запись видео и `followSymlinks: false` не поддерживаются.
+- Firefox, pipe transport, Node.js writable streams, старый API `screencast()` и `followSymlinks: false` не поддерживаются.
 
 ## Разработка
 
@@ -405,6 +416,7 @@ docker compose run --rm chrome php examples/01_page_open.php
 | [01_page_open.php](examples/01_page_open.php) | Опции launch, viewport, таймаут и evaluate |
 | [02_page_screenshot.php](examples/02_page_screenshot.php) | Stealth, User-Agent, язык, масштаб viewport и screenshot |
 | [04_form_intercept.php](examples/04_form_intercept.php) | Ожидание POST до клика, вывод данных и отмена запроса |
+| [05_video_stream.php](examples/05_video_stream.php) | Потоковая запись MP4 в файл через Amp `pipe()` |
 
 Используются локальные HTML без HTTP-сервера; скриншот сохраняется на хосте. Для видимого браузера на хосте с PHP/QuickJS и графическим дисплеем: `php examples/01_page_open.php --headful` (`headless => false`).
 

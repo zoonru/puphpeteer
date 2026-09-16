@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer;
 
+use Amp\ByteStream\ReadableStream;
 use Nesk\Puphpeteer\Puppeteer\Browser;
 use RuntimeException;
 
@@ -96,6 +97,14 @@ class RemoteObject
     public function __get(string $name): mixed
     {
         return $this->getRemote($name);
+    }
+
+    /** @internal */
+    protected function getRemoteStream(): ReadableStream
+    {
+        $this->assertLive();
+
+        return $this->client->call($this->id, '', [], 'readable')->await();
     }
 
     protected function getRemote(string $name): mixed

@@ -22,6 +22,7 @@ use Nesk\Puphpeteer\Puppeteer\Keyboard;
 use Nesk\Puphpeteer\Puppeteer\Locator;
 use Nesk\Puphpeteer\Puppeteer\Mouse;
 use Nesk\Puphpeteer\Puppeteer\Page;
+use Nesk\Puphpeteer\Puppeteer\ScreenRecording;
 use Nesk\Puphpeteer\Puppeteer\SecurityDetails;
 use Nesk\Puphpeteer\Puppeteer\Target;
 use Nesk\Puphpeteer\Puppeteer\Touchscreen;
@@ -56,6 +57,7 @@ final class GeneratedRegistry
         'Locator' => Locator::class,
         'Mouse' => Mouse::class,
         'Page' => Page::class,
+        'ScreenRecording' => ScreenRecording::class,
         'SecurityDetails' => SecurityDetails::class,
         'Target' => Target::class,
         'Touchscreen' => Touchscreen::class,

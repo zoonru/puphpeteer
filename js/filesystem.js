@@ -9,6 +9,21 @@ export function installFilesystem(request) {
     }
     return request(operation, args);
   };
+  const openFile = async (operation, ...args) => {
+    const id = await call(operation, ...args);
+    let closed = false;
+    return {
+      async writeFile(data) {
+        if (closed) throw new Error('File handle is closed');
+        await call('append', id, data);
+      },
+      async close() {
+        if (closed) return;
+        closed = true;
+        await request('close', [id]);
+      },
+    };
+  };
   Object.assign(environment.value, {
     async readFile(path, encoding) {
       const bytes = stringToTypedArray(await call('read', path), true);
@@ -19,20 +34,7 @@ export function installFilesystem(request) {
     },
     async writeFile(path, data) { await call('write', path, data); },
     async mkdir(path, options = {}) { await call('mkdir', path, options.recursive ?? false); },
-    async openFileForWriting(path) {
-      const id = await call('open', path);
-      let closed = false;
-      return {
-        async writeFile(data) {
-          if (closed) throw new Error('File handle is closed');
-          await call('append', id, data);
-        },
-        async close() {
-          if (closed) return;
-          closed = true;
-          await request('close', [id]);
-        },
-      };
-    },
+    openFileForWriting: path => openFile('open', path),
   });
+  return (path, overwrite) => openFile('openRecording', path, overwrite);
 }

@@ -217,6 +217,18 @@ try {
 
 Amp `pipe()` and `buffer()` work with this stream (`buffer()` intentionally collects everything). `read($cancellation)` cancels and closes only that stream. Early close also releases the PDF's CDP handle. Node.js writable streams are a separate interface and are not provided by this adapter.
 
+### Recording video
+
+`$page->record()` uses Chrome's experimental `Page.startScreenRecording` API and
+returns an Amp readable stream. See
+[05_video_stream.php](examples/05_video_stream.php) for live MP4 output with
+`pipe()`.
+
+Limitations: the browser must support this experimental CDP method; output is
+MP4 with no codec or container selection; the first fragment may be delayed;
+`stop()` is required to finalize the stream. With `path`, the path belongs to the
+PHP application's filesystem, including when Chrome runs through Browserless.
+
 ## Puppeteer plugins
 
 Register bundled plugins before launching or connecting:
@@ -389,7 +401,7 @@ Other behavior changes:
 - Node options, the old logger and `js_extra` throw an exception. Local launch uses installed Chrome, `executablePath` or `PUPPETEER_EXECUTABLE_PATH`; system Chrome is not selected automatically.
 - Function scope/defaults accept scalars, arrays and `JsFunction`; pass remote handles as separate `evaluate()` arguments. PHP callbacks must be `Closure` objects. Use `Amp\async()` for concurrency; public results need no manual `await()`.
 - `undefined` becomes `null`; binary results are PHP strings. Screenshot, PDF and script/style filesystem operations run on the PHP host. A base64 screenshot returns without writing `path`.
-- Firefox, pipe transport, Node.js writable streams, video recording and `followSymlinks: false` are unsupported.
+- Firefox, pipe transport, Node.js writable streams, the old `screencast()` API and `followSymlinks: false` are unsupported.
 
 ## Development
 
@@ -419,6 +431,7 @@ Run `docker compose run --rm chrome php examples/<filename>`.
 | [01_page_open.php](examples/01_page_open.php) | Launch options, viewport, timeout and evaluate |
 | [02_page_screenshot.php](examples/02_page_screenshot.php) | Stealth, User-Agent, language, viewport scale and screenshot |
 | [04_form_intercept.php](examples/04_form_intercept.php) | Wait for POST before clicking, print data and abort the request |
+| [05_video_stream.php](examples/05_video_stream.php) | Stream a live MP4 recording to a file with Amp `pipe()` |
 
 Local HTML needs no HTTP server; screenshots persist on the host. For a visible browser on a host with PHP/QuickJS and a graphical display: `php examples/01_page_open.php --headful` (`headless => false`).
 

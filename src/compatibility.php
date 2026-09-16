@@ -21,6 +21,7 @@ use Nesk\Puphpeteer\Resources\Keyboard;
 use Nesk\Puphpeteer\Resources\Locator;
 use Nesk\Puphpeteer\Resources\Mouse;
 use Nesk\Puphpeteer\Resources\Page;
+use Nesk\Puphpeteer\Resources\ScreenRecording;
 use Nesk\Puphpeteer\Resources\SecurityDetails;
 use Nesk\Puphpeteer\Resources\Target;
 use Nesk\Puphpeteer\Resources\Touchscreen;
@@ -97,6 +98,10 @@ if (!class_exists(Mouse::class)) {
 
 if (!class_exists(Page::class)) {
     class_alias(Nesk\Puphpeteer\Puppeteer\Page::class, Page::class);
+}
+
+if (!class_exists(ScreenRecording::class)) {
+    class_alias(Nesk\Puphpeteer\Puppeteer\ScreenRecording::class, ScreenRecording::class);
 }
 
 if (!class_exists(SecurityDetails::class)) {

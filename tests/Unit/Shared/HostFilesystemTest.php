@@ -32,6 +32,36 @@ final class HostFilesystemTest extends TestCase
         }
     }
 
+    public function testRecordingCreatesDirectoriesAndProtectsExistingFiles(): void
+    {
+        $directory = sys_get_temp_dir() . '/puphpeteer-recording-fs-' . bin2hex(random_bytes(8));
+        $path = $directory . '/video.mp4';
+        $fs = new HostFilesystem();
+        try {
+            $id = $fs->call('openRecording', [$path, false]);
+            $fs->call('append', [$id, 'original']);
+            $fs->call('close', [$id]);
+            try {
+                $fs->call('openRecording', [$path, false]);
+                self::fail('Expected exclusive creation failure');
+            } catch (RuntimeException) {
+                self::assertSame('original', file_get_contents($path));
+            }
+            $id = $fs->call('openRecording', [$path, true]);
+            $fs->call('append', [$id, 'replacement']);
+            $fs->call('close', [$id]);
+            self::assertSame('replacement', file_get_contents($path));
+        } finally {
+            $fs->closeAll();
+            if (is_file($path)) {
+                unlink($path);
+            }
+            if (is_dir($directory)) {
+                rmdir($directory);
+            }
+        }
+    }
+
     public function testIoFailureRestoresErrorHandler(): void
     {
         $handler = static fn (): bool => true;

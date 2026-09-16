@@ -1,11 +1,12 @@
 import {fireTimer, clearTimers} from './host-environment.js';
+import {Recordings} from './recordings.js';
 import {GuestReadableStreams} from './readable-streams.js';
 import {installFilesystem} from './filesystem.js';
 import {PluginAdapter} from './plugins/adapter.js';
 import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
-  Connection, Locator, Puppeteer, Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
+  Connection, Locator, ScreenRecording, Puppeteer, Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
 } from 'puppeteer-core/lib/puppeteer/puppeteer-core-browser.js';
 
 // Public prototype identity survives bundler renaming and implementation subclasses.
@@ -13,7 +14,7 @@ import puppeteer, {
 const publicConstructors = {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
-  Connection, Locator, Puppeteer, Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
+  Connection, Locator, ScreenRecording, Puppeteer, Keyboard, Mouse, Page, SecurityDetails, Target, Touchscreen, Tracing, WebWorker,
 };
 const constructorNames = new Map(Object.entries(publicConstructors).map(([name, type]) => [type, name]));
 const publicTypes = new Map(Object.entries(publicConstructors).map(([name, type]) => [type.prototype, name]));
@@ -64,11 +65,12 @@ function clearEvents(objectId, event) {
 const streams = new GuestReadableStreams();
 const emit = (kind, value) => __quickjsEmit(kind, value);
 const errorData = error => ({name: error?.name ?? 'Error', message: error?.message ?? String(error), stack: error?.stack ?? ''});
-installFilesystem((operation, args) => new Promise((resolve, reject) => {
+const openRecordingFile = installFilesystem((operation, args) => new Promise((resolve, reject) => {
   const id = ++nextCallback;
   callbacks.set(id, {resolve, reject});
   emit('filesystem', {id, operation, args: args.map(item => encode(item))});
 }));
+const recordings = new Recordings(openRecordingFile);
 function encodeRecord(value, ancestors) {
   const entries = Object.entries(value);
   const record = {};
@@ -92,7 +94,7 @@ function encode(value, ancestors) {
   }
   if ((type !== 'object' && !constructorNames.has(value)) || value === null) return value;
   if (value instanceof Uint8Array) return {$quickjs: 'bytes', value};
-  if (value instanceof ReadableStream) return streams.encode(value);
+  if (value instanceof ReadableStream && !(value instanceof ScreenRecording)) return streams.encode(value);
   const prototype = Object.getPrototypeOf(value);
   if (Array.isArray(value) || prototype === Object.prototype || prototype === null) {
     ancestors ??= new Set();
@@ -181,6 +183,9 @@ async function call(request) {
   let object = objects.get(request.object);
   if (!object) throw new Error(`Unknown remote object ${request.object}`);
   if (request.operation === 'static') object = publicConstructors[remoteClass(object)];
+  if (request.operation === 'readable' && object instanceof ScreenRecording) return recordings.readable(object);
+  if (request.operation === 'call' && object instanceof Page && method === 'record') return recordings.start(object, decode(request.args[0] ?? {}));
+  if (request.operation === 'call' && object instanceof ScreenRecording && method === 'stop') return recordings.stop(object);
   if (request.operation === 'get') return object[method];
   if (request.operation === 'set') {
     if (!Reflect.set(object, method, decode(request.args[0]))) throw new TypeError(`Property is not writable: ${method}`);
@@ -256,7 +261,11 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   if (kind === 'timer') { fireTimer(Number(payload)); return; }
   const request = payload;
   if (kind === 'releaseFunction') { decodedFunctions.delete(`function:${request.id}`); return; }
-  if (kind === 'release') { clearEvents(request.id); objects.delete(request.id); return; }
+  if (kind === 'release') {
+    const object = objects.get(request.id);
+    if (object instanceof ScreenRecording) recordings.discard(object).catch(error => emit('log', `Recording cleanup failed: ${error.message}`));
+    clearEvents(request.id); objects.delete(request.id); return;
+  }
   if (kind === 'callbackResult') {
     const pending = callbacks.get(request.id);
     if (!pending) return;
