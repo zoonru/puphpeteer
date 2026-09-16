@@ -71,7 +71,7 @@ final class HostFilesystemTest extends TestCase
                 (new HostFilesystem())->call('read', [__DIR__ . '/missing/file']);
                 self::fail('Expected read failure');
             } catch (RuntimeException $error) {
-                self::assertStringContainsString('file_get_contents', $error->getMessage());
+                self::assertStringStartsWith('Filesystem read failed:', $error->getMessage());
             }
             $previous = set_error_handler($handler);
             self::assertSame($handler, $previous);

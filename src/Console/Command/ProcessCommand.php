@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Console\Command;
 
+use Amp\Process\Process;
 use Closure;
 use Override;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressIndicator;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -14,6 +14,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+
+use function Amp\async;
+use function Amp\ByteStream\buffer;
 
 /** Common process handling for the project CLI. */
 abstract class ProcessCommand extends Command
@@ -63,82 +66,35 @@ abstract class ProcessCommand extends Command
         bool $displayOutput = true,
     ): array {
         $started = microtime(true);
-        $pipes = [];
         $processEnvironment = getenv();
         $processEnvironment = is_array($processEnvironment) ? array_replace($processEnvironment, $environment) : $environment;
-        $process = proc_open(
-            $command,
-            [0 => ['file', 'php://stdin', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            $pipes,
-            $this->root,
-            $processEnvironment,
-        );
-        if (!is_resource($process)) {
-            throw new RuntimeException('Cannot start: ' . implode(' ', $command));
-        }
-
-        stream_set_blocking($pipes[1], false);
-        stream_set_blocking($pipes[2], false);
+        $process = Process::start($command, $this->root, $processEnvironment);
+        $process->getStdin()->close();
+        $stderrFuture = async(static fn (): string => buffer($process->getStderr()));
         $stdout = '';
-        $stderr = '';
         $pending = '';
-        $code = 1;
         $progress = $indicator && !$this->jsonOutput ? new ProgressIndicator($io) : null;
         $progress?->start($message);
 
         try {
-            while (true) {
-                $read = [];
-                if (!feof($pipes[1])) {
-                    $read[] = $pipes[1];
-                }
-                if (!feof($pipes[2])) {
-                    $read[] = $pipes[2];
-                }
-                if ([] !== $read) {
-                    $write = $except = [];
-                    @stream_select($read, $write, $except, 0, 100_000);
-                    foreach ($read as $stream) {
-                        $chunk = stream_get_contents($stream);
-                        if (false === $chunk || '' === $chunk) {
-                            continue;
-                        }
-                        if ($stream === $pipes[1]) {
-                            $stdout .= $chunk;
-                            $pending .= $chunk;
-                        } else {
-                            $stderr .= $chunk;
-                        }
-                    }
-                }
-                $status = proc_get_status($process);
-                if (!$status['running']) {
-                    $tail = stream_get_contents($pipes[1]) ?: '';
-                    $stdout .= $tail;
-                    $pending .= $tail;
-                    $stderr .= stream_get_contents($pipes[2]) ?: '';
-                    $code = $status['exitcode'];
-                }
-                // Deliver both streamed output and the final drain through the same handler.
+            while (null !== ($chunk = $process->getStdout()->read())) {
+                $stdout .= $chunk;
+                $pending .= $chunk;
                 while (($position = strpos($pending, "\n")) !== false) {
                     $line = rtrim(substr($pending, 0, $position), "\r");
                     $pending = substr($pending, $position + 1);
                     $onLine?->__invoke($line, $progress);
                 }
-                if (!$status['running']) {
-                    if ('' !== $pending) {
-                        $onLine?->__invoke(rtrim($pending, "\r"), $progress);
-                    }
-                    break;
-                }
                 $progress?->advance();
             }
+            if ('' !== $pending) {
+                $onLine?->__invoke(rtrim($pending, "\r"), $progress);
+            }
+            $code = $process->join();
+            $stderr = $stderrFuture->await();
         } finally {
-            fclose($pipes[1]);
-            fclose($pipes[2]);
-            $closedCode = proc_close($process);
-            if (-1 === $code && $closedCode >= 0) {
-                $code = $closedCode;
+            if ($process->isRunning()) {
+                $process->kill();
             }
         }
 

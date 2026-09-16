@@ -27,6 +27,7 @@
     "ext-json": "*",
     "ext-php_quickjs": "*",
     "amphp/amp": "^3.1",
+    "amphp/file": "^4.0",
     "amphp/websocket-client": "^2.0",
     "amphp/process": "^2.1",
     "amphp/http-client": "^5.3",
@@ -39,6 +40,11 @@
     "nikic/php-parser": "^5.6",
     "phpunit/phpunit": "^11",
     "vimeo/psalm": "^7.0.0-beta19"
+  },
+  "suggest": {
+    "ext-pcntl": "Recommended with ext-posix to terminate all processes of locally launched Chrome on Unix.",
+    "ext-posix": "Recommended with ext-pcntl to terminate all processes of locally launched Chrome on Unix.",
+    "ext-uv": "Recommended by amphp/file for asynchronous filesystem operations."
   },
   "autoload": {
     "psr-4": {

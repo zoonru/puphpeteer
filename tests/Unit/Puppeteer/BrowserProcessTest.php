@@ -10,6 +10,8 @@ use Nesk\Puphpeteer\Internal\BrowserProcess;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
+use function Amp\ByteStream\splitLines;
+
 final class BrowserProcessTest extends TestCase
 {
     public function testCloseWaitsForProcessBeforeRemovingItsProfile(): void
@@ -17,17 +19,18 @@ final class BrowserProcessTest extends TestCase
         $profile = sys_get_temp_dir() . '/puphpeteer-close-test-' . bin2hex(random_bytes(8));
         mkdir($profile, 0700);
         $process = Process::start([PHP_BINARY, '-r', <<<'CODE'
+            require $argv[1];
             echo "ready";
-            usleep(100000);
+            Amp\delay(0.1);
             // Simulate Chrome finishing a profile write after its close response.
-            exit(file_put_contents($argv[1] . '/Preferences', '{}') === 2 ? 0 : 1);
-            CODE, $profile]);
+            exit(file_put_contents($argv[2] . '/Preferences', '{}') === 2 ? 0 : 1);
+            CODE, dirname(__DIR__, 3) . '/vendor/autoload.php', $profile]);
         $reflection = new ReflectionClass(BrowserProcess::class);
         $browser = $reflection->newInstanceWithoutConstructor();
         $reflection->getProperty('process')->setValue($browser, $process);
         $reflection->getProperty('temporaryProfile')->setValue($browser, $profile);
         try {
-            self::assertSame('ready', $process->getStdout()->read(new TimeoutCancellation(5)));
+            self::assertSame('ready', self::readLine($process));
             $browser->close();
             self::assertSame(0, $process->join(), 'Process must finish its profile write, not be killed');
             self::assertDirectoryDoesNotExist($profile);
@@ -55,18 +58,19 @@ final class BrowserProcessTest extends TestCase
         mkdir($profile, 0700);
         file_put_contents($profile . '/Preferences', 'user data');
         $process = Process::start([PHP_BINARY, '-r', <<<'CODE'
+            require $argv[1];
             $processGroupId = posix_setsid();
-            $child = proc_open([PHP_BINARY, '-r', 'sleep(60);'], [STDIN, STDOUT, STDERR], $pipes);
+            $child = proc_open([PHP_BINARY, '-r', 'require $argv[1]; Amp\\delay(60);', $argv[1]], [STDIN, STDOUT, STDERR], $pipes);
             echo $processGroupId, ':', proc_get_status($child)['pid'], "\n";
-            sleep(60);
-            CODE]);
+            Amp\delay(60);
+            CODE, dirname(__DIR__, 3) . '/vendor/autoload.php']);
         $reflection = new ReflectionClass(BrowserProcess::class);
         $browser = $reflection->newInstanceWithoutConstructor();
         $reflection->getProperty('process')->setValue($browser, $process);
         $reflection->getProperty('temporaryProfile')->setValue($browser, $profile);
         $processGroupId = 0;
         try {
-            [$processGroupId, $pid] = array_map(intval(...), explode(':', trim($process->getStdout()->read(new TimeoutCancellation(5)) ?? '')));
+            [$processGroupId, $pid] = array_map(intval(...), explode(':', self::readLine($process)));
             $reflection->getProperty('processGroupId')->setValue($browser, $processGroupId);
             self::assertGreaterThan(0, $pid);
             $start = hrtime(true);
@@ -100,12 +104,13 @@ final class BrowserProcessTest extends TestCase
         $profile = sys_get_temp_dir() . '/puphpeteer-reparented-test-' . bin2hex(random_bytes(8));
         mkdir($profile, 0700);
         $process = Process::start([PHP_BINARY, '-r', <<<'CODE'
+            require $argv[1];
             $processGroupId = posix_setsid();
-            $child = proc_open([PHP_BINARY, '-r', 'while (true) { file_put_contents($argv[1] . "/Preferences", "{}"); usleep(10000); }', $argv[1], '--user-data-dir=' . $argv[1]], [STDIN, STDOUT, STDERR], $pipes);
-            while (!is_file($argv[1] . '/Preferences')) { usleep(1000); }
+            $child = proc_open([PHP_BINARY, '-r', 'require $argv[1]; while (true) { file_put_contents($argv[2] . "/Preferences", "{}"); Amp\\delay(0.01); }', $argv[1], $argv[2], '--user-data-dir=' . $argv[2]], [STDIN, STDOUT, STDERR], $pipes);
+            while (!is_file($argv[2] . '/Preferences')) { Amp\delay(0.001); }
             echo $processGroupId, ':', proc_get_status($child)['pid'], "\n";
-            sleep(60);
-            CODE, $profile]);
+            Amp\delay(60);
+            CODE, dirname(__DIR__, 3) . '/vendor/autoload.php', $profile]);
         $reflection = new ReflectionClass(BrowserProcess::class);
         $browser = $reflection->newInstanceWithoutConstructor();
         $reflection->getProperty('process')->setValue($browser, $process);
@@ -113,7 +118,7 @@ final class BrowserProcessTest extends TestCase
         $processGroupId = 0;
         $pid = 0;
         try {
-            [$processGroupId, $pid] = array_map(intval(...), explode(':', trim($process->getStdout()->read(new TimeoutCancellation(5)) ?? '')));
+            [$processGroupId, $pid] = array_map(intval(...), explode(':', self::readLine($process)));
             $reflection->getProperty('processGroupId')->setValue($browser, $processGroupId);
             self::assertGreaterThan(0, $pid);
             $process->kill();
@@ -139,5 +144,14 @@ final class BrowserProcessTest extends TestCase
                 rmdir($profile);
             }
         }
+    }
+
+    private static function readLine(Process $process): string
+    {
+        foreach (splitLines($process->getStdout(), new TimeoutCancellation(5)) as $line) {
+            return $line;
+        }
+
+        return '';
     }
 }

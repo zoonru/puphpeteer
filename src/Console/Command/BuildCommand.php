@@ -10,6 +10,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+use function Amp\File\getSize;
+use function Amp\File\isFile;
+
 final class BuildCommand extends ProcessCommand
 {
     #[Override]
@@ -57,7 +60,7 @@ final class BuildCommand extends ProcessCommand
             return $result['code'];
         }
         $bundle = $this->root . '/resources/puppeteer.js';
-        $size = is_file($bundle) ? filesize($bundle) : false;
+        $size = isFile($bundle) ? getSize($bundle) : false;
         if ($this->jsonOutput) {
             $this->writeJson($output, ['command' => 'build', 'status' => 'ok', 'mode' => $input->getOption('debug') ? 'debug' : 'production', 'bundle_bytes' => false === $size ? null : $size, 'elapsed' => $result['elapsed']]);
 

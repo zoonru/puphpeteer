@@ -54,6 +54,7 @@ try {
 - PHP **8.4+** и Composer.
 - Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs). [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
 - Локальный Chrome или подключение к Browserless.
+- Для надёжного завершения локальных процессов Chrome в Unix: необязательные расширения `pcntl` и `posix`.
 - Для скачивания локального Chrome: HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`.
 
 Для работы пакета и установки браузера Node.js и npm не нужны. Готовые JS-bundle входят в пакет.

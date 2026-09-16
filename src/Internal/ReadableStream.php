@@ -18,9 +18,8 @@ use Closure;
 use IteratorAggregate;
 use Nesk\Puphpeteer\Client;
 use Override;
+use Revolt\EventLoop;
 use Throwable;
-
-use function Amp\delay;
 
 /** @internal A byte stream owned by QuickJS, consumed on demand by PHP
  * @implements IteratorAggregate<int, string>
@@ -60,7 +59,9 @@ final class ReadableStream implements \Amp\ByteStream\ReadableStream, IteratorAg
         $combined = new CompositeCancellation($this->cancellation->getCancellation(), ...(null === $cancellation ? [] : [$cancellation]));
         try {
             // Even buffered JS chunks must let timers and other fibers run.
-            delay(0, cancellation: $combined);
+            $yield = new DeferredFuture();
+            EventLoop::defer(static fn () => $yield->complete(null));
+            $yield->getFuture()->await($combined);
             $chunk = $this->client->call($this->id, 'read', [], 'stream', $combined)->await();
             if (null === $chunk) {
                 $this->finish();

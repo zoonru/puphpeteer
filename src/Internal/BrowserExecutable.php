@@ -6,6 +6,8 @@ namespace Nesk\Puphpeteer\Internal;
 
 use RuntimeException;
 
+use function Amp\File\getStatus;
+
 /** @internal Resolves the same pinned installation as browser:install. */
 final class BrowserExecutable
 {
@@ -17,7 +19,8 @@ final class BrowserExecutable
         }
         $installation = new BrowserInstallation($packageRoot);
         $executable = $installation->executable();
-        if (is_file($executable) && is_executable($executable)) {
+        $status = getStatus($executable);
+        if (null !== $status && 0100000 === ($status['mode'] & 0170000) && (PHP_OS_FAMILY === 'Windows' || 0 !== ($status['mode'] & 0111))) {
             return $executable;
         }
         throw new RuntimeException('Compatible Chrome not found at ' . $executable . '; run php bin/console browser:install in the package directory, or set PUPPETEER_EXECUTABLE_PATH');

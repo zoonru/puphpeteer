@@ -30,6 +30,7 @@ use WeakMap;
 use WeakReference;
 
 use function Amp\async;
+use function Amp\File\read;
 
 /** @internal Async transport over upstream Puppeteer in QuickJS. Use Puppeteer as the public entry point. */
 final class Client
@@ -69,10 +70,7 @@ final class Client
         $this->logger = $logger ?? new Internal\StderrLogger();
         $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, timeoutMs: 2000, maxStack: 512 * 1024);
         $this->js->register('now', static fn (): float => (float) hrtime(true) / 1e6);
-        $source = file_get_contents($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
-        if (false === $source) {
-            throw new RuntimeException('Build the Puppeteer bundle first.');
-        }
+        $source = read($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
         $this->js->eval($source);
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
     }
@@ -213,7 +211,9 @@ final class Client
             }
             $this->deliver('messageChunk', substr($message, $offset, $end - $offset));
             $offset = $end;
-            \Amp\delay(0);
+            $yield = new DeferredFuture();
+            EventLoop::defer(static fn () => $yield->complete(null));
+            $yield->getFuture()->await();
             if ($this->closed) {
                 return;
             }

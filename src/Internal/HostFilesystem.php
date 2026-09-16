@@ -4,25 +4,30 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Internal;
 
+use Amp\File\File;
 use InvalidArgumentException;
 use RuntimeException;
+use Throwable;
+
+use function Amp\File\createDirectory;
+use function Amp\File\createDirectoryRecursively;
+use function Amp\File\isDirectory;
+use function Amp\File\openFile;
+use function Amp\File\read as readFile;
+use function Amp\File\write as writeFile;
 
 /** @internal Filesystem operations requested by the Puppeteer environment. */
 final class HostFilesystem
 {
-    /** @var array<int, resource> */
+    /** @var array<int, File> */
     private array $handles = [];
     private int $sequence = 0;
 
     public function call(string $operation, array $arguments): mixed
     {
-        // Convert PHP I/O warnings into rejected JS promises; never silently lose writes.
-        set_error_handler(static function (int $severity, string $message): never {
-            throw new RuntimeException($message);
-        });
         try {
             return match ($operation) {
-                'read' => base64_encode($this->read($arguments[0])),
+                'read' => base64_encode(readFile($arguments[0])),
                 'write' => $this->write($arguments[0], $arguments[1]),
                 'mkdir' => $this->mkdir($arguments[0], $arguments[1]),
                 'open' => $this->open($arguments[0]),
@@ -31,41 +36,30 @@ final class HostFilesystem
                 'close' => $this->close($arguments[0]),
                 default => throw new InvalidArgumentException('Unknown filesystem operation: ' . $operation),
             };
-        } finally {
-            restore_error_handler();
+        } catch (InvalidArgumentException|RuntimeException $error) {
+            throw $error;
+        } catch (Throwable $error) {
+            $messages = [];
+            for ($cause = $error; null !== $cause; $cause = $cause->getPrevious()) {
+                $messages[] = $cause->getMessage();
+            }
+            throw new RuntimeException("Filesystem $operation failed: " . implode(': ', array_unique($messages)), previous: $error);
         }
-    }
-
-    private function read(string $path): string
-    {
-        $data = file_get_contents($path);
-        if (false === $data) {
-            throw new RuntimeException('Cannot read file: ' . $path);
-        }
-
-        return $data;
     }
 
     private function write(string $path, string $data): null
     {
-        $id = $this->open($path);
-        try {
-            $this->append($id, $data);
-        } finally {
-            $this->close($id);
-        }
+        writeFile($path, $data);
 
         return null;
     }
 
     private function mkdir(string $path, bool $recursive): null
     {
-        if ($recursive && is_dir($path)) {
+        if ($recursive && isDirectory($path)) {
             return null;
         }
-        if (!mkdir($path, 0777, $recursive)) {
-            throw new RuntimeException('Cannot create directory: ' . $path);
-        }
+        $recursive ? createDirectoryRecursively($path) : createDirectory($path);
 
         return null;
     }
@@ -73,7 +67,7 @@ final class HostFilesystem
     private function openRecording(string $path, bool $overwrite): int
     {
         $directory = dirname($path);
-        if (!is_dir($directory)) {
+        if (!isDirectory($directory)) {
             $this->mkdir($directory, true);
         }
 
@@ -82,12 +76,8 @@ final class HostFilesystem
 
     private function open(string $path, string $mode = 'wb'): int
     {
-        $handle = fopen($path, $mode);
-        if (false === $handle) {
-            throw new RuntimeException('Cannot open file: ' . $path);
-        }
         $id = ++$this->sequence;
-        $this->handles[$id] = $handle;
+        $this->handles[$id] = openFile($path, $mode);
 
         return $id;
     }
@@ -95,14 +85,7 @@ final class HostFilesystem
     private function append(int $id, string $data): null
     {
         $handle = $this->handles[$id] ?? throw new RuntimeException('Unknown file handle');
-        $offset = 0;
-        while ($offset < strlen($data)) {
-            $written = fwrite($handle, substr($data, $offset));
-            if (false === $written || 0 === $written) {
-                throw new RuntimeException('Cannot write file');
-            }
-            $offset += $written;
-        }
+        $handle->write($data);
 
         return null;
     }
@@ -111,7 +94,7 @@ final class HostFilesystem
     {
         $handle = $this->handles[$id] ?? throw new RuntimeException('Unknown file handle');
         unset($this->handles[$id]);
-        fclose($handle);
+        $handle->close();
 
         return null;
     }
@@ -119,13 +102,8 @@ final class HostFilesystem
     public function closeAll(): void
     {
         foreach ($this->handles as $handle) {
-            fclose($handle);
+            $handle->close();
         }
         $this->handles = [];
-    }
-
-    public function __destruct()
-    {
-        $this->closeAll();
     }
 }

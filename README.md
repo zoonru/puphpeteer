@@ -54,6 +54,7 @@ try {
 - PHP **8.4+** and Composer.
 - The enabled [php-quickjs extension fork](https://github.com/xtrime-ru/php-quickjs). [Build and installation instructions](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
 - Local Chrome or access to Browserless.
+- For reliable cleanup of locally launched Chrome processes on Unix: the optional `pcntl` and `posix` extensions.
 - To download local Chrome: PHP HTTPS streams (`allow_url_fopen=1`, OpenSSL) and the `unzip` command.
 
 Node.js and npm are not required to run the package or install a browser. Ready-to-use JS bundles are included.

@@ -32,7 +32,13 @@ final class ProcessRunnerTest extends TestCase
             self::markTestSkipped('Process inspection is unavailable in this sandbox');
         }
         $started = hrtime(true);
-        $process = Process::start([PHP_BINARY, '-r', '$p = proc_open([PHP_BINARY, "-r", "sleep(30);"], [STDIN, STDOUT, STDERR], $pipes); echo proc_get_status($p)["pid"], "\\n"; flush(); sleep(30);']);
+        $process = Process::start([PHP_BINARY, '-r', <<<'CODE'
+            require $argv[1];
+            $child = proc_open([PHP_BINARY, '-r', 'require $argv[1]; Amp\\delay(30);', $argv[1]], [STDIN, STDOUT, STDERR], $pipes);
+            echo proc_get_status($child)['pid'], "\n";
+            flush();
+            Amp\delay(30);
+            CODE, dirname(__DIR__, 3) . '/vendor/autoload.php']);
         $pid = '';
         try {
             ProcessRunner::collect($process, 0.3, static function (string $chunk) use (&$pid): void { $pid .= $chunk; });

@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-use Amp\ByteStream\WritableResourceStream;
 use Nesk\Puphpeteer\Puppeteer\Puppeteer;
-use RuntimeException;
 
 use function Amp\async;
 use function Amp\ByteStream\pipe;
 use function Amp\delay;
+use function Amp\File\openFile;
 
 $path = 'recording.mp4';
-$resource = fopen($path, 'wb');
-if (false === $resource) {
-    throw new RuntimeException('Cannot open recording output');
-}
-
-$output = new WritableResourceStream($resource);
+$output = openFile($path, 'w');
 $browser = (new Puppeteer())->launch();
 $recording = null;
 try {
@@ -32,7 +26,7 @@ try {
     $bytes = $copy->await();
     $output->end();
 
-    printf("Streamed %d bytes to %s\n", $bytes, realpath($path));
+    printf("Streamed %d bytes to %s\n", $bytes, $path);
 } finally {
     $recording?->close();
     $output->close();

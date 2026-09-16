@@ -108,10 +108,10 @@ final class RuntimeLifecycleTest extends TestCase
             for ($i = 0; $i < 100; ++$i) {
                 $client->call(1, 'echo', [new JsFunction('() => 2')])->await();
             }
-            \Amp\delay(0);
+            \Amp\delay(0.001);
             self::assertSame(1, $client->call(1, 'functionCount', [])->await());
             unset($live);
-            \Amp\delay(0);
+            \Amp\delay(0.001);
             self::assertSame(0, $client->call(1, 'functionCount', [])->await());
         } finally {
             $client->close();

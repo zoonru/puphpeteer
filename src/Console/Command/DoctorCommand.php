@@ -9,6 +9,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+use function Amp\File\isFile;
+
 final class DoctorCommand extends ProcessCommand
 {
     #[Override]
@@ -25,7 +27,7 @@ final class DoctorCommand extends ProcessCommand
         $checks = [
             ['PHP', PHP_VERSION, version_compare(PHP_VERSION, '8.4.0', '>=')],
             ['php-quickjs', $extensionReady ? 'loaded in PHP' : 'not loaded', $extensionReady],
-            ['bundle', $this->root . '/resources/puppeteer.js', is_file($this->root . '/resources/puppeteer.js')],
+            ['bundle', $this->root . '/resources/puppeteer.js', isFile($this->root . '/resources/puppeteer.js')],
         ];
         $failed = count(array_filter($checks, static fn (array $check): bool => !$check[2]));
         if ($this->jsonOutput) {

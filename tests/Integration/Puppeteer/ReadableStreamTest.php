@@ -92,7 +92,7 @@ final class ReadableStreamTest extends TestCase
             self::assertGreaterThanOrEqual($chunks, $ticks, 'Ready chunks must not starve the event loop');
             self::assertTrue($stream->isClosed());
             self::assertNull($stream->read());
-            delay(0);
+            delay(0.001);
             self::assertSame(1, $closed);
             self::assertSame([], (new ReflectionProperty($client, 'streams'))->getValue($client));
         } finally {
@@ -121,7 +121,7 @@ final class ReadableStreamTest extends TestCase
             } catch (CancelledException) {
                 self::assertTrue(true);
             }
-            delay(0);
+            delay(0.001);
             self::assertTrue($stream->isClosed());
             self::assertSame(1, $client->call(-1, 'stats', [])->await()['cancelled']);
             self::assertSame(42, $client->call(-1, 'ping', [])->await());
@@ -144,7 +144,7 @@ final class ReadableStreamTest extends TestCase
             $unread = $client->call(-1, 'stream', ['pending'])->await();
             unset($unread);
             gc_collect_cycles();
-            delay(0);
+            delay(0.001);
             self::assertSame(2, $client->call(-1, 'stats', [])->await()['cancelled']);
             self::assertSame([], (new ReflectionProperty($client, 'streams'))->getValue($client));
         } finally {
