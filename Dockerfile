@@ -1,10 +1,18 @@
 ARG PHP_VERSION=8.5
+ARG UV_REF=670a609efc36c9043be37bae4126f06ed30fde21
 FROM node:22-bookworm-slim AS node
 FROM composer:2 AS composer
 FROM php:${PHP_VERSION}-cli-bookworm AS php-base
+ARG UV_REF
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git unzip libicu-dev libzip-dev time procps \
-    && docker-php-ext-install -j2 intl zip pcntl \
+    git unzip libicu-dev libuv1-dev libzip-dev time procps \
+    && mkdir -p /usr/src/php/ext/uv \
+    && cd /usr/src/php/ext/uv \
+    && git init \
+    && git remote add origin https://github.com/amphp/ext-uv.git \
+    && git fetch --depth=1 origin "$UV_REF" \
+    && git checkout --detach FETCH_HEAD \
+    && docker-php-ext-install -j2 intl zip pcntl uv \
     && rm -rf /var/lib/apt/lists/*
 
 FROM php-base AS extension
