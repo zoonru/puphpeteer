@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<psalm errorLevel="3" findUnusedCode="false" cacheDirectory=".psalm-cache" resolveFromConfigFile="true"
+<psalm errorLevel="3" findUnusedCode="false" runTaintAnalysis="false" cacheDirectory=".psalm-cache" resolveFromConfigFile="true"
        xmlns="https://getpsalm.org/schema/config" autoloader="vendor/autoload.php">
     <projectFiles>
         <directory name="src" />
