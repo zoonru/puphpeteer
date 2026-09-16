@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Generator\Shared;
 
+use Nesk\Puphpeteer\Console\Command\Generate\CodeStyle;
+use Nesk\Puphpeteer\Console\Command\Generate\Synchronizer;
 use Override;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
-use Zoon\Puphpeteer\Tooling\CodeStyle;
-use Zoon\Puphpeteer\Tooling\Synchronizer;
 
 /** @psalm-import-type ClassSpec from Synchronizer */
 final class SynchronizerTest extends TestCase

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Console\Command;
 
+use Nesk\Puphpeteer\Internal\BrowserInstallation;
 use Override;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,13 +22,15 @@ final class BrowserInstallCommand extends ProcessCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $result = $this->runProcess($io, [$this->phpBinary, 'tools/install-browser.php'], message: 'Downloading Chrome…');
+        $started = microtime(true);
+        $path = BrowserInstallation::skipDownload() ? null : (new BrowserInstallation($this->root))->install();
+        $elapsed = microtime(true) - $started;
         if ($this->jsonOutput) {
-            $this->writeJson($output, ['command' => 'browser:install', 'status' => 0 === $result['code'] ? 'ok' : 'error', 'code' => $result['code'], 'elapsed' => $result['elapsed']]);
-        } elseif (0 === $result['code']) {
-            $io->success(trim($result['stdout']));
+            $this->writeJson($output, ['command' => 'browser:install', 'status' => 'ok', 'path' => $path, 'skipped' => null === $path, 'elapsed' => $elapsed]);
+        } else {
+            $io->success($path ?? 'Chrome download skipped.');
         }
 
-        return $result['code'];
+        return self::SUCCESS;
     }
 }

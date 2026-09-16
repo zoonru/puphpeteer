@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zoon\Puphpeteer\Tooling;
+namespace Nesk\Puphpeteer\Console\Command\Generate;
 
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -27,7 +27,7 @@ final class CodeStyle
         if ([] === $sources) {
             return [];
         }
-        $root = dirname(__DIR__, 3);
+        $root = dirname(__DIR__, 4);
         $directory = sys_get_temp_dir() . '/puphpeteer-style-' . bin2hex(random_bytes(12));
         if (!mkdir($directory, 0700)) {
             throw new RuntimeException('Cannot create PHP formatting directory');

@@ -266,7 +266,7 @@ export default {example: options => plugin(options)};
 ```
 
 ```sh
-docker compose run --rm php npm run build -- --plugins=./app-plugins.js
+docker compose run --rm php php bin/console build --plugins=./app-plugins.js
 ```
 
 Сохраните собранный `resources/puppeteer.js` вместе с приложением. Для отдельного файла используйте `new Puppeteer(['bundle' => '/absolute/path/puppeteer.js'])`, затем `$puppeteer->use('example', $options)`. Явный `bundle` имеет приоритет; иначе без плагинов выбирается меньший `resources/puppeteer-core.js`. Проверка воспроизводимости требует того же `--plugins`.
@@ -435,7 +435,7 @@ docker compose run --rm php npm ci
 ```sh
 docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@latest
 docker compose run --rm php php bin/console generate
-docker compose run --rm php npm run build
+docker compose run --rm php php bin/console build
 docker compose build chrome
 docker compose run --rm chrome php bin/console test all --no-interaction
 ```
@@ -451,7 +451,7 @@ docker compose run --rm chrome composer test
 
 Стиль PHP — Symfony (`PHP CS Fixer`) с пробелами вокруг `.` и импортом классов, включая встроенные. Проверка: `composer cs:check`, исправление всех PHP-файлов: `composer cs:fix` (также через `docker compose run --rm php ...`). Генератор применяет те же правила. Проверка включена в `composer test` и CI.
 
-`npm run build` собирает минифицированные CDP bundle: `resources/puppeteer-core.js` без плагинов и `resources/puppeteer.js` с плагинами. `--debug` создаёт читаемый JS. Коммитьте ресурсы вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости; `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
+`php bin/console build` собирает минифицированные CDP bundle: `resources/puppeteer-core.js` без плагинов и `resources/puppeteer.js` с плагинами. `--debug` создаёт читаемый JS. Коммитьте ресурсы вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости; `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
 
 Без расширения доступны только unit-тесты и Psalm: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, затем `php vendor/bin/phpunit` и `composer psalm`.
 

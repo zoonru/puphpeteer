@@ -20,7 +20,7 @@ final class InstallationTest extends TestCase
         $app = realpath($app) ?: $app;
         try {
             $snapshot = $app . '/package';
-            foreach (['composer.json', 'src', 'resources', 'bin', 'upstream', 'tools/install-browser.php'] as $file) {
+            foreach (['composer.json', 'src', 'resources', 'bin', 'upstream'] as $file) {
                 self::copy($root . '/' . $file, $snapshot . '/' . $file);
             }
             $repositories = [['type' => 'path', 'url' => $snapshot, 'options' => ['symlink' => true, 'versions' => ['zoon/puphpeteer' => 'dev-fixture']]]];

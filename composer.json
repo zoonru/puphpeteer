@@ -56,8 +56,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Nesk\\Puphpeteer\\Tests\\": "tests/",
-      "Zoon\\Puphpeteer\\Tooling\\": "tools/php/src/"
+      "Nesk\\Puphpeteer\\Tests\\": "tests/"
     }
   },
   "bin": [
@@ -71,17 +70,17 @@
       "npm run test-generator",
       "npm run test-plugins",
       "@verify-php",
-      "npm run build:check"
+      "@php bin/console build --check --no-interaction"
     ],
     "psalm": "@php vendor/bin/psalm",
-    "build": "npm run build",
+    "build": "@php bin/console build --no-interaction",
     "browser:install": "@php bin/console browser:install",
     "test-release": "@php tests/Release/Puppeteer/run.php",
     "benchmark": "@php bin/console benchmark",
     "update-php": "@php bin/console generate",
-    "verify-php": "node tools/upstream/update.cjs --check",
-    "post-install-cmd": "@php tools/install-browser.php",
-    "post-update-cmd": "@php tools/install-browser.php",
+    "verify-php": "@php bin/console generate --check --no-interaction",
+    "post-install-cmd": "@browser:install",
+    "post-update-cmd": "@browser:install",
     "cs:check": "@php vendor/bin/php-cs-fixer fix --dry-run --diff",
     "cs:fix": "@php vendor/bin/php-cs-fixer fix"
   },

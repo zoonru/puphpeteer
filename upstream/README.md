@@ -1,6 +1,6 @@
 # QuickJS PHP API generation
 
-`node tools/upstream/update.cjs` extracts the installed, exact `puppeteer-core`
+`php bin/console generate` extracts the installed, exact `puppeteer-core`
 TypeScript declarations and generates PHP wrappers with automatic awaiting.
 Use `--check` to compare without writing tracked files, or `--offline` to require
 an existing matching source cache. A normal clean run may download the pinned

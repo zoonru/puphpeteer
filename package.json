@@ -7,8 +7,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "node tools/build.cjs",
-    "build:check": "node tools/build.cjs --check",
+    "build": "php bin/console build --no-interaction",
+    "build:check": "php bin/console build --check --no-interaction",
     "test-generator": "node --test tests/Generator/Puppeteer/*.test.cjs",
     "test-plugins": "node --test tests/Plugins/Puppeteer/*.test.cjs"
   },

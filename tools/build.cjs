@@ -40,7 +40,7 @@ const pluginFile = pluginArgument ? path.resolve(root, pluginArgument.slice('--p
   for (const file of outputs) {
     if (check) {
       if (!fs.existsSync(file.path) || !fs.readFileSync(file.path).equals(file.contents)) {
-        throw new Error(`${path.relative(root, file.path)} is missing or outdated; run npm run build and commit resources.`);
+        throw new Error(`${path.relative(root, file.path)} is missing or outdated; run php bin/console build and commit resources.`);
       }
     } else {
       fs.mkdirSync(path.dirname(file.path), {recursive: true});

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Generator\Shared;
 
+use Nesk\Puphpeteer\Console\Command\Generate\CodeStyle;
 use PHPUnit\Framework\TestCase;
-use Zoon\Puphpeteer\Tooling\CodeStyle;
 
 final class CodeStyleTest extends TestCase
 {

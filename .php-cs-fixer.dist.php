@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use Nesk\Puphpeteer\Console\Command\Generate\GlobalClassImportFixer;
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
-use Zoon\Puphpeteer\Tooling\GlobalClassImportFixer;
 
-require_once __DIR__ . '/tools/php/src/GlobalClassImportFixer.php';
+require_once __DIR__ . '/src/Console/Command/Generate/GlobalClassImportFixer.php';
 
 return (new Config())
     ->registerCustomFixers([new GlobalClassImportFixer()])

@@ -1,6 +1,6 @@
 <?php
 
-// @generated aliases by tools/upstream/update.cjs. Do not edit.
+// @generated aliases by bin/console generate. Do not edit.
 
 declare(strict_types=1);
 use Nesk\Puphpeteer\Resources\Accessibility;

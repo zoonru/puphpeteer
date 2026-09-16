@@ -16,7 +16,7 @@ test('upstream removal deletes PHP methods and classes; check leaves files intac
         members: {'Page.removed': {}, 'OldClass.title': {}}};
     const generate = () => {
         const model = buildPhpModel({api: extractPublicApi(entry, {root}), config});
-        const result = spawnSync('php', [path.resolve(__dirname, '../../../tools/php/synchronize.php')], {
+        const result = spawnSync('php', [path.resolve(__dirname, '../../../bin/console'), 'generate:php', 'synchronize', '--no-interaction', '--no-ansi'], {
             input: JSON.stringify({root, classes: model.classes}), encoding: 'utf8',
         });
         assert.equal(result.status, 0, result.stderr || result.stdout);

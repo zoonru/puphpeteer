@@ -9,6 +9,7 @@ use Nesk\Puphpeteer\Console\Command\BrowserInstallCommand;
 use Nesk\Puphpeteer\Console\Command\BuildCommand;
 use Nesk\Puphpeteer\Console\Command\DoctorCommand;
 use Nesk\Puphpeteer\Console\Command\GenerateCommand;
+use Nesk\Puphpeteer\Console\Command\GeneratePhpCommand;
 use Nesk\Puphpeteer\Console\Command\TestCommand;
 use Symfony\Component\Console\Application;
 
@@ -20,6 +21,7 @@ final class ConsoleApplication extends Application
         $this->addCommands([
             new BuildCommand('build'),
             new GenerateCommand('generate'),
+            new GeneratePhpCommand('generate:php'),
             new BrowserInstallCommand('browser:install'),
             new TestCommand('test'),
             new TestCommand('test:unit', 'unit'),

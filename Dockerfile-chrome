@@ -4,9 +4,7 @@ USER root
 WORKDIR /tmp/browser-install
 COPY upstream/lock.json ./upstream/lock.json
 COPY src/Internal/BrowserInstallation.php ./src/Internal/BrowserInstallation.php
-COPY tools/install-browser.php ./tools/install-browser.php
-RUN PUPPETEER_SKIP_DOWNLOAD=false PUPPETEER_CACHE_DIR=/opt/chrome php tools/install-browser.php \
-    && php -r 'require "src/Internal/BrowserInstallation.php"; putenv("PUPPETEER_CACHE_DIR=/opt/chrome"); symlink((new \Nesk\Puphpeteer\Internal\BrowserInstallation(getcwd()))->executable(), "/opt/chrome/executable");' \
+RUN PUPPETEER_SKIP_DOWNLOAD=false PUPPETEER_CACHE_DIR=/opt/chrome php -r 'require "src/Internal/BrowserInstallation.php"; $installer = new \Nesk\Puphpeteer\Internal\BrowserInstallation(getcwd()); $installer->install(); symlink($installer->executable(), "/opt/chrome/executable");' \
     && chmod -R a+rX /opt/chrome
 
 FROM ${BASE_IMAGE}

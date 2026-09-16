@@ -49,7 +49,7 @@ explicit-null arguments, variadics, full regeneration and removal of obsolete me
 These fixtures also run as part of the default PHPUnit suite. `npm run test-generator`
 checks extraction/type mapping and upstream method/class removal, including read-only checks; `composer verify-php` checks generated artifacts.
 
-`composer psalm` checks `src/`, `tools/php/`, `tests/Generator/`, `tests/Unit/`,
+`composer psalm` checks `src/`, `tests/Generator/`, `tests/Unit/`,
 `tests/Integration/` and `tests/Support/` at level 3 without a baseline. The browser smoke script
 is executed separately and is not included in static analysis.
 

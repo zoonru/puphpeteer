@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zoon\Puphpeteer\Tooling;
+namespace Nesk\Puphpeteer\Console\Command\Generate;
 
 use Override;
 use PhpCsFixer\Fixer\FixerInterface;
