@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 use Amp\Process\Process;
-use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use Nesk\Puphpeteer\Tests\Support\Shared\ProcessRunner;
 
 use function Amp\async;

@@ -5,7 +5,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 ini_set('display_errors', 'stderr');
 
 use Nesk\Puphpeteer\JsFunction;
-use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use Nesk\Puphpeteer\Tests\Support\Puppeteer\LargePayload;
 use Revolt\EventLoop;
 use Symfony\Component\Console\Helper\Table;

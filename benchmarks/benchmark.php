@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-use Nesk\Puphpeteer\Puppeteer;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 use function Amp\async;

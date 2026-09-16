@@ -106,9 +106,6 @@ jobs:
           exit 1
       - name: Browserless failure boundaries
         run: docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" --network puphpeteer_default -e "BROWSER_WS=ws://browserless:3000?token=local-tests" puphpeteer-base php tests/Browser/Puppeteer/browserless.php
-      - name: Benchmark
-        if: ${{ github.event_name == 'release' }}
-        run: docker run --rm --init --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer -v "$PWD:/app" --shm-size=1g --cap-add=SYS_ADMIN -e XDG_CONFIG_HOME=/tmp/chrome-config puphpeteer-chrome composer benchmark -- --trials=5 --iterations=1000
       - name: Container logs
         if: failure()
         run: docker compose logs --no-color
