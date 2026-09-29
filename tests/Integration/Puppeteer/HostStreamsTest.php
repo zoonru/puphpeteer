@@ -57,12 +57,12 @@ final class HostStreamsTest extends TestCase
               const {done} = await reader.read();
               return [reason, done];
             })()
-          ]).then(value => __quickjsEmit('result', value), error => __quickjsEmit('error', error.message));
+          ]).then(value => quickjs.postMessage(['result', value]), error => quickjs.postMessage(['error', error.message]));
         }
         JS);
         self::assertInstanceOf(Callback::class, $dispatch);
-        $batch = $dispatch->dispatch([], 1000);
-        self::assertFalse($batch['pending']);
-        self::assertSame([['result', [[1, 2, 3], 'stream failed', ['cancelled', true]]]], $batch['messages']);
+        $dispatch();
+        $js->executePendingJobs(1000);
+        self::assertSame([['result', [[1, 2, 3], 'stream failed', ['cancelled', true]]]], $js->drainMessages());
     }
 }

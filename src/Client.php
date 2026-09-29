@@ -37,10 +37,11 @@ final class Client
 {
     private QuickJS $js;
     private Callback $dispatch;
+    private Callback $drain;
+    private bool $draining = false;
     private ?WebsocketConnection $socket = null;
     private array $writes = [];
     private bool $writing = false;
-    private ?string $pumpWatcher = null;
     private bool $connecting = false;
     private bool $closed = false;
     private string $endpoint = '';
@@ -64,15 +65,16 @@ final class Client
 
     public function __construct(?string $bundle = null, ?LoggerInterface $logger = null)
     {
-        if (!method_exists(Callback::class, 'dispatch')) {
-            throw new RuntimeException('Load the php-quickjs fork with Js\\Callback::dispatch().');
+        if (!method_exists(QuickJS::class, 'drainMessages')) {
+            throw new RuntimeException('Load php-quickjs >=0.0.3 with automatic Promise awaiting and QuickJS::drainMessages().');
         }
         $this->logger = $logger ?? new Internal\StderrLogger();
-        $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, timeoutMs: 2000, maxStack: 512 * 1024);
+        $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, maxStack: 512 * 1024);
         $this->js->register('now', static fn (): float => (float) hrtime(true) / 1e6);
         $source = read($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
         $this->js->eval($source);
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
+        $this->drain = $this->js->eval('globalThis.__quickjsDrain');
     }
 
     /**
@@ -226,116 +228,129 @@ final class Client
         if ($this->closed) {
             return;
         }
-        $this->pump([$kind, $payload]);
+        ($this->dispatch)($kind, $payload);
+        $this->drive();
     }
 
-    /** @param list<mixed>|null $arguments */
-    private function pump(?array $arguments = null): void
+    private function drive(): void
+    {
+        if ($this->draining || $this->closed) {
+            return;
+        }
+        $this->draining = true;
+        async(function (): void {
+            try {
+                while (!$this->closed && ($this->drain)()) {
+                    $messages = $this->js->drainMessages();
+                    $transportClosed = false;
+                    foreach ($messages as [$kind, $payload]) {
+                        if ('close' === $kind) {
+                            $transportClosed = true;
+                        } else {
+                            $this->receive($kind, $payload);
+                        }
+                    }
+                    if ($transportClosed) {
+                        $this->stop();
+                    }
+                }
+            } catch (Throwable $error) {
+                $this->stop($error);
+            } finally {
+                $this->draining = false;
+            }
+        })->ignore();
+    }
+
+    private function receive(string $kind, mixed $payload): void
     {
         if ($this->closed) {
             return;
         }
-        $batch = $this->dispatch->dispatch($arguments, 100);
-        $messages = $batch['messages'];
-        $transportClosed = false;
-        foreach ($messages as [$kind, $payload]) {
-            if ('send' === $kind) {
-                $this->writes[] = $payload;
-                continue;
-            }
-            if ('releaseCallback' === $kind) {
-                unset($this->callbacks[(int) $payload]);
-                continue;
-            }
-            if ('log' === $kind) {
-                $level = is_array($payload) ? (string) ($payload['level'] ?? 'info') : 'info';
-                $message = is_array($payload) ? (string) ($payload['message'] ?? '') : (string) $payload;
-                $this->logger->log($level, $message);
-                continue;
-            }
-            if ('clearTimer' === $kind) {
-                $id = (int) $payload;
-                if (isset($this->timers[$id])) {
-                    EventLoop::cancel($this->timers[$id]);
-                    unset($this->timers[$id]);
-                }
-                continue;
-            }
-            if ('close' === $kind) {
-                $transportClosed = true;
-                continue;
-            }
-            $data = $payload;
-            if ('timer' === $kind) {
-                $id = $data['id'];
-                $this->timers[$id] = EventLoop::delay($data['milliseconds'] / 1000, function () use ($id): void {
-                    unset($this->timers[$id]);
-                    try {
-                        $this->deliver('timer', (string) $id);
-                    } catch (Throwable $e) {
-                        $this->stop($e);
-                    }
-                });
-            } elseif ('result' === $kind) {
-                $future = $this->pending[$data['id']] ?? null;
-                unset($this->pending[$data['id']]);
-                if (!$future) {
-                    continue;
-                }
-                if (isset($data['error'])) {
-                    $future->error($this->guestError($data['error']));
-                } else {
-                    try {
-                        $future->complete($this->decode($data['value']));
-                    } catch (Throwable $error) {
-                        $future->error($error);
-                    }
-                }
-            } elseif ('callback' === $kind || 'filesystem' === $kind) {
-                $fn = 'filesystem' === $kind
-                    ? fn (...$arguments) => ($this->filesystem ??= new Internal\HostFilesystem())->call($data['operation'], $arguments)
-                    : ($this->callbacks[$data['callback']] ?? null);
-                async(function () use ($data, $fn): void {
-                    if ($this->closed) {
-                        return;
-                    }
-                    try {
-                        if (null === $fn) {
-                            throw new RuntimeException('Unknown PHP callback');
-                        }
-                        $value = $fn(...$this->decode($data['args']));
-                        if ($value instanceof Future) {
-                            $value = $value->await();
-                        }
-                        $result = ['id' => $data['id'], 'value' => $this->encode($value)];
-                    } catch (Throwable $e) {
-                        $result = ['id' => $data['id'], 'error' => ['name' => $e::class, 'message' => $e->getMessage()]];
-                    }
-                    try {
-                        $this->deliver('callbackResult', $result);
-                    } catch (Throwable $e) {
-                        $this->stop($e);
-                    }
-                })->ignore();
-            } elseif ('fatal' === $kind) {
-                throw $this->guestError($data);
-            }
-        }
-        if ($transportClosed) {
-            $this->stop();
+        if ('send' === $kind) {
+            $this->writes[] = $payload;
+            $this->write();
 
             return;
         }
-        $this->write();
-        if ($batch['pending'] && null === $this->pumpWatcher) {
-            $this->pumpWatcher = EventLoop::defer(function (): void {
-                $this->pumpWatcher = null;
+        if ('releaseCallback' === $kind) {
+            unset($this->callbacks[(int) $payload]);
+
+            return;
+        }
+        if ('log' === $kind) {
+            $level = is_array($payload) ? (string) ($payload['level'] ?? 'info') : 'info';
+            $message = is_array($payload) ? (string) ($payload['message'] ?? '') : (string) $payload;
+            $this->logger->log($level, $message);
+
+            return;
+        }
+        if ('clearTimer' === $kind) {
+            $id = (int) $payload;
+            if (isset($this->timers[$id])) {
+                EventLoop::cancel($this->timers[$id]);
+                unset($this->timers[$id]);
+            }
+
+            return;
+        }
+        if ('result' === $kind) {
+            $future = $this->pending[$payload['id']] ?? null;
+            unset($this->pending[$payload['id']]);
+            if (null === $future) {
+                return;
+            }
+            try {
+                if (isset($payload['error'])) {
+                    $future->error($this->guestError($payload['error']));
+                } else {
+                    $future->complete($this->decode($payload['value']));
+                }
+            } catch (Throwable $error) {
+                $future->error($error);
+            }
+
+            return;
+        }
+        $data = $payload;
+        if ('timer' === $kind) {
+            $id = $data['id'];
+            $this->timers[$id] = EventLoop::delay($data['milliseconds'] / 1000, function () use ($id): void {
+                unset($this->timers[$id]);
                 try {
-                    $this->pump();
+                    $this->deliver('timer', (string) $id);
                 } catch (Throwable $e) {
                     $this->stop($e);
                 }
             });
+        } elseif ('callback' === $kind || 'filesystem' === $kind) {
+            $fn = 'filesystem' === $kind
+                ? fn (...$arguments) => ($this->filesystem ??= new Internal\HostFilesystem())->call($data['operation'], $arguments)
+                : ($this->callbacks[$data['callback']] ?? null);
+            async(function () use ($data, $fn): void {
+                if ($this->closed) {
+                    return;
+                }
+                try {
+                    if (null === $fn) {
+                        throw new RuntimeException('Unknown PHP callback');
+                    }
+                    $value = $fn(...$this->decode($data['args']));
+                    if ($value instanceof Future) {
+                        $value = $value->await();
+                    }
+                    $result = ['id' => $data['id'], 'value' => $this->encode($value)];
+                } catch (Throwable $e) {
+                    $result = ['id' => $data['id'], 'error' => ['name' => $e::class, 'message' => $e->getMessage()]];
+                }
+                try {
+                    $this->deliver('callbackResult', $result);
+                } catch (Throwable $e) {
+                    $this->stop($e);
+                }
+            })->ignore();
+        } elseif ('fatal' === $kind) {
+            throw $this->guestError($data);
         }
     }
 
@@ -559,13 +574,9 @@ final class Client
             return;
         }
         $this->closed = true;
-        if (null !== $this->pumpWatcher) {
-            EventLoop::cancel($this->pumpWatcher);
-            $this->pumpWatcher = null;
-        }
         // Drop JS transport callbacks, timers and object roots as well as PHP bookkeeping.
         try {
-            $this->dispatch->dispatch(['closed', null], 100);
+            ($this->dispatch)('closed', null);
         } catch (Throwable) {
         }
         foreach ($this->timers as $watcher) {

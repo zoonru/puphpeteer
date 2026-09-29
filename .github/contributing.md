@@ -15,7 +15,7 @@ composer cs:check
 ```
 
 The extension exception above is for unit tests and Psalm only. Integration
-requires the async/native-bridge php-quickjs fork with `dispatch()`.
+requires the php-quickjs fork pinned in Dockerfile, with automatic Promise awaiting and `drainMessages()`.
 Run `php bin/console test integration` with that extension loaded; see the
 [extension contract](../README.md#extension-contract) for boundary tests. For browser tests,
 run `docker compose build php chrome`, then `docker compose run --rm chrome php bin/console test browser`. The Chrome image sets `PUPPETEER_EXECUTABLE_PATH` to its installed browser.

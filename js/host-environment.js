@@ -1,4 +1,5 @@
 import './abort-controller.js';
+import {emit} from './bridge.js';
 import {ReadableStream} from 'web-streams-polyfill';
 
 globalThis.ReadableStream = ReadableStream;
@@ -159,31 +160,31 @@ const timers = new Map();
 globalThis.setTimeout = (fn, milliseconds = 0, ...args) => {
   const id = ++nextTimer;
   timers.set(id, {fn: () => fn(...args), interval: null});
-  __quickjsEmit('timer', {id, milliseconds: Math.max(0, Number(milliseconds) || 0)});
+  emit('timer', {id, milliseconds: Math.max(0, Number(milliseconds) || 0)});
   return id;
 };
 globalThis.clearTimeout = id => {
   timers.delete(id);
-  __quickjsEmit('clearTimer', String(id));
+  emit('clearTimer', String(id));
 };
 globalThis.setInterval = (fn, milliseconds = 0, ...args) => {
   const id = ++nextTimer;
   const interval = Math.max(1, Number(milliseconds) || 0);
   timers.set(id, {fn: () => fn(...args), interval});
-  __quickjsEmit('timer', {id, milliseconds: interval});
+  emit('timer', {id, milliseconds: interval});
   return id;
 };
 globalThis.clearInterval = globalThis.clearTimeout;
 globalThis.performance = {now: () => php.now()};
 const logLevels = {log: 'info', warn: 'warning', error: 'error', debug: 'debug', info: 'info'};
-globalThis.console = Object.fromEntries(Object.entries(logLevels).map(([method, level]) => [method, (...args) => __quickjsEmit('log', {level, message: args.map(String).join(' ')})]));
+globalThis.console = Object.fromEntries(Object.entries(logLevels).map(([method, level]) => [method, (...args) => emit('log', {level, message: args.map(String).join(' ')})]));
 export function fireTimer(id) {
   const timer = timers.get(id);
   if (!timer) return;
   if (timer.interval === null) timers.delete(id);
   timer.fn();
   if (timer.interval !== null && timers.has(id)) {
-    __quickjsEmit('timer', {id, milliseconds: timer.interval});
+    emit('timer', {id, milliseconds: timer.interval});
   }
 }
 

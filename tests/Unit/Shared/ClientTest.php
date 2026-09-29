@@ -120,7 +120,7 @@ final class ClientTest extends TestCase
             CODE, dirname(__DIR__, 3) . '/src/Client.php']);
         $result = ProcessRunner::collect($process, 5);
         self::assertSame(0, $result['code']);
-        self::assertStringContainsString('Js\\Callback::dispatch()', $result['stdout']);
+        self::assertStringContainsString('automatic Promise awaiting', $result['stdout']);
         self::assertSame('', $result['stderr']);
     }
 }

@@ -11,9 +11,13 @@ use Amp\CancelledException;
 use Amp\DeferredCancellation;
 use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\Puppeteer\Page;
+use Override;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\AbstractLogger;
 use ReflectionProperty;
 use Revolt\EventLoop;
+use RuntimeException;
+use Stringable;
 
 use function Amp\async;
 use function Amp\delay;
@@ -40,7 +44,7 @@ final class ReadableStreamTest extends TestCase
         $js = (new ReflectionProperty($client, 'js'))->getValue($client);
         $js->eval(<<<'JS'
         let cancelled = 0, pulls = 0;
-        globalThis.__testStreamObjects.set(-1, {
+        globalThis.__testStreamObjects.set(-1, Object.assign(Object.create({}), {
           createPDFStream() { return this.stream('large'); },
           shared() { return this.saved ??= this.stream('large'); },
           stream(kind) {
@@ -60,10 +64,40 @@ final class ReadableStreamTest extends TestCase
           },
           stats() { return {cancelled, pulls}; },
           ping() { return 42; },
-        });
+          on(event, handler) { this.listener = handler; },
+          off() { this.listener = undefined; },
+          trigger() { this.listener?.(); return 42; },
+        }));
         JS);
 
         return $client;
+    }
+
+    public function testAsyncEventFailureIsLoggedWithoutAnotherRemoteCall(): void
+    {
+        $client = $this->client();
+        $logger = new class extends AbstractLogger {
+            public array $messages = [];
+
+            /** @psalm-external-mutation-free */
+            #[Override]
+            public function log($level, Stringable|string $message, array $context = []): void
+            {
+                $this->messages[] = (string) $message;
+            }
+        };
+        (new ReflectionProperty($client, 'logger'))->setValue($client, $logger);
+        try {
+            $client->call(-1, 'on', ['tick', static function (): void {
+                delay(0.01);
+                throw new RuntimeException('async event failure');
+            }])->await();
+            self::assertSame(42, $client->call(-1, 'trigger', [])->await());
+            delay(0.03);
+            self::assertSame(['PHP event callback failed: async event failure'], $logger->messages);
+        } finally {
+            $client->close();
+        }
     }
 
     public function testChunksAreBoundedExactAndYieldToTheEventLoop(): void

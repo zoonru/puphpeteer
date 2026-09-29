@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Tests\Integration\Puppeteer;
 
 use Nesk\Puphpeteer\Client;
+use Nesk\Puphpeteer\Tests\Support\Shared\AsyncGuest;
 use Override;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\AbstractLogger;
@@ -19,14 +20,14 @@ final class LoggingTest extends TestCase
         if (false === $bundle) {
             throw new RuntimeException('Cannot create fixture');
         }
-        file_put_contents($bundle, <<<'JS'
+        file_put_contents($bundle, AsyncGuest::wrap(<<<'JS'
             globalThis.__quickjsDispatch = (kind, payload) => {
               if (kind !== 'call') return;
-              __quickjsEmit('log', {level: 'debug', message: 'details'});
-              __quickjsEmit('log', {level: 'warning', message: 'careful'});
-              __quickjsEmit('result', {id: payload.id, value: 42});
+              __testEmit('log', {level: 'debug', message: 'details'});
+              __testEmit('log', {level: 'warning', message: 'careful'});
+              __testEmit('result', {id: payload.id, value: 42});
             };
-            JS);
+            JS));
         $logger = new class extends AbstractLogger {
             public array $records = [];
 

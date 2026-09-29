@@ -48,18 +48,23 @@ final class GuestFunctionLifetimeTest extends TestCase
         $js->register('now', static fn (): float => 0.0);
         $js->eval($source);
         $dispatch = $js->eval('globalThis.__quickjsDispatch');
+        $drain = $js->eval('globalThis.__quickjsDrain');
         self::assertInstanceOf(Callback::class, $dispatch);
         $request = ['id' => 1, 'object' => -1, 'method' => 'retain', 'args' => [
             ['$quickjs' => 'function', 'id' => 7, 'source' => '() => 42'],
         ]];
-        $first = $dispatch->dispatch(['call', $request], 100);
-        self::assertSame([['result', ['id' => 1, 'value' => 42]]], $first['messages']);
+        $dispatch('call', $request);
+        $ready = $drain();
+        self::assertTrue($ready);
+        self::assertSame([['result', ['id' => 1, 'value' => 42]]], $js->drainMessages());
         self::assertSame(1, $js->eval('__functionCacheSize()'));
         $request['id'] = 2;
         $request['args'][0]['source'] = '() => 99';
-        $second = $dispatch->dispatch(['call', $request], 100);
-        self::assertSame([['result', ['id' => 2, 'value' => 42]]], $second['messages'], 'Live identity must be reused');
-        $dispatch->dispatch(['releaseFunction', ['id' => 7]], 100);
+        $dispatch('call', $request);
+        $ready = $drain();
+        self::assertTrue($ready);
+        self::assertSame([['result', ['id' => 2, 'value' => 42]]], $js->drainMessages(), 'Live identity must be reused');
+        $dispatch('releaseFunction', ['id' => 7]);
         self::assertSame(0, $js->eval('__functionCacheSize()'));
         self::assertSame(42, $js->eval('__retainedFunction()'), 'Listener-held function must remain callable');
     }

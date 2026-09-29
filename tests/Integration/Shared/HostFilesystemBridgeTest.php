@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Tests\Integration\Shared;
 
 use Nesk\Puphpeteer\Client;
+use Nesk\Puphpeteer\Tests\Support\Shared\AsyncGuest;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -16,17 +17,17 @@ final class HostFilesystemBridgeTest extends TestCase
         $output = tempnam(sys_get_temp_dir(), 'fs-output-');
         self::assertIsString($bundle);
         self::assertIsString($output);
-        file_put_contents($bundle, <<<'JS'
+        file_put_contents($bundle, AsyncGuest::wrap(<<<'JS'
         globalThis.__quickjsDispatch = (kind, payload) => {
           if (kind === 'call') {
             const args = payload.args;
             if (payload.method === 'write') args.push({$quickjs:'bytes', value:new Uint8Array([0,255,195,169])});
-            __quickjsEmit('filesystem', {id:payload.id, operation:payload.method, args});
+            __testEmit('filesystem', {id:payload.id, operation:payload.method, args});
           } else if (kind === 'callbackResult') {
-            __quickjsEmit('result', payload);
+            __testEmit('result', payload);
           }
         };
-        JS);
+        JS));
         try {
             $client = new Client($bundle);
             try {

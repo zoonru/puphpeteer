@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\RemoteObject;
+use Nesk\Puphpeteer\Tests\Support\Shared\AsyncGuest;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -21,18 +22,18 @@ final class RuntimeLifecycleTest extends TestCase
         if (false === $file) {
             throw new RuntimeException('Cannot create fixture');
         }
-        file_put_contents($file, <<<'JS'
+        file_put_contents($file, AsyncGuest::wrap(<<<'JS'
         const functions = new Set();
         globalThis.__quickjsDispatch = (kind, payload) => {
           if (kind === 'releaseFunction') { functions.delete(payload.id); return; }
           if (kind === 'call' && payload.method === 'functionCount') {
-            __quickjsEmit('result', {id: payload.id, value: functions.size}); return;
+            __testEmit('result', {id: payload.id, value: functions.size}); return;
           }
           if (kind === 'call' && payload.args[0]?.$quickjs === 'function') functions.add(payload.args[0].id);
           if (kind !== 'call' || payload.method === 'pending') return;
-          __quickjsEmit('result', {id: payload.id, value: payload.args[0] ?? 42});
+          __testEmit('result', {id: payload.id, value: payload.args[0] ?? 42});
         };
-        JS);
+        JS));
         try {
             return new Client($file);
         } finally {

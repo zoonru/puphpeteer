@@ -12,12 +12,13 @@ namespace {
     class QuickJS
     {
         /**
-         * @param int|null $memoryLimit max heap bytes (0/null = unbounded)
-         * @param int|null $timeoutMs   per-eval/callback/job-batch wall-clock budget in ms (0/null = unbounded)
-         * @param int|null $maxStack    max native stack bytes (0/null = engine default)
-         * @param bool     $isolated    run each eval() in its own fresh global realm
+         * @param int|null $memoryLimit           max heap bytes (0/null = unbounded)
+         * @param int|null $timeoutMs             per-eval/callback/job-batch wall-clock budget in ms (0/null = unbounded)
+         * @param int|null $maxStack              max native stack bytes (0/null = engine default)
+         * @param bool     $isolated              run each eval() in its own fresh global realm
+         * @param int|null $maxQueuedMessageBytes max accounted bytes in the native message queue (null = 32 MiB)
          */
-        public function __construct(?int $memoryLimit = null, ?int $timeoutMs = null, ?int $maxStack = null, bool $isolated = false)
+        public function __construct(?int $memoryLimit = null, ?int $timeoutMs = null, ?int $maxStack = null, bool $isolated = false, ?int $maxQueuedMessageBytes = null)
         {
         }
 
@@ -32,7 +33,7 @@ namespace {
         {
         }
 
-        /** Evaluate JS source and marshal the result back to a PHP value. */
+        /** Evaluate JS, automatically await Promise/thenable results and marshal the resolved value. */
         public function eval(string $code): mixed
         {
         }
@@ -52,7 +53,12 @@ namespace {
         {
         }
 
-        /** Generate a TypeScript `.d.ts` declaration for the `php` global. */
+        /** Drain bounded notifications emitted by quickjs.postMessage(). */
+        public function drainMessages(): array
+        {
+        }
+
+        /** Generate TypeScript `.d.ts` declarations for the `php` and `quickjs` globals. */
         public function dts(): string
         {
         }
@@ -82,6 +88,8 @@ namespace {
 namespace Js {
     /**
      * A JS function handed to PHP. Invoke it like any callable: `$cb(...$args)`.
+     * Promise/thenable results are awaited through Revolt; concurrent callbacks
+     * are queued while the owning Fiber waits for external I/O.
      */
     class Callback
     {
@@ -90,22 +98,6 @@ namespace Js {
         }
 
         public function call(mixed ...$args): mixed
-        {
-        }
-
-        /**
-         * Shared-mode direct dispatch; callback return values are ignored.
-         * Null drains jobs only; [] invokes with no arguments. The positive job
-         * budget does not bound synchronous JS (the engine timeout does).
-         * Failures discard partial messages. No host I/O is performed here.
-         * Throws on nested dispatch or Fiber switching inside native JS.
-         * See README.md#extension-contract for conversion and queue limits.
-         *
-         * @param list<mixed>|null $args
-         *
-         * @return array{messages: list<array{0: string, 1: mixed}>, pending: bool, jobs: non-negative-int}
-         */
-        public function dispatch(?array $args, int $maxJobs = 100): array
         {
         }
     }

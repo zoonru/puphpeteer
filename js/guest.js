@@ -3,6 +3,7 @@ import {Recordings} from './recordings.js';
 import {GuestReadableStreams} from './readable-streams.js';
 import {installFilesystem} from './filesystem.js';
 import {PluginAdapter} from './plugins/adapter.js';
+import {emit, drain, fail} from './bridge.js';
 import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
@@ -63,13 +64,17 @@ function clearEvents(objectId, event) {
   }
 }
 const streams = new GuestReadableStreams();
-const emit = (kind, value) => __quickjsEmit(kind, value);
 const errorData = error => ({name: error?.name ?? 'Error', message: error?.message ?? String(error), stack: error?.stack ?? ''});
-const openRecordingFile = installFilesystem((operation, args) => new Promise((resolve, reject) => {
-  const id = ++nextCallback;
-  callbacks.set(id, {resolve, reject});
-  emit('filesystem', {id, operation, args: args.map(item => encode(item))});
-}));
+// Only host I/O needs a Promise adapter; Puppeteer operations use async/await.
+function hostRequest(kind, payload) {
+  return new Promise((resolve, reject) => {
+    const id = ++nextCallback;
+    callbacks.set(id, {resolve, reject});
+    try { emit(kind, {id, ...payload}); }
+    catch (error) { callbacks.delete(id); reject(error); }
+  });
+}
+const openRecordingFile = installFilesystem((operation, args) => hostRequest('filesystem', {operation, args: args.map(item => encode(item))}));
 const recordings = new Recordings(openRecordingFile);
 function encodeRecord(value, ancestors) {
   const entries = Object.entries(value);
@@ -142,11 +147,7 @@ function decode(value, pin = true, temporary = null) {
     else temporary?.add(value.id);
     const key = `callback:${value.id}`;
     if (decodedFunctions.has(key)) return decodedFunctions.get(key);
-    const fn = (...args) => new Promise((resolve, reject) => {
-    const id = ++nextCallback;
-    callbacks.set(id, {resolve, reject});
-    emit('callback', {id, callback: value.id, args: args.map(item => encode(item))});
-    });
+    const fn = (...args) => hostRequest('callback', {callback: value.id, args: args.map(item => encode(item))});
     decodedFunctions.set(key, fn);
     return fn;
   }
@@ -154,9 +155,10 @@ function decode(value, pin = true, temporary = null) {
   if (value.$quickjs === 'bigint') return BigInt(value.value);
   return decodeRecord(value, pin, temporary);
 }
+let transportClosing = false;
 const transport = {
-  send: message => __quickjsEmit('send', message),
-  close: () => __quickjsEmit('close', ''),
+  send: message => emit('send', message),
+  close: () => { transportClosing = true; },
 };
 const plugins = new PluginAdapter();
 async function call(request) {
@@ -200,7 +202,7 @@ async function call(request) {
     entry.wrapper = (...args) => {
       const result = callback(...args);
       if (method === 'once') dropEvent(entry);
-      result.catch(error => emit('log', {level: 'error', message: `PHP event callback failed: ${error.message}`}));
+      background(result.catch(error => emit('log', {level: 'error', message: `PHP event callback failed: ${error.message}`})));
     };
     object.on(event, entry.wrapper);
     if (!eventListeners.has(request.object)) eventListeners.set(request.object, new Set());
@@ -233,6 +235,22 @@ async function call(request) {
   }
 }
 let messageParts = [];
+let operations = 0;
+let closed = false;
+function background(task) {
+  operations++;
+  task.finally(() => { operations--; emit('idle', null); }).catch(fail);
+}
+async function invoke(request) {
+  operations++;
+  try {
+    try { emit('result', {id: request.id, value: encode(await call(request))}); }
+    catch (error) { emit('result', {id: request.id, error: errorData(error)}); }
+    // Complete disconnect/close before PHP rejects remaining pending calls.
+    if (transportClosing && (request.method === 'close' || request.method === 'disconnect')) emit('close', '');
+  } finally { operations--; }
+}
+globalThis.__quickjsDrain = () => drain(() => !closed && operations > 0);
 globalThis.__quickjsDispatch = (kind, payload) => {
   if (kind === 'messageChunk') { messageParts.push(payload); return; }
   if (kind === 'messageEnd') {
@@ -243,6 +261,8 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   }
   if (kind === 'message') { transport.onmessage?.(payload); return; }
   if (kind === 'closed') {
+    closed = true;
+    emit('closed', null);
     messageParts = [];
     transport.onclose?.();
     streams.close();
@@ -263,7 +283,7 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   if (kind === 'releaseFunction') { decodedFunctions.delete(`function:${request.id}`); return; }
   if (kind === 'release') {
     const object = objects.get(request.id);
-    if (object instanceof ScreenRecording) recordings.discard(object).catch(error => emit('log', {level: 'warning', message: `Recording cleanup failed: ${error.message}`}));
+    if (object instanceof ScreenRecording) background(recordings.discard(object).catch(error => emit('log', {level: 'warning', message: `Recording cleanup failed: ${error.message}`})));
     clearEvents(request.id); objects.delete(request.id); return;
   }
   if (kind === 'callbackResult') {
@@ -274,11 +294,5 @@ globalThis.__quickjsDispatch = (kind, payload) => {
     else pending.resolve(decode(request.value));
     return;
   }
-  call(request).then(
-    value => {
-      try { emit('result', {id: request.id, value: encode(value)}); }
-      catch (error) { emit('result', {id: request.id, error: errorData(error)}); }
-    },
-    error => emit('result', {id: request.id, error: errorData(error)}),
-  ).catch(error => emit('fatal', errorData(error)));
+  invoke(request).catch(fail);
 };

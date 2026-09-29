@@ -5,53 +5,42 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Tests\Integration\Shared;
 
 use Js\Callback;
-use Override;
 use PHPUnit\Framework\TestCase;
 use QuickJS;
-use RuntimeException;
 
 final class BridgeTest extends TestCase
 {
-    #[Override]
-    protected function setUp(): void
-    {
-        if (!class_exists(QuickJS::class) || !method_exists(Callback::class, 'dispatch')) {
-            throw new RuntimeException('Integration tests require php-quickjs with Js\\Callback::dispatch().');
-        }
-    }
-
-    public function testBatchPreservesLargeBinaryPayloadAndDrainsMessages(): void
+    public function testNativeQueuePreservesLargeBinaryPayloadAndDrainsMessages(): void
     {
         $js = new QuickJS();
-        $dispatch = $js->eval('(kind, value) => { __quickjsEmit(kind, value); }');
-        self::assertInstanceOf(Callback::class, $dispatch);
+        $send = $js->eval('(kind, value) => quickjs.postMessage([kind, value])');
+        self::assertInstanceOf(Callback::class, $send);
         $value = "\0\xff\xfe" . str_repeat('x', 65_536);
-        $batch = $dispatch->dispatch(['binary', $value]);
-        self::assertSame([['binary', $value]], $batch['messages']);
-        self::assertFalse($batch['pending']);
-        self::assertSame([], $dispatch->dispatch(null)['messages']);
+        $send('binary', $value);
+        self::assertSame([['binary', $value]], $js->drainMessages());
+        self::assertSame([], $js->drainMessages());
     }
 
     public function testJobBudgetLeavesPendingWorkAndCanResume(): void
     {
         $js = new QuickJS();
-        $dispatch = $js->eval('() => {
+        $start = $js->eval('() => {
             let count = 0;
             const next = () => {
-                __quickjsEmit("count", ++count);
+                quickjs.postMessage(["count", ++count]);
                 if (count < 5) Promise.resolve().then(next);
             };
             Promise.resolve().then(next);
         }');
-        self::assertInstanceOf(Callback::class, $dispatch);
-        $first = $dispatch->dispatch([], 1);
-        self::assertSame(1, $first['jobs']);
-        self::assertTrue($first['pending']);
-        $rest = $dispatch->dispatch(null, 100);
-        self::assertFalse($rest['pending']);
+        self::assertInstanceOf(Callback::class, $start);
+        $start();
+        self::assertSame(1, $js->executePendingJobs(1));
+        self::assertTrue($js->hasPendingJobs());
+        $js->executePendingJobs(100);
+        self::assertFalse($js->hasPendingJobs());
         self::assertSame(
             [['count', 1], ['count', 2], ['count', 3], ['count', 4], ['count', 5]],
-            [...$first['messages'], ...$rest['messages']],
+            $js->drainMessages(),
         );
     }
 }

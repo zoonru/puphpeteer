@@ -493,11 +493,11 @@ JavaScript `console.debug`, `console.log`/`console.info`, `console.warn` and `co
 
 ## Extension contract
 
-Use the fork SHA pinned in `Dockerfile`: `dispatch()` alone does not establish compatibility. [Integration tests](tests/Integration/) check values, limits, recovery, resource release and Fibers against the installed extension.
+Use the fork SHA pinned in `Dockerfile`. The bridge requires automatic Promise awaiting through Revolt, `quickjs.postMessage()` and `QuickJS::drainMessages()`. [Integration tests](tests/Integration/) check values, limits, recovery, resource release and Fibers against the installed extension.
 
-The bridge copies values without MessagePack or shared memory. The client runs up to 100 ready JS jobs per batch; Amp handles I/O. Limits: 2 seconds native execution, 256 MiB JS heap, 512 KiB stack; 4,096 messages / 32 MiB queue; 16 MiB conversion budget including structural overhead; depth 64. These do not bound PHP callbacks or Chrome memory.
+One asynchronous JS consumer waits for native notifications while Amp handles host I/O. Messages are copied through the native queue (32 MiB by default). PuPHPeteer limits the JS heap to 256 MiB and stack to 512 KiB. Puppeteer and Amp control operation timeouts; PuPHPeteer no longer sets a separate native execution timeout. These limits do not bound PHP callbacks or Chrome memory.
 
-Dispatch failure discards partial messages but does not roll back JS mutations: the client closes without retrying. PHP callbacks run after native dispatch returns so they can suspend their Fiber.
+The client closes the transport on a bridge failure without retrying; JS mutations are not rolled back. PHP callbacks run outside the native JS stack so they can suspend their Fiber.
 
 ## Release validation
 
