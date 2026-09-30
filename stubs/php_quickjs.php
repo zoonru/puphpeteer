@@ -11,13 +11,15 @@ namespace {
     class QuickJS
     {
         /**
-         * @param int|null $memoryLimit           max heap bytes (0/null = unbounded)
-         * @param int|null $timeoutMs             per-eval/callback/job-batch wall-clock budget in ms (0/null = unbounded)
-         * @param int|null $maxStack              max native stack bytes (0/null = engine default)
-         * @param bool     $isolated              run each eval() in its own fresh global realm
-         * @param int|null $maxQueuedMessageBytes max accounted bytes in the message queue (null = 32 MiB)
+         * @param int|null $memoryLimit              max heap bytes (0/null = unbounded)
+         * @param int|null $timeoutMs                per-eval/callback/job-batch wall-clock budget in ms (0/null = unbounded)
+         * @param int|null $maxStack                 max native stack bytes (0/null = engine default)
+         * @param bool     $isolated                 run each eval() in its own fresh global realm
+         * @param int|null $maxQueuedMessageBytes    max accounted bytes in the message queue (null = 32 MiB)
+         * @param int      $transpileCacheMaxBytes   retained cache string bytes (0 disables cache)
+         * @param int      $transpileCacheMaxEntries retained cache entries (0 disables cache)
          */
-        public function __construct(?int $memoryLimit = null, ?int $timeoutMs = null, ?int $maxStack = null, bool $isolated = false, ?int $maxQueuedMessageBytes = null)
+        public function __construct(?int $memoryLimit = null, ?int $timeoutMs = null, ?int $maxStack = null, bool $isolated = false, ?int $maxQueuedMessageBytes = null, int $transpileCacheMaxBytes = 33554432, int $transpileCacheMaxEntries = 256)
         {
         }
 
