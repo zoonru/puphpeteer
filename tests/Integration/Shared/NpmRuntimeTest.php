@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Integration\Shared;
 
-use Nesk\Puphpeteer\JsFunctionHandle;
 use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\JsFunctionHandle;
 use Nesk\Puphpeteer\JsRuntime;
 use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use PHPUnit\Framework\TestCase;
