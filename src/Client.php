@@ -23,6 +23,7 @@ use Nesk\Puphpeteer\Internal\RemoteObjectFactory;
 use Nesk\Puphpeteer\Puppeteer\Browser;
 use Psr\Log\LoggerInterface;
 use QuickJS;
+use ReflectionMethod;
 use Revolt\EventLoop;
 use RuntimeException;
 use Throwable;
@@ -84,7 +85,13 @@ final class Client
             $this->js->register('npm.deflateRaw', $moduleHost->deflateRaw(...));
         }
         $source = read($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
-        $this->js->eval($source);
+        static $supportsJavascript = null;
+        $supportsJavascript ??= (new ReflectionMethod(QuickJS::class, 'eval'))->getNumberOfParameters() >= 2;
+        if ($supportsJavascript) {
+            $this->js->eval($source, typescript: false);
+        } else {
+            $this->js->eval($source);
+        }
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
         $this->drain = $this->js->eval('globalThis.__quickjsDrain');
     }

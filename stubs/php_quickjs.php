@@ -34,7 +34,7 @@ namespace {
         }
 
         /** Evaluate JS, automatically await Promise/thenable results and marshal the resolved value. */
-        public function eval(string $code): mixed
+        public function eval(string $code, bool $typescript = true): mixed
         {
         }
 
