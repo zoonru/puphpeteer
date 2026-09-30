@@ -57,6 +57,7 @@ test('writes file chunks as they arrive and waits for them in stop', async () =>
   const recording = await recordings.start(page, {path: 'video.mp4', overwrite: false});
   await recordings.stop(recording);
   assert.deepEqual(writes, [[1], [2], 'closed']);
+  assert.equal((await recordings.readable(recording).getReader().read()).done, true);
   assert.equal(calls.filter(([method]) => method === 'Page.stopScreenRecording').length, 1);
 });
 
@@ -82,4 +83,42 @@ test('validates options before starting Chrome or opening a file', async () => {
   const recordings = new Recordings(() => assert.fail('Must not open file'));
   await assert.rejects(recordings.start(page, {path: 'existing.mp4', frameRate: 0}), /frameRate/);
   assert.deepEqual(calls, []);
+});
+
+test('large file recording finishes without a stream reader and retains no video chunks', async () => {
+  const chunk = Buffer.alloc(65536, 42);
+  const results = Array.from({length: 256}, () => ({data: chunk.toString('base64'), base64Encoded: true}));
+  const {page} = fixture(results);
+  let written = 0, closed = false;
+  const recordings = new Recordings(async () => ({
+    async writeFile(bytes) {
+      assert.equal(bytes.byteLength, chunk.length);
+      assert.equal(bytes[0], 42);
+      written += bytes.byteLength;
+    },
+    async close() { closed = true; },
+  }));
+  const recording = await recordings.start(page, {path: 'video.mp4'});
+  await recordings.stop(recording);
+  assert.equal(written, 16 * 1024 * 1024);
+  assert.equal(closed, true);
+  // Any queued chunk would be returned before the stream's closed marker.
+  assert.equal((await recordings.readable(recording).getReader().read()).done, true);
+});
+
+test('a file stream reader waits for finalization and receives no duplicate video', async () => {
+  const {page} = fixture([{data: 'AQ==', base64Encoded: true}]);
+  let written = 0;
+  const recordings = new Recordings(async () => ({
+    async writeFile(bytes) { written += bytes.byteLength; },
+    async close() {},
+  }));
+  const recording = await recordings.start(page, {path: 'video.mp4'});
+  let completed = false;
+  const read = recordings.readable(recording).getReader().read().then(result => { completed = true; return result; });
+  await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(written, 1);
+  assert.equal(completed, false);
+  await recordings.stop(recording);
+  assert.equal((await read).done, true);
 });

@@ -229,6 +229,9 @@ Limitations: the browser must support this experimental CDP method; output is
 MP4 with no codec or container selection; the first fragment may be delayed;
 `stop()` is required to finalize the stream. With `path`, the path belongs to the
 PHP application's filesystem, including when Chrome runs through Browserless.
+File recordings write continuously to disk and return an empty stream once
+`stop()` finishes. Read the completed file if you need its bytes. Omit `path`
+to receive live video through the readable stream.
 
 ## Puppeteer plugins
 

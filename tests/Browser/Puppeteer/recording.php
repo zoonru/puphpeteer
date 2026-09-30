@@ -51,9 +51,12 @@ try {
     $saved = $page->record(['path' => $path, 'frameRate' => 10, 'overwrite' => false]);
     delay(0.2);
     $saved->stop();
-    $savedBytes = buffer($saved);
-    if ($savedBytes !== file_get_contents($path)) {
-        throw new RuntimeException('Recording file differs from the Amp stream');
+    if ('' !== buffer($saved)) {
+        throw new RuntimeException('File recording must return an empty stream');
+    }
+    $savedBytes = file_get_contents($path);
+    if (strlen($savedBytes) < 100 || 'ftyp' !== substr($savedBytes, 4, 4)) {
+        throw new RuntimeException('Recording file is not a complete MP4');
     }
     try {
         $page->record(['path' => $path, 'overwrite' => false]);
@@ -70,6 +73,13 @@ try {
         if ($savedBytes !== file_get_contents($path)) {
             throw new RuntimeException('Invalid options truncated the existing recording');
         }
+    }
+    $fileEarly = $page->record(['path' => $directory . '/early.mp4']);
+    delay(0.1);
+    $fileEarly->close();
+    $fileEarly->close();
+    if (!$fileEarly->isClosed()) {
+        throw new RuntimeException('Early close did not close the file recording');
     }
     $early = $page->record();
     delay(0.1);

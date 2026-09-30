@@ -71,7 +71,7 @@ export class Recordings {
         const chunk = await this.#read(entry);
         if (!chunk) break;
         await entry.file.writeFile(chunk);
-        entry.controller.enqueue(chunk);
+        // With a path, only write to disk: an unread stream would retain the entire video.
       }
       entry.controller.close();
     } catch (error) {
