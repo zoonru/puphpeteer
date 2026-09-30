@@ -20,8 +20,7 @@ final class BuildCommand extends ProcessCommand
     {
         $this->setDescription('Build the JavaScript bundle for QuickJS')
             ->addOption('check', null, InputOption::VALUE_NONE, 'Check build reproducibility without writing files')
-            ->addOption('debug', null, InputOption::VALUE_NONE, 'Build a readable debug bundle')
-            ->addOption('plugins', null, InputOption::VALUE_REQUIRED, 'Custom plugin registry file');
+            ->addOption('debug', null, InputOption::VALUE_NONE, 'Build a readable debug bundle');
     }
 
     #[Override]
@@ -42,9 +41,6 @@ final class BuildCommand extends ProcessCommand
         }
         if ($input->getOption('debug')) {
             $arguments[] = '--debug';
-        }
-        if (($plugins = $input->getOption('plugins')) !== null) {
-            $arguments[] = '--plugins=' . $plugins;
         }
         $result = $this->runProcess($io, ['node', ...$arguments], message: 'Building the bundle…', indicator: false);
         if (!$this->jsonOutput) {

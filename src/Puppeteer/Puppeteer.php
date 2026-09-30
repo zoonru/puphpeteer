@@ -13,6 +13,7 @@ use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\Internal;
 use Nesk\Puphpeteer\Internal\BrowserProcess;
 use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\JsRuntime;
 use Nesk\Puphpeteer\RemoteObject;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -22,7 +23,7 @@ use UnexpectedValueException;
 /** Public entry point. All browser operations automatically await the internal transport. */
 final class Puppeteer
 {
-    /** @var array<string,array> */
+    /** @var array<int,RemoteObject> */
     private array $plugins = [];
     private ?Client $client = null;
     private bool $clientConnected = false;
@@ -31,9 +32,12 @@ final class Puppeteer
 
     private function staticClient(): Client
     {
+        if (null !== $this->runtime) {
+            return $this->client = $this->runtime->client();
+        }
         if (null === $this->client || $this->client->isClosed()) {
-            // A getter may precede use(); keep the plugin registry available in this runtime.
-            $this->client = $this->newClient($this->options['bundle'] ?? dirname(__DIR__, 2) . '/resources/puppeteer.js');
+            // A getter may precede launch(); keep the same client until the browser connects.
+            $this->client = $this->newClient($this->bundle());
             $this->clientConnected = false;
         }
 
@@ -52,6 +56,15 @@ final class Puppeteer
 
     private function browserClient(): Client
     {
+        if (null !== $this->runtime) {
+            if ($this->clientConnected) {
+                throw new RuntimeException('JsRuntime can be connected to one browser only');
+            }
+            $this->client = $this->runtime->client();
+            $this->clientConnected = true;
+
+            return $this->client;
+        }
         if (null === $this->client || $this->client->isClosed() || $this->clientConnected) {
             $this->client = $this->newClient($this->bundle());
         }
@@ -103,17 +116,16 @@ final class Puppeteer
     }
 
     /**
-     * Register a factory from the compiled plugin registry for future browsers.
+     * Enable a plugin from the current JsRuntime before launch or connect.
      *
      * @psalm-external-mutation-free
      */
-    public function use(string $name, array $options = []): self
+    public function use(RemoteObject $plugin): self
     {
-        $name = preg_replace('/^puppeteer-extra-plugin-/', '', $name) ?? $name;
-        if ('' === $name) {
-            throw new InvalidArgumentException('Plugin name cannot be empty');
+        if (null === $this->runtime || !$plugin->belongsTo($this->runtime->client())) {
+            throw new InvalidArgumentException('Plugin instance must belong to this Puppeteer JsRuntime');
         }
-        $this->plugins[$name] = $options;
+        $this->plugins[$plugin->remoteId()] = $plugin;
 
         return $this;
     }
@@ -121,8 +133,8 @@ final class Puppeteer
     private function preparePlugins(Client $client, array $options, string $mode): array
     {
         $definitions = [];
-        foreach ($this->plugins as $name => $configuration) {
-            $definitions[] = ['name' => $name, 'options' => $configuration];
+        foreach ($this->plugins as $plugin) {
+            $definitions[] = ['plugin' => $plugin];
         }
         $timeout = 'launch' === $mode ? ($options['timeout'] ?? 30000) : ($options['protocolTimeout'] ?? ((float) ($this->options['read_timeout'] ?? 180) * 1000.0));
         $cancellation = $timeout > 0 ? new TimeoutCancellation($timeout / 1000) : null;
@@ -137,21 +149,20 @@ final class Puppeteer
     /** @psalm-mutation-free */
     private function bundle(): string
     {
-        if (isset($this->options['bundle'])) {
-            return $this->options['bundle'];
-        }
-
-        return dirname(__DIR__, 2) . '/resources/' . ([] === $this->plugins ? 'puppeteer-core.js' : 'puppeteer.js');
+        return $this->options['bundle'] ?? dirname(__DIR__, 2) . '/resources/puppeteer.js';
     }
 
     /**
      * @param array{bundle?:string,read_timeout?:int|float} $options
      *
-     * @psalm-mutation-free
+     * @psalm-pure
      */
-    public function __construct(private array $options = [], private ?LoggerInterface $logger = null)
+    public function __construct(private array $options = [], private ?LoggerInterface $logger = null, private ?JsRuntime $runtime = null)
     {
         self::validateOptions($options, ['bundle', 'read_timeout']);
+        if (null !== $runtime && isset($options['bundle'])) {
+            throw new InvalidArgumentException('Use either JsRuntime or bundle option');
+        }
     }
 
     /** @param array{browserWSEndpoint?:string,browserURL?:string,defaultViewport?:array|null,protocolTimeout?:int|float,slowMo?:int|float,acceptInsecureCerts?:bool,ignoreHTTPSErrors?:bool,targetFilter?:Closure|JsFunction,isPageTarget?:Closure|JsFunction,protocol?:string,capabilities?:array} $options */

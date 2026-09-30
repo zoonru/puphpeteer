@@ -56,6 +56,12 @@ class RemoteObject
         return $result;
     }
 
+    /** @internal */
+    protected function client(): Client
+    {
+        return $this->client;
+    }
+
     /**
      * @template T of RemoteObject
      *

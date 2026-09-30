@@ -1,16 +1,8 @@
-import {registry} from './registry.js';
-import customPlugins from 'puphpeteer-custom-plugins';
-
 /** Browser-side subset of puppeteer-extra: native process/profile ownership stays in PHP. */
 export class PluginAdapter {
-  constructor(factories = null) {
-    if (factories === null) {
-      for (const name of Object.keys(customPlugins)) {
-        if (Object.hasOwn(registry, name)) throw new Error(`Reserved bundled plugin name: ${name}`);
-      }
-      factories = {...registry, ...customPlugins};
-    }
+  constructor(factories = {}, resolvePlugin = null) {
     this.factories = factories;
+    this.resolvePlugin = resolvePlugin;
     this.plugins = [];
     this.pages = new WeakMap();
     this.targets = new WeakSet();
@@ -26,19 +18,29 @@ export class PluginAdapter {
     const visiting = new Set();
     const configurations = new Map();
     for (const definition of definitions) {
-      const name = definition.name.replace(/^puppeteer-extra-plugin-/, '');
+      const pluginName = definition.plugin ? definition.plugin.name : definition.name;
+      if (typeof pluginName !== 'string' || !pluginName) throw new Error('Invalid plugin name');
+      const name = pluginName.replace(/^puppeteer-extra-plugin-/, '');
       if (configurations.has(name)) throw new Error(`Duplicate plugin registration: ${name}`);
-      configurations.set(name, definition.options || {});
+      configurations.set(name, definition);
     }
     const add = name => {
       name = name.replace(/^puppeteer-extra-plugin-/, '');
-      let opts = configurations.get(name) || {};
+      const definition = configurations.get(name);
+      let opts = definition?.options || {};
       if (this.plugins.some(plugin => plugin.name === name)) return;
       if (visiting.has(name)) throw new Error(`Circular plugin dependency: ${name}`);
-      const factory = Object.hasOwn(this.factories, name) ? this.factories[name] : undefined;
-      if (typeof factory !== 'function') throw new Error(`Plugin is not bundled: ${name}`);
-      if (name === 'stealth' && opts.enabledEvasions) opts = {...opts, enabledEvasions: new Set(opts.enabledEvasions)};
-      const plugin = factory(opts);
+      let plugin = definition?.plugin;
+      if (!plugin) {
+        let factory = Object.hasOwn(this.factories, name) ? this.factories[name] : undefined;
+        if (factory === undefined && this.resolvePlugin) {
+          try { factory = this.resolvePlugin(name); }
+          catch (cause) { throw new Error(`Failed to resolve plugin ${name}: ${cause.message}`, {cause}); }
+        }
+        if (typeof factory !== 'function') throw new Error(`Plugin is not available: ${name}`);
+        if (name === 'stealth' && opts.enabledEvasions) opts = {...opts, enabledEvasions: new Set(opts.enabledEvasions)};
+        plugin = factory(opts);
+      }
       if (!plugin || plugin._isPuppeteerExtraPlugin !== true) throw new Error(`Not a PuppeteerExtraPlugin: ${name}`);
       for (const requirement of plugin.requirements) {
         if (!['runLast', 'dataFromPlugins', 'launch', 'headful'].includes(requirement)) throw new Error(`Unsupported plugin requirement: ${requirement}`);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
 use Nesk\Puphpeteer\JsFunction;
+use Nesk\Puphpeteer\JsRuntime;
 use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use Nesk\Puphpeteer\Puppeteer\Target;
 
@@ -15,7 +16,9 @@ function pluginCheck(bool $condition, string $message): void
     }
 }
 
-$puppeteer = (new Puppeteer())->use('stealth');
+$root = dirname(__DIR__, 3);
+$runtime = new JsRuntime(moduleRoot: $root);
+$puppeteer = (new Puppeteer(runtime: $runtime))->use($runtime->require('puppeteer-extra-plugin-stealth')());
 $browser = $puppeteer->launch(['headless' => true]);
 try {
     $context = $browser->createBrowserContext();
@@ -42,7 +45,8 @@ try {
     $context->close();
 
     // A separate QuickJS client applies beforeConnect and onBrowser hooks too.
-    $connected = (new Puppeteer())->use('stealth', ['enabledEvasions' => ['navigator.hardwareConcurrency']])->connect(['browserWSEndpoint' => $browser->wsEndpoint()]);
+    $otherRuntime = new JsRuntime(moduleRoot: $root);
+    $connected = (new Puppeteer(runtime: $otherRuntime))->use($otherRuntime->require('puppeteer-extra-plugin-stealth')(['enabledEvasions' => ['navigator.hardwareConcurrency']]))->connect(['browserWSEndpoint' => $browser->wsEndpoint()]);
     try {
         $connectedPage = $connected->newPage();
         $connectedPage->goto('data:text/html,<title>connected</title>');
@@ -55,10 +59,4 @@ try {
     $browser->close();
 }
 
-try {
-    (new Puppeteer())->use('not-bundled')->launch();
-    throw new LogicException('Missing plugin accepted');
-} catch (RuntimeException $error) {
-    pluginCheck(str_contains($error->getMessage(), 'not bundled'), 'unknown plugin rejected before launch');
-}
 echo "Plugin launch/connect, pages, frames and popups PASS\n";

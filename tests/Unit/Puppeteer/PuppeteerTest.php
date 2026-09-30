@@ -39,16 +39,9 @@ final class PuppeteerTest extends TestCase
         self::assertNotContains('--no-first-run', $puppeteer->defaultArgs(['ignoreDefaultArgs' => ['--no-first-run']]));
     }
 
-    public function testNoPluginsUseTheCoreBundleByDefault(): void
+    public function testOneStableBundleIsUsedByDefault(): void
     {
         $bundle = (new ReflectionMethod(Puppeteer::class, 'bundle'))->invoke(new Puppeteer());
-        self::assertSame(dirname(__DIR__, 3) . '/resources/puppeteer-core.js', $bundle);
-    }
-
-    public function testPluginsUseTheFullBundleByDefault(): void
-    {
-        $puppeteer = (new Puppeteer())->use('stealth');
-        $bundle = (new ReflectionMethod(Puppeteer::class, 'bundle'))->invoke($puppeteer);
         self::assertSame(dirname(__DIR__, 3) . '/resources/puppeteer.js', $bundle);
     }
 

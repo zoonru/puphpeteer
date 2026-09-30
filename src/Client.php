@@ -18,6 +18,7 @@ use Closure;
 use InvalidArgumentException;
 use Js\Callback;
 use LogicException;
+use Nesk\Puphpeteer\Internal\NpmModuleHost;
 use Nesk\Puphpeteer\Internal\RemoteObjectFactory;
 use Nesk\Puphpeteer\Puppeteer\Browser;
 use Psr\Log\LoggerInterface;
@@ -63,7 +64,7 @@ final class Client
     private ?Internal\HostFilesystem $filesystem = null;
     private LoggerInterface $logger;
 
-    public function __construct(?string $bundle = null, ?LoggerInterface $logger = null)
+    public function __construct(?string $bundle = null, ?LoggerInterface $logger = null, ?NpmModuleHost $moduleHost = null)
     {
         if (!method_exists(QuickJS::class, 'drainMessages')) {
             throw new RuntimeException('Load php-quickjs >=0.0.3 with automatic Promise awaiting and QuickJS::drainMessages().');
@@ -71,6 +72,17 @@ final class Client
         $this->logger = $logger ?? new Internal\StderrLogger();
         $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, maxStack: 512 * 1024);
         $this->js->register('now', static fn (): float => (float) hrtime(true) / 1e6);
+        if (null !== $moduleHost) {
+            $this->js->register('npm.resolve', $moduleHost->resolve(...));
+            $this->js->register('npm.root', $moduleHost->root(...));
+            $this->js->register('npm.readSource', $moduleHost->readSource(...));
+            $this->js->register('npm.readBinary', $moduleHost->readBinary(...));
+            $this->js->register('npm.decodeUtf8', $moduleHost->decodeUtf8(...));
+            $this->js->register('npm.crc32', $moduleHost->crc32(...));
+            $this->js->register('npm.exists', $moduleHost->exists(...));
+            $this->js->register('npm.inflateRaw', $moduleHost->inflateRaw(...));
+            $this->js->register('npm.deflateRaw', $moduleHost->deflateRaw(...));
+        }
         $source = read($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
         $this->js->eval($source);
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');

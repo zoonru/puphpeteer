@@ -8,14 +8,6 @@ use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 use function Amp\File\getSize;
 
 $puppeteer = new Puppeteer();
-// Plugins run in QuickJS; enable only the evasions needed by this example.
-$puppeteer->use('stealth', ['enabledEvasions' => [
-    'navigator.webdriver',
-    'navigator.languages',
-]]);
-$puppeteer->use('stealth/evasions/navigator.hardwareConcurrency', [
-    'hardwareConcurrency' => 8,
-]);
 $browser = $puppeteer->launch([
     'headless' => true,
     'args' => ['--user-agent=PuPHPeteer-Example/1.0', '--lang=en-US'],

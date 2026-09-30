@@ -3,6 +3,9 @@ import {Recordings} from './recordings.js';
 import {GuestReadableStreams} from './readable-streams.js';
 import {installFilesystem} from './filesystem.js';
 import {PluginAdapter} from './plugins/adapter.js';
+import {installNpmLoader} from './npm-loader.js';
+import {createNodeCompat} from './node-compat.js';
+import {adaptAdmZip} from './adm-zip-adapter.js';
 import {emit, drain, fail} from './bridge.js';
 import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
@@ -97,7 +100,7 @@ function encode(value, ancestors) {
     if (Object.is(value, -0)) return {$quickjs: 'number', value: '-0'};
     return value;
   }
-  if ((type !== 'object' && !constructorNames.has(value)) || value === null) return value;
+  if ((type !== 'object' && type !== 'function') || value === null) return value;
   if (value instanceof Uint8Array) return {$quickjs: 'bytes', value};
   if (value instanceof ReadableStream && !(value instanceof ScreenRecording)) return streams.encode(value);
   const prototype = Object.getPrototypeOf(value);
@@ -117,7 +120,7 @@ function encode(value, ancestors) {
   }
   // A released object can be encoded again. Re-pin it only in that case.
   if (!objects.has(id)) objects.set(id, value);
-  return {$quickjs: 'object', id, class: remoteClass(value)};
+  return {$quickjs: 'object', id, class: type === 'function' && !constructorNames.has(value) ? 'Function' : remoteClass(value)};
 }
 function decodeRecord(value, pin, temporary) {
   const entries = Object.entries(value);
@@ -160,9 +163,49 @@ const transport = {
   send: message => emit('send', message),
   close: () => { transportClosing = true; },
 };
-const plugins = new PluginAdapter();
+function binaryFromHost(value) {
+  if (!(value instanceof Uint8Array) || value[0] !== 255) throw new TypeError('Invalid binary result from host');
+  return value.subarray(1);
+}
+const npmBuiltins = globalThis.php?.npm?.resolve && createNodeCompat({
+  root: php.npm.root(), readBinary: path => binaryFromHost(php.npm.readBinary(path)),
+  decodeUtf8: bytes => php.npm.decodeUtf8(bytes),
+  crc32: (bytes, value) => php.npm.crc32(bytes, value),
+  exists: path => php.npm.exists(path),
+  inflateRaw: (data, limit) => binaryFromHost(php.npm.inflateRaw(data, limit)),
+  deflateRaw: data => binaryFromHost(php.npm.deflateRaw(data)),
+});
+const npm = npmBuiltins && installNpmLoader({
+  resolve: (specifier, parent) => php.npm.resolve(specifier, parent),
+  readSource: path => php.npm.readSource(path),
+  builtins: npmBuiltins,
+  afterLoad: (filename, exports) => adaptAdmZip(filename, exports, npmBuiltins),
+});
+const plugins = new PluginAdapter({}, npm ? name => npm.requireModule(`puppeteer-extra-plugin-${name}`) : null);
 async function call(request) {
   const method = request.method;
+  if (request.object === 0 && request.operation === 'runtime') {
+    if (method === 'require') {
+      if (!npm) throw new Error('JsRuntime requires a module root to load modules');
+      return npm.requireModule(decode(request.args[0]));
+    }
+    if (method === 'run') {
+      const temporary = new Set();
+      try {
+        const [fn, ...args] = request.args.map(item => decode(item, false, temporary));
+        if (typeof fn !== 'function') throw new TypeError('JsRuntime.run expects a function');
+        return await Reflect.apply(fn, undefined, args);
+      } finally {
+        for (const callbackId of temporary) {
+          if (!pinnedCallbacks.has(callbackId) && !eventCallbacks.has(callbackId)) {
+            decodedFunctions.delete(`callback:${callbackId}`);
+            emit('releaseCallback', callbackId);
+          }
+        }
+      }
+    }
+    throw new Error(`Unknown runtime operation: ${method}`);
+  }
   if (request.operation === 'stream') {
     if (method === 'read') return streams.read(request.object);
     if (method === 'cancel') return streams.cancel(request.object);
@@ -184,6 +227,10 @@ async function call(request) {
   }
   let object = objects.get(request.object);
   if (!object) throw new Error(`Unknown remote object ${request.object}`);
+  if (request.operation === 'invoke') {
+    if (typeof object !== 'function') throw new TypeError('Remote value is not callable');
+    return Reflect.apply(object, undefined, request.args.map(item => decode(item)));
+  }
   if (request.operation === 'static') object = publicConstructors[remoteClass(object)];
   if (request.operation === 'readable' && object instanceof ScreenRecording) return recordings.readable(object);
   if (request.operation === 'call' && object instanceof Page && method === 'record') return recordings.start(object, decode(request.args[0] ?? {}));
