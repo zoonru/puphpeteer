@@ -9,7 +9,7 @@
 
 A [Puppeteer](https://github.com/puppeteer/puppeteer) bridge for PHP. Original Puppeteer runs inside the PHP process through **php-quickjs**; Amp handles WebSocket transport, timers and PHP callbacks. Browser operations do not require a Node.js process.
 
-Generated wrappers cover part of Puppeteer's API; bundled stealth and custom plugin support are available within the documented compatibility limits.
+Generated wrappers cover part of Puppeteer's API. npm plugins can be loaded from an application's `node_modules` within the documented compatibility limits.
 
 ## Contents
 
@@ -57,7 +57,7 @@ try {
 - For reliable cleanup of locally launched Chrome processes on Unix: the optional `pcntl` and `posix` extensions.
 - To download local Chrome: PHP HTTPS streams (`allow_url_fopen=1`, OpenSSL) and the `unzip` command.
 
-Node.js and npm are not required to run the package or install a browser. Ready-to-use JS bundles are included.
+Node.js and npm are not required to run the package or install a browser. Applications using npm plugins need npm to install packages; deployment must include `node_modules`, but no Node.js process runs at runtime. ESM-only packages may also need a build step.
 
 ## Installation
 
@@ -232,63 +232,53 @@ PHP application's filesystem, including when Chrome runs through Browserless.
 
 ## Puppeteer plugins
 
-Register bundled plugins before launching or connecting:
+See the runnable [stealth + fingerprint example](examples/06_stealth_fingerprint.php) for both plugins in one PHP flow. Module files and compressed assets are served by read-only PHP callbacks through php-quickjs's direct bridge; package versions remain under the application's control.
 
-```php
-$puppeteer = (new Puppeteer())->use('stealth');
-$browser = $puppeteer->launch(['headless' => true]);
+Install plugin packages in your application:
+
+```sh
+npm install puppeteer-extra-plugin-stealth fingerprint-injector
 ```
 
-The bundle includes upstream stealth modules and the puppeteer-extra hook adapter.
+```php
+use Nesk\Puphpeteer\JsRuntime;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 
-`use()` returns the same Puppeteer instance. Registrations apply to subsequent
-`launch()` and `connect()` calls; each browser connection gets fresh plugin
-instances. Unknown names, missing dependencies and incompatible requirements
-fail before launching Chrome. Registering the same name again replaces its options.
-The `puppeteer-extra-plugin-` prefix is optional. Launch preparation respects
+$js = new JsRuntime(moduleRoot: __DIR__);
+$stealth = $js->require('puppeteer-extra-plugin-stealth');
+['newInjectedPage' => $newInjectedPage] = $js->require('fingerprint-injector');
+
+$puppeteer = new Puppeteer(runtime: $js);
+$puppeteer->use($stealth());
+$browser = $puppeteer->launch();
+$page = $newInjectedPage($browser, [
+    'fingerprintOptions' => ['devices' => ['mobile'], 'operatingSystems' => ['ios']],
+]);
+$page->goto('https://example.com');
+```
+
+Keep `node_modules` and the packages' non-JS data files in deployment. Pin package versions with `package-lock.json`. Upgrading a plugin does not require rebuilding PuPHPeteer. If another package needs ESM or unsupported syntax, build it to CommonJS with standard tooling and pass the resulting file path to `require()`.
+
+For custom JavaScript logic, use `$js->run(new JsFunction('async (...) => { ... }'), ...$arguments)`; it runs in the same QuickJS context as the loaded packages. `$page->evaluate()` instead runs inside the web page.
+
+`use()` returns the same Puppeteer instance. Register plugins before its single
+`launch()` or `connect()` call. Missing dependencies and incompatible requirements
+fail before launching Chrome. Exported plugin instances belong to their `JsRuntime`;
+keep that runtime alive while using the browser. Launch preparation respects
 `timeout` (default 30 seconds); connect preparation uses `protocolTimeout` or
 `read_timeout` (default 180 seconds). Zero disables that preparation deadline.
 
-To select evasions, pass their upstream names:
+To select stealth evasions, pass their upstream names when creating the plugin:
 
 ```php
-$puppeteer->use('stealth', ['enabledEvasions' => [
+$puppeteer->use($stealth(['enabledEvasions' => [
     'navigator.webdriver', 'navigator.languages', 'navigator.hardwareConcurrency',
-]]);
+]]));
 ```
 
-Individual evasions accept their original options:
+Individual evasions can be loaded by their npm package path with `require()` when needed.
 
-```php
-$puppeteer->use('stealth/evasions/navigator.hardwareConcurrency', [
-    'hardwareConcurrency' => 8,
-]);
-```
-
-### Application plugins
-
-Plugins must be bundled in advance. Install the plugin with npm in the build
-project, then create a JavaScript registry exporting name-to-factory entries:
-
-```js
-// app-plugins.js
-import plugin from 'puppeteer-extra-plugin-example';
-export default {example: options => plugin(options)};
-```
-
-```sh
-docker compose run --rm php php bin/console build --plugins=./app-plugins.js
-```
-
-Commit/distribute the resulting `resources/puppeteer.js` with your
-application. The no-plugin path uses the smaller `resources/puppeteer-core.js`
-automatically; an explicitly configured `bundle` always takes precedence. Use
-`new Puppeteer(['bundle' => '/absolute/path/puppeteer.js'])` when keeping an
-application bundle separately. Reproducibility checks need the same
-`--plugins` argument. Register it with `$puppeteer->use('example', $options)`.
-Custom registry names cannot override bundled names. Dependencies must also be
-present in the registry. This is build-time dependency resolution: runtime
-`require()`, Node filesystem, Node process and network modules are unavailable.
+The loader supports CommonJS modules, not arbitrary ESM or native Node addons. Its Node compatibility layer offers only selected builtins and read-only filesystem access inside the supplied module root. Put plugins in a dedicated directory without secrets: npm code can read files anywhere inside that root. This is compatibility, not a security sandbox; install only trusted packages. It does not start Node.js or provide a general-purpose Node process or Node network stack. A package requiring an unsupported API will fail with an error; compatibility with every npm package is not guaranteed.
 
 ### Compatibility limits
 
@@ -298,7 +288,7 @@ present in the registry. This is build-time dependency resolution: runtime
 
 3. **The first popup document may load before the plugin is ready.** A site's `window.open('/check')` can run `/check` scripts before stealth finishes preparing the popup. If those scripts need the patches from the start, obtain the popup page and then navigate it to `/check` again. This affects the new load; it does not undo checks or requests from the first load.
 
-4. **Language overrides apply to the browser connection, not saved profile settings.** For example, `use('stealth/evasions/user-agent-override', ['locale' => 'de-DE,de'])` configures the language through CDP in both headless and visible Chrome. It does not write that language to the profile's `Preferences` file: relaunching the same profile without the plugin does not preserve this setting. The order of HTTP headers may also differ from puppeteer-extra running in Node.js.
+4. **Language overrides apply to the browser connection, not saved profile settings.** For example, the stealth `user-agent-override` evasion with locale `de-DE,de` configures the language through CDP in both headless and visible Chrome. It does not write that language to the profile's `Preferences` file: relaunching the same profile without the plugin does not preserve this setting. The order of HTTP headers may also differ from puppeteer-extra running in Node.js.
 
 5. **A plugin error becomes a PHP exception, sometimes on the next call.** For example, if `onPageCreated()` fails while you call `$browser->newPage()`, that call throws. If a hook fails in the background when a popup appears, the next client operation can throw even though it did not create the popup. Keep browser cleanup in `finally`: `close()` and `disconnect()` remain available after plugin failures. A target disappearing during initialization because its page closed is treated as normal cleanup.
 
@@ -353,7 +343,7 @@ try {
 }
 ```
 
-**Plugins:** replace JavaScript initialization in `js_extra` with registration before `launch()` or `connect()`.
+**Plugins:** replace JavaScript initialization in `js_extra` with `JsRuntime::require()` (see [Puppeteer plugins](#puppeteer-plugins)).
 
 ```php
 // v2
@@ -364,7 +354,10 @@ $puppeteer = new Puppeteer(['js_extra' => "
 "]);
 
 // v3
-$puppeteer = (new Puppeteer())->use('stealth');
+$js = new JsRuntime(moduleRoot: __DIR__);
+$puppeteer = new Puppeteer(runtime: $js);
+$stealth = $js->require('puppeteer-extra-plugin-stealth');
+$puppeteer->use($stealth());
 ```
 
 **Timeouts and HTTPS:** the old options still map automatically; prefer the upstream names. `protocolTimeout` is in milliseconds, whereas `read_timeout` was in seconds. Navigation has its own timeout.
@@ -466,7 +459,7 @@ docker compose run --rm chrome composer test
 
 PHP style follows Symfony (`PHP CS Fixer`), with spaces around `.` and class imports, including built-in classes. Run `composer cs:check` to check or `composer cs:fix` to format all PHP files (also via `docker compose run --rm php ...`). Generated PHP uses the same rules. Style checks run in `composer test` and CI.
 
-`php bin/console build` creates minified CDP bundles: `resources/puppeteer-core.js` without plugins and `resources/puppeteer.js` with plugins. `--debug` produces readable JS. Commit resources with source and lock-file changes. `package-lock.json` pins JS dependencies; `composer.lock` stays local, and applications resolve PHP dependency ranges.
+`php bin/console build` creates the package's minified CDP client bundle; `--debug` produces readable JS. Applications normally load CommonJS npm packages directly; ESM-only packages can be bundled separately with standard tooling. Commit package resources with source and lock-file changes. `package-lock.json` pins this package's JS dependencies; applications should pin their own plugin dependencies. `composer.lock` stays local, and applications resolve PHP dependency ranges.
 
 Without the extension, only unit tests/Psalm are available: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, then `php vendor/bin/phpunit` and `composer psalm`.
 

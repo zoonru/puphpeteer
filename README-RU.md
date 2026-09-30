@@ -9,7 +9,7 @@
 
 Клиент [Puppeteer](https://github.com/puppeteer/puppeteer) для PHP. Оригинальный Puppeteer выполняется внутри PHP-процесса через **php-quickjs**; Amp обслуживает WebSocket, таймеры и PHP callbacks. Для работы с браузером процесс Node.js не нужен.
 
-Сгенерированные обёртки покрывают часть API Puppeteer; встроенный stealth и пользовательские плагины доступны в пределах, описанных в документации совместимости.
+Сгенерированные обёртки покрывают часть API Puppeteer. npm-плагины загружаются из `node_modules` приложения в пределах, описанных в документации совместимости.
 
 ## Содержание
 
@@ -57,7 +57,7 @@ try {
 - Для надёжного завершения локальных процессов Chrome в Unix: необязательные расширения `pcntl` и `posix`.
 - Для скачивания локального Chrome: HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`.
 
-Для работы пакета и установки браузера Node.js и npm не нужны. Готовые JS-bundle входят в пакет.
+Для работы пакета и установки браузера Node.js и npm не нужны. Если приложение использует npm-плагины, npm нужен для их установки; при развёртывании понадобится `node_modules`, но процесс Node.js во время работы не запускается. Для ESM-only пакетов может понадобиться отдельная сборка.
 
 ## Установка
 
@@ -231,47 +231,48 @@ try {
 
 ## Плагины Puppeteer
 
-Зарегистрируйте встроенный плагин перед запуском или подключением:
+Оба плагина в одном PHP-сценарии показаны в [примере stealth + fingerprint](examples/06_stealth_fingerprint.php). Файлы модулей и сжатые данные обрабатывают PHP-коллбеки с проверкой корневого каталога; данные проходят через прямой мост php-quickjs без MessagePack.
 
-```php
-$puppeteer = (new Puppeteer())->use('stealth');
-$browser = $puppeteer->launch(['headless' => true]);
-```
-
-Bundle включает исходные stealth-модули и адаптер hooks puppeteer-extra.
-Пользовательские плагины регистрируются при сборке. Node API внутри QuickJS
-недоступны; старая настройка `js_extra` по-прежнему отклоняется.
-
-Регистрация действует на последующие `launch()` и `connect()`; каждое соединение получает новые экземпляры плагинов. `use()` возвращает тот же Puppeteer, повторная регистрация имени заменяет опции. Префикс `puppeteer-extra-plugin-` необязателен. Неизвестные имена, отсутствующие зависимости и несовместимые требования отклоняются до запуска Chrome. Подготовка launch ограничена `timeout` (по умолчанию 30 секунд), connect — `protocolTimeout` или `read_timeout` (180 секунд); ноль отключает этот таймаут.
-
-Можно выбрать upstream evasions или настроить отдельный модуль:
-
-```php
-$puppeteer->use('stealth', ['enabledEvasions' => [
-    'navigator.webdriver', 'navigator.languages', 'navigator.hardwareConcurrency',
-]]);
-$puppeteer->use('stealth/evasions/navigator.hardwareConcurrency', [
-    'hardwareConcurrency' => 8,
-]);
-```
-
-### Собственные плагины
-
-Установите npm-пакет в проект сборки и создайте реестр фабрик:
-
-```js
-// app-plugins.js
-import plugin from 'puppeteer-extra-plugin-example';
-export default {example: options => plugin(options)};
-```
+Установите пакеты в своём приложении:
 
 ```sh
-docker compose run --rm php php bin/console build --plugins=./app-plugins.js
+npm install puppeteer-extra-plugin-stealth fingerprint-injector
 ```
 
-Сохраните собранный `resources/puppeteer.js` вместе с приложением. Для отдельного файла используйте `new Puppeteer(['bundle' => '/absolute/path/puppeteer.js'])`, затем `$puppeteer->use('example', $options)`. Явный `bundle` имеет приоритет; иначе без плагинов выбирается меньший `resources/puppeteer-core.js`. Проверка воспроизводимости требует того же `--plugins`.
+```php
+use Nesk\Puphpeteer\JsRuntime;
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
 
-Имена собственного реестра не могут заменять встроенные; зависимости тоже должны входить в реестр. Разрешение зависимостей происходит при сборке: runtime `require()` и Node-модули файловой системы, процессов и сети недоступны. Старый `js_extra` не поддерживается.
+$js = new JsRuntime(moduleRoot: __DIR__);
+$stealth = $js->require('puppeteer-extra-plugin-stealth');
+['newInjectedPage' => $newInjectedPage] = $js->require('fingerprint-injector');
+
+$puppeteer = new Puppeteer(runtime: $js);
+$puppeteer->use($stealth());
+$browser = $puppeteer->launch();
+$page = $newInjectedPage($browser, [
+    'fingerprintOptions' => ['devices' => ['mobile'], 'operatingSystems' => ['ios']],
+]);
+$page->goto('https://example.com');
+```
+
+При развёртывании сохраняйте `node_modules` и файлы данных пакетов. Фиксируйте версии пакетов в `package-lock.json`. Обновление плагина не требует пересборки PuPHPeteer. Если другому пакету необходим ESM или неподдерживаемый синтаксис, соберите его в CommonJS стандартным инструментом и передайте путь к файлу в `require()`.
+
+Для собственной JS-логики используйте `$js->run(new JsFunction('async (...) => { ... }'), ...$arguments)`; она выполняется в том же контексте QuickJS, что и загруженные пакеты. `$page->evaluate()` выполняет код внутри веб-страницы.
+
+`use()` возвращает тот же Puppeteer. Регистрируйте плагины перед единственным вызовом `launch()` или `connect()`. Отсутствующие зависимости и несовместимые требования отклоняются до запуска Chrome. Экземпляры плагинов принадлежат своему `JsRuntime`; сохраняйте его на всё время работы с браузером. Подготовка launch ограничена `timeout` (по умолчанию 30 секунд), connect — `protocolTimeout` или `read_timeout` (180 секунд); ноль отключает этот таймаут.
+
+Можно выбрать upstream evasions при создании плагина:
+
+```php
+$puppeteer->use($stealth(['enabledEvasions' => [
+    'navigator.webdriver', 'navigator.languages', 'navigator.hardwareConcurrency',
+]]));
+```
+
+Отдельные evasions при необходимости можно загрузить из npm-пакета через `require()`.
+
+Загрузчик поддерживает CommonJS-модули, но не произвольные ESM-пакеты и не нативные Node-аддоны. Слой совместимости содержит только выбранные встроенные API Node и доступ к файлам внутри указанного корневого каталога лишь для чтения. Храните плагины в отдельном каталоге без секретов: npm-код может прочитать любой файл внутри него. Это слой совместимости, а не песочница безопасности; устанавливайте только доверенные пакеты. Он не запускает Node.js и не предоставляет полноценный Node process или сетевые API Node. Пакет с неподдерживаемым API завершится ошибкой; совместимость с любым npm-пакетом не гарантируется.
 
 ### Ограничения плагинов
 
@@ -281,7 +282,7 @@ docker compose run --rm php php bin/console build --plugins=./app-plugins.js
 
 3. **Первый документ popup может загрузиться раньше плагина.** Например, сайт вызывает `window.open('/check')`, и скрипты `/check` успевают выполниться до подготовки popup плагином stealth. Если изменения нужны с самого начала, получите страницу popup и повторно перейдите на `/check`. Они подействуют при новой загрузке, но не отменят проверки и запросы, выполненные при первой.
 
-4. **Настройка языка действует через соединение с браузером и не сохраняется в профиле.** Например, `use('stealth/evasions/user-agent-override', ['locale' => 'de-DE,de'])` задаёт язык через CDP и для headless, и для видимого Chrome. Плагин не записывает язык в файл `Preferences`: при следующем запуске того же профиля без плагина эта настройка не сохранится. Порядок HTTP-заголовков также может отличаться от puppeteer-extra, запущенного через Node.js.
+4. **Настройка языка действует через соединение с браузером и не сохраняется в профиле.** Например, stealth evasion `user-agent-override` с locale `de-DE,de` задаёт язык через CDP и для headless, и для видимого Chrome. Плагин не записывает язык в файл `Preferences`: при следующем запуске того же профиля без плагина эта настройка не сохранится. Порядок HTTP-заголовков также может отличаться от puppeteer-extra, запущенного через Node.js.
 
 5. **Ошибка плагина превращается в PHP-исключение, иногда при следующем вызове.** Например, если `onPageCreated()` падает во время `$browser->newPage()`, исключение выбросит этот вызов. Если обработчик упал в фоне при появлении popup, исключение может выбросить следующая операция клиента, хотя она не создавала popup. Закрывайте браузер в `finally`: `close()` и `disconnect()` доступны после ошибок плагина. Если страница просто закрылась во время инициализации, исчезновение её target считается обычной очисткой.
 
@@ -338,7 +339,7 @@ try {
 }
 ```
 
-**Плагины:** замените JavaScript-инициализацию в `js_extra` регистрацией до `launch()` или `connect()`.
+**Плагины:** замените JavaScript-инициализацию в `js_extra` на `JsRuntime::require()` (см. [Плагины Puppeteer](#плагины-puppeteer)).
 
 ```php
 // v2
@@ -349,7 +350,10 @@ $puppeteer = new Puppeteer(['js_extra' => "
 "]);
 
 // v3
-$puppeteer = (new Puppeteer())->use('stealth');
+$js = new JsRuntime(moduleRoot: __DIR__);
+$puppeteer = new Puppeteer(runtime: $js);
+$stealth = $js->require('puppeteer-extra-plugin-stealth');
+$puppeteer->use($stealth());
 ```
 
 **Таймауты и HTTPS:** старые настройки преобразуются автоматически; предпочтительны имена из upstream. `protocolTimeout` задаётся в миллисекундах, а `read_timeout` — в секундах. У навигации отдельный таймаут.
@@ -451,7 +455,7 @@ docker compose run --rm chrome composer test
 
 Стиль PHP — Symfony (`PHP CS Fixer`) с пробелами вокруг `.` и импортом классов, включая встроенные. Проверка: `composer cs:check`, исправление всех PHP-файлов: `composer cs:fix` (также через `docker compose run --rm php ...`). Генератор применяет те же правила. Проверка включена в `composer test` и CI.
 
-`php bin/console build` собирает минифицированные CDP bundle: `resources/puppeteer-core.js` без плагинов и `resources/puppeteer.js` с плагинами. `--debug` создаёт читаемый JS. Коммитьте ресурсы вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости; `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
+`php bin/console build` собирает минифицированный CDP bundle пакета; `--debug` создаёт читаемый JS. Обычно приложение загружает CommonJS npm-пакеты напрямую; ESM-only пакеты при необходимости можно отдельно собрать стандартным инструментом. Коммитьте ресурсы пакета вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости пакета; приложению следует отдельно фиксировать версии плагинов. `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
 
 Без расширения доступны только unit-тесты и Psalm: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, затем `php vendor/bin/phpunit` и `composer psalm`.
 
