@@ -229,7 +229,8 @@ Limitations: the browser must support this experimental CDP method; output is
 MP4 with no codec or container selection; the first fragment may be delayed;
 `stop()` is required to finalize the stream. With `path`, the path belongs to the
 PHP application's filesystem, including when Chrome runs through Browserless.
-File recordings write continuously to disk and return an empty stream once
+PHP opens the file with Amp and continuously pipes the CDP stream to disk, applying
+backpressure while writes complete. File recordings return an empty stream once
 `stop()` finishes. Read the completed file if you need its bytes. Omit `path`
 to receive live video through the readable stream.
 
@@ -491,7 +492,9 @@ JavaScript `console.debug`, `console.log`/`console.info`, `console.warn` and `co
 
 Use the fork SHA pinned in `Dockerfile`. The bridge requires automatic Promise awaiting through Revolt, `quickjs.postMessage()` and `QuickJS::drainMessages()`. [Integration tests](tests/Integration/) check values, limits, recovery, resource release and Fibers against the installed extension.
 
-One asynchronous JS consumer waits for native notifications while Amp handles host I/O. Messages are copied through the native queue (32 MiB by default). PuPHPeteer limits the JS heap to 256 MiB and stack to 512 KiB. Puppeteer and Amp control operation timeouts; PuPHPeteer no longer sets a separate native execution timeout. These limits do not bound PHP callbacks or Chrome memory.
+The canonical native API stubs belong to [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` is a copy for Psalm; integration tests compare its signatures with the loaded extension. `Client` executes the ready JavaScript bundle with `eval($source, typescript: false)`, bypassing Oxc and its transpile cache. For older supported extensions with a one-argument `eval()`, it selects the previous call by inspecting the method signature.
+
+One asynchronous JS consumer waits for native notifications while Amp handles host I/O. Messages are copied through the native queue (32 MiB by default). PuPHPeteer limits the JS heap to 256 MiB and stack to 512 KiB. Puppeteer and Amp control operation timeouts; PuPHPeteer no longer sets a separate native execution timeout. Bridge values are limited to a conversion depth of 64; the separate TypeScript transpile cache defaults to at most 256 entries and 32 MiB of source, JavaScript and source-map strings. This cache budget does not cover all Oxc allocations. These limits do not bound PHP callbacks or Chrome memory.
 
 The client closes the transport on a bridge failure without retrying; JS mutations are not rolled back. PHP callbacks run outside the native JS stack so they can suspend their Fiber.
 
