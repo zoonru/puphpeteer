@@ -4,10 +4,9 @@ const wait = milliseconds => new Promise(resolve => setTimeout(resolve, millisec
 
 export class Recordings {
   #entries = new WeakMap();
-  constructor(openFile) { this.openFile = openFile; }
 
   async start(page, options = {}) {
-    const {path, overwrite = true, ...settings} = options;
+    const settings = options;
     for (const name of ['maxWidth', 'maxHeight', 'frameRate', 'fps']) {
       if (settings[name] !== undefined && settings[name] <= 0) throw new Error(`\`${name}\` must be greater than 0.`);
     }
@@ -19,30 +18,19 @@ export class Recordings {
       maxHeight: settings.maxHeight,
       frameRate: settings.frameRate ?? settings.fps,
     });
-    const entry = {client, handle, file: null, controller: null, stream: null, pump: null, stop: null, stopping: false, closed: false};
+    const entry = {client, handle, stream: null, stop: null, stopping: false, closed: false};
     this.#entries.set(recording, entry);
     recording.stop = () => this.stop(recording);
     entry.stream = new ReadableStream({
-      start: controller => { entry.controller = controller; },
-      pull: path ? undefined : async controller => {
+      pull: async controller => {
         try {
           const chunk = await this.#read(entry);
           if (chunk) controller.enqueue(chunk); else controller.close();
-        } catch (error) { controller.error(error); }
+        } catch (error) { await this.discard(recording).catch(() => {}); controller.error(error); }
       },
       cancel: () => this.discard(recording),
-    }, {highWaterMark: path ? 1 : 0});
-    try {
-      if (path) {
-        entry.file = await this.openFile(path, overwrite);
-        entry.pump = this.#write(entry);
-        entry.pump.catch(() => {});
-      }
-      return recording;
-    } catch (error) {
-      await this.discard(recording);
-      throw error;
-    }
+    }, {highWaterMark: 0});
+    return recording;
   }
 
   readable(recording) {
@@ -53,9 +41,13 @@ export class Recordings {
     const entry = this.#entry(recording);
     return entry.stop ??= (async () => {
       recording.stopped = true;
-      await entry.client.send('Page.stopScreenRecording');
-      entry.stopping = true;
-      await entry.pump;
+      try {
+        await entry.client.send('Page.stopScreenRecording');
+        entry.stopping = true;
+      } catch (error) {
+        await this.#close(entry);
+        throw error;
+      }
     })();
   }
 
@@ -63,22 +55,6 @@ export class Recordings {
     const entry = this.#entry(recording);
     try { await this.stop(recording); }
     finally { await this.#close(entry); }
-  }
-
-  async #write(entry) {
-    try {
-      while (true) {
-        const chunk = await this.#read(entry);
-        if (!chunk) break;
-        await entry.file.writeFile(chunk);
-        // With a path, only write to disk: an unread stream would retain the entire video.
-      }
-      entry.controller.close();
-    } catch (error) {
-      await this.#close(entry);
-      entry.controller.error(error);
-      throw error;
-    } finally { await entry.file.close(); }
   }
 
   async #read(entry) {

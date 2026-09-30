@@ -99,8 +99,8 @@ function hostRequest(kind, payload) {
     catch (error) { callbacks.delete(id); reject(error); }
   });
 }
-const openRecordingFile = installFilesystem((operation, args) => hostRequest('filesystem', {operation, args: args.map(item => encode(item))}));
-const recordings = new Recordings(openRecordingFile);
+installFilesystem((operation, args) => hostRequest('filesystem', {operation, args: args.map(item => encode(item))}));
+const recordings = new Recordings();
 function encodeRecord(value, ancestors) {
   const entries = Object.entries(value);
   const record = {};

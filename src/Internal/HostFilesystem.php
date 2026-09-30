@@ -31,7 +31,6 @@ final class HostFilesystem
                 'write' => $this->write($arguments[0], $arguments[1]),
                 'mkdir' => $this->mkdir($arguments[0], $arguments[1]),
                 'open' => $this->open($arguments[0]),
-                'openRecording' => $this->openRecording($arguments[0], $arguments[1]),
                 'append' => $this->append($arguments[0], $arguments[1]),
                 'close' => $this->close($arguments[0]),
                 default => throw new InvalidArgumentException('Unknown filesystem operation: ' . $operation),
@@ -62,16 +61,6 @@ final class HostFilesystem
         $recursive ? createDirectoryRecursively($path) : createDirectory($path);
 
         return null;
-    }
-
-    private function openRecording(string $path, bool $overwrite): int
-    {
-        $directory = dirname($path);
-        if (!isDirectory($directory)) {
-            $this->mkdir($directory, true);
-        }
-
-        return $this->open($path, $overwrite ? 'wb' : 'xb');
     }
 
     private function open(string $path, string $mode = 'wb'): int

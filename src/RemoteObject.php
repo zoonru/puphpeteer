@@ -6,6 +6,7 @@ namespace Nesk\Puphpeteer;
 
 use Amp\ByteStream\ReadableStream;
 use Nesk\Puphpeteer\Puppeteer\Browser;
+use Nesk\Puphpeteer\Puppeteer\Page;
 use RuntimeException;
 
 class RemoteObject
@@ -25,6 +26,9 @@ class RemoteObject
     protected function invokeRemote(string $method, array $arguments): mixed
     {
         $this->assertLive();
+        if ($this instanceof Page && 'record' === $method) {
+            return Internal\ScreenRecordingStream::start($arguments[0] ?? [], fn (array $options) => $this->client->call($this->id, $method, [$options])->await());
+        }
         if ($this instanceof Browser && 'wsEndpoint' === $method) {
             return $this->client->endpoint();
         }

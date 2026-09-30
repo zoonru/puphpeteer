@@ -49,9 +49,13 @@ try {
         throw new RuntimeException('Recording stream did not close');
     }
     $saved = $page->record(['path' => $path, 'frameRate' => 10, 'overwrite' => false]);
+    $savedRead = async(static fn (): string => buffer($saved));
     delay(0.2);
+    if ($savedRead->isComplete()) {
+        throw new RuntimeException('File stream ended before recording stopped');
+    }
     $saved->stop();
-    if ('' !== buffer($saved)) {
+    if ('' !== $savedRead->await()) {
         throw new RuntimeException('File recording must return an empty stream');
     }
     $savedBytes = file_get_contents($path);
@@ -88,7 +92,18 @@ try {
     if (!$early->isClosed() || 42 !== $page->evaluate('6 * 7')) {
         throw new RuntimeException('Early close damaged the browser connection');
     }
-    echo 'Live recording, MP4 output, backpressure, overwrite protection and early close PASS', PHP_EOL;
+    $disconnected = $page->record(['path' => $directory . '/disconnected.mp4']);
+    delay(0.1);
+    $browser->disconnect();
+    try {
+        $disconnected->stop();
+        throw new LogicException('Expected disconnected recording to fail');
+    } catch (RuntimeException) {
+        if (!$disconnected->isClosed()) {
+            throw new RuntimeException('Disconnected recording file did not close');
+        }
+    }
+    echo 'Live recording, MP4 output, backpressure, overwrite protection, early close and disconnect PASS', PHP_EOL;
 } finally {
     $browser->close();
     if (is_dir($directory)) {

@@ -34,7 +34,7 @@ function fixture(results = []) {
 
 test('reads live chunks before stop and applies stream backpressure', async () => {
   const {page, calls} = fixture([new Error('Protocol error (IO.read): Read failed'), {data: 'AP8=', base64Encoded: true, eof: true}, {data: 'Kg==', base64Encoded: true, eof: true}]);
-  const recordings = new Recordings(() => assert.fail('No file requested'));
+  const recordings = new Recordings();
   const recording = await recordings.start(page, {fps: 20});
   const reader = recordings.readable(recording).getReader();
   assert.deepEqual([...(await reader.read()).value], [0, 255]);
@@ -47,78 +47,57 @@ test('reads live chunks before stop and applies stream backpressure', async () =
   assert.deepEqual(calls[0], ['Page.startScreenRecording', {audio: undefined, maxWidth: undefined, maxHeight: undefined, frameRate: 20}]);
 });
 
-test('writes file chunks as they arrive and waits for them in stop', async () => {
-  const writes = [];
-  const {page, calls} = fixture([{data: 'AQ==', base64Encoded: true, eof: false}, {data: 'Ag==', base64Encoded: true, eof: false}, {eof: true}]);
-  const recordings = new Recordings(async (path, overwrite) => {
-    assert.equal(path, 'video.mp4'); assert.equal(overwrite, false);
-    return {async writeFile(bytes) { writes.push([...bytes]); }, async close() { writes.push('closed'); }};
-  });
-  const recording = await recordings.start(page, {path: 'video.mp4', overwrite: false});
-  await recordings.stop(recording);
-  assert.deepEqual(writes, [[1], [2], 'closed']);
-  assert.equal((await recordings.readable(recording).getReader().read()).done, true);
-  assert.equal(calls.filter(([method]) => method === 'Page.stopScreenRecording').length, 1);
+test('validates options before starting Chrome', async () => {
+  const {page, calls} = fixture();
+  const recordings = new Recordings();
+  await assert.rejects(recordings.start(page, {frameRate: 0}), /frameRate/);
+  assert.deepEqual(calls, []);
 });
 
-test('file-open failure stops recording and closes its CDP handle', async () => {
-  const {page, calls} = fixture();
-  const recordings = new Recordings(async () => { throw new Error('file exists'); });
-  await assert.rejects(recordings.start(page, {path: 'video.mp4'}), /file exists/);
+test('an unread stream does not read or retain video chunks', async () => {
+  const {page, calls} = fixture([{data: Buffer.alloc(65536).toString('base64'), base64Encoded: true}]);
+  const recordings = new Recordings();
+  const recording = await recordings.start(page);
+  await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(calls.filter(([method]) => method === 'IO.read').length, 0);
+  await recordings.discard(recording);
+  await recordings.discard(recording);
   assert.equal(calls.filter(([method]) => method === 'Page.stopScreenRecording').length, 1);
   assert.equal(calls.filter(([method]) => method === 'IO.close').length, 1);
 });
 
-test('file write failure is returned by stop', async () => {
-  let closed = false;
-  const {page} = fixture([{data: 'AQ==', base64Encoded: true, eof: false}]);
-  const recordings = new Recordings(async () => ({async writeFile() { throw new Error('disk full'); }, async close() { closed = true; }}));
-  const recording = await recordings.start(page, {path: 'video.mp4'});
-  await assert.rejects(recordings.stop(recording), /disk full/);
-  assert.equal(closed, true);
+test('CDP reads request at most 64 KiB', async () => {
+  const {page, calls} = fixture([{data: Buffer.alloc(65536, 42).toString('base64'), base64Encoded: true}]);
+  const recordings = new Recordings();
+  const recording = await recordings.start(page);
+  const reader = recordings.readable(recording).getReader();
+  assert.equal((await reader.read()).value.length, 65536);
+  assert.equal(calls.find(([method]) => method === 'IO.read')[1].size, 65536);
+  await reader.cancel();
 });
 
-test('validates options before starting Chrome or opening a file', async () => {
+test('read failure stops Chrome and closes the CDP handle', async () => {
+  const {page, calls} = fixture([new Error('connection lost')]);
+  const recordings = new Recordings();
+  const recording = await recordings.start(page);
+  await assert.rejects(recordings.readable(recording).getReader().read(), /connection lost/);
+  assert.equal(calls.filter(([method]) => method === 'Page.stopScreenRecording').length, 1);
+  assert.equal(calls.filter(([method]) => method === 'IO.close').length, 1);
+});
+
+test('stop failure closes the CDP handle and remains idempotent', async () => {
   const {page, calls} = fixture();
-  const recordings = new Recordings(() => assert.fail('Must not open file'));
-  await assert.rejects(recordings.start(page, {path: 'existing.mp4', frameRate: 0}), /frameRate/);
-  assert.deepEqual(calls, []);
-});
-
-test('large file recording finishes without a stream reader and retains no video chunks', async () => {
-  const chunk = Buffer.alloc(65536, 42);
-  const results = Array.from({length: 256}, () => ({data: chunk.toString('base64'), base64Encoded: true}));
-  const {page} = fixture(results);
-  let written = 0, closed = false;
-  const recordings = new Recordings(async () => ({
-    async writeFile(bytes) {
-      assert.equal(bytes.byteLength, chunk.length);
-      assert.equal(bytes[0], 42);
-      written += bytes.byteLength;
-    },
-    async close() { closed = true; },
-  }));
-  const recording = await recordings.start(page, {path: 'video.mp4'});
-  await recordings.stop(recording);
-  assert.equal(written, 16 * 1024 * 1024);
-  assert.equal(closed, true);
-  // Any queued chunk would be returned before the stream's closed marker.
-  assert.equal((await recordings.readable(recording).getReader().read()).done, true);
-});
-
-test('a file stream reader waits for finalization and receives no duplicate video', async () => {
-  const {page} = fixture([{data: 'AQ==', base64Encoded: true}]);
-  let written = 0;
-  const recordings = new Recordings(async () => ({
-    async writeFile(bytes) { written += bytes.byteLength; },
-    async close() {},
-  }));
-  const recording = await recordings.start(page, {path: 'video.mp4'});
-  let completed = false;
-  const read = recordings.readable(recording).getReader().read().then(result => { completed = true; return result; });
-  await new Promise(resolve => setTimeout(resolve, 10));
-  assert.equal(written, 1);
-  assert.equal(completed, false);
-  await recordings.stop(recording);
-  assert.equal((await read).done, true);
+  const client = page.mainFrame().client;
+  const send = client.send;
+  client.send = async (method, params) => {
+    const result = await send(method, params);
+    if (method === 'Page.stopScreenRecording') throw new Error('connection lost');
+    return result;
+  };
+  const recordings = new Recordings();
+  const recording = await recordings.start(page);
+  await assert.rejects(recordings.stop(recording), /connection lost/);
+  await assert.rejects(recordings.stop(recording), /connection lost/);
+  assert.equal(calls.filter(([method]) => method === 'Page.stopScreenRecording').length, 1);
+  assert.equal(calls.filter(([method]) => method === 'IO.close').length, 1);
 });

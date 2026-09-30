@@ -36,5 +36,4 @@ export function installFilesystem(request) {
     async mkdir(path, options = {}) { await call('mkdir', path, options.recursive ?? false); },
     openFileForWriting: path => openFile('open', path),
   });
-  return (path, overwrite) => openFile('openRecording', path, overwrite);
 }
