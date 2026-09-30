@@ -14,6 +14,35 @@ use function Amp\ByteStream\splitLines;
 
 final class BrowserProcessTest extends TestCase
 {
+    public function testOptionsAndReturnedArraysDoNotChangeCachedDefaults(): void
+    {
+        foreach ([true, false, 'shell'] as $headless) {
+            foreach ([false, true] as $devtools) {
+                $options = ['headless' => $headless, 'devtools' => $devtools];
+                $original = BrowserProcess::defaultArgs($options);
+                self::assertContains('--no-first-run', $original);
+                self::assertSame(['about:blank'], array_slice($original, -1));
+
+                $modified = BrowserProcess::defaultArgs($options + [
+                    'ignoreDefaultArgs' => ['--no-first-run'],
+                    'args' => ['--custom', 'https://example.com'],
+                ]);
+                self::assertNotContains('--no-first-run', $modified);
+                self::assertNotContains('about:blank', $modified);
+                self::assertSame(['--custom', 'https://example.com'], array_slice($modified, -2));
+                self::assertSame(['--custom', 'about:blank'], BrowserProcess::defaultArgs($options + [
+                    'ignoreDefaultArgs' => true,
+                    'args' => ['--custom'],
+                ]));
+
+                $returned = BrowserProcess::defaultArgs($options);
+                $returned[0] = '--modified';
+                $returned[] = '--extra';
+                self::assertSame($original, BrowserProcess::defaultArgs($options));
+            }
+        }
+    }
+
     public function testCloseWaitsForProcessBeforeRemovingItsProfile(): void
     {
         $profile = sys_get_temp_dir() . '/puphpeteer-close-test-' . bin2hex(random_bytes(8));

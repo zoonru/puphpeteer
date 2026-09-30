@@ -10,6 +10,7 @@ use Amp\CancelledException;
 use Amp\Process\Process;
 use Amp\TimeoutCancellation;
 use InvalidArgumentException;
+use JsonException;
 use RuntimeException;
 use Throwable;
 
@@ -24,7 +25,6 @@ use function Amp\File\deleteFile;
 use function Amp\File\isDirectory;
 use function Amp\File\isSymlink;
 use function Amp\File\listFiles;
-use function Amp\File\read;
 
 /** @internal Owns only the Chrome process and temporary profile created by launch(). */
 final class BrowserProcess
@@ -96,9 +96,20 @@ final class BrowserProcess
             throw new InvalidArgumentException('Invalid headless value');
         }
         $key = (is_bool($headless) ? ($headless ? 'true' : 'false') : $headless) . ':' . (($options['devtools'] ?? false) ? 'true' : 'false');
-        $source = read(dirname(__DIR__, 2) . '/resources/launch-defaults.json');
-        /** @var array<string,list<string>> $defaultsByMode */
-        $defaultsByMode = json_decode($source, true, 512, JSON_THROW_ON_ERROR);
+        /** @var array<string,list<string>>|null $defaultsByMode */
+        static $defaultsByMode = null;
+        if (null === $defaultsByMode) {
+            $path = dirname(__DIR__, 2) . '/resources/launch-defaults.json';
+            $source = @file_get_contents($path);
+            if (false === $source) {
+                throw new RuntimeException('Cannot read launch defaults: ' . $path);
+            }
+            try {
+                $defaultsByMode = json_decode($source, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $error) {
+                throw new RuntimeException('Cannot decode launch defaults: ' . $path, 0, $error);
+            }
+        }
         $defaults = $defaultsByMode[$key];
         $ignore = $options['ignoreDefaultArgs'] ?? false;
         if (true === $ignore) {
