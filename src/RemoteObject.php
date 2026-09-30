@@ -6,8 +6,11 @@ namespace Nesk\Puphpeteer;
 
 use Amp\ByteStream\ReadableStream;
 use Nesk\Puphpeteer\Puppeteer\Browser;
+use Nesk\Puphpeteer\Puppeteer\ElementHandle;
 use Nesk\Puphpeteer\Puppeteer\Page;
 use RuntimeException;
+
+use function Amp\File\write;
 
 class RemoteObject
 {
@@ -28,6 +31,9 @@ class RemoteObject
         $this->assertLive();
         if ($this instanceof Page && 'record' === $method) {
             return Internal\ScreenRecordingStream::start($arguments[0] ?? [], fn (array $options) => $this->client->call($this->id, $method, [$options])->await());
+        }
+        if ('screenshot' === $method && ($this instanceof Page || $this instanceof ElementHandle)) {
+            return $this->captureScreenshot($arguments[0] ?? []);
         }
         if ($this instanceof Browser && 'wsEndpoint' === $method) {
             return $this->client->endpoint();
@@ -58,6 +64,24 @@ class RemoteObject
         }
 
         return $result;
+    }
+
+    protected function captureScreenshot(array $options): string
+    {
+        $base64 = $this->client->call($this->id, 'screenshot', [array_replace($options, ['encoding' => 'base64'])])->await();
+        if ('base64' === ($options['encoding'] ?? 'binary')) {
+            return $base64;
+        }
+        $bytes = base64_decode($base64, true);
+        if (false === $bytes) {
+            throw new RuntimeException('Invalid base64 screenshot data');
+        }
+        unset($base64);
+        if (isset($options['path']) && '' !== $options['path']) {
+            write($options['path'], $bytes);
+        }
+
+        return $bytes;
     }
 
     /** @internal */

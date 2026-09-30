@@ -132,6 +132,32 @@ try {
         try {
             $png = $page->screenshot(['path' => $path]);
             check(str_starts_with($png, "\x89PNG\r\n\x1a\n") && file_get_contents($path) === $png, 'Screenshot file');
+            $button = $page->querySelector('#button');
+            check($button instanceof ElementHandle, 'Screenshot element');
+            foreach ([$page, $button] as $target) {
+                foreach (['jpg', 'webp'] as $extension) {
+                    $imagePath = $path . '.' . $extension;
+                    try {
+                        $image = $target->screenshot(['path' => $imagePath]);
+                        check('jpg' === $extension ? str_starts_with($image, "\xff\xd8\xff") : str_starts_with($image, 'RIFF') && 'WEBP' === substr($image, 8, 4), 'Screenshot type inferred from path');
+                        check(file_get_contents($imagePath) === $image, 'Page and element screenshot file bytes');
+                    } finally {
+                        if (is_file($imagePath)) {
+                            unlink($imagePath);
+                        }
+                    }
+                }
+                file_put_contents($path, 'original');
+                $base64 = $target->screenshot(['path' => $path, 'encoding' => 'base64']);
+                check(str_starts_with(base64_decode($base64, true), "\x89PNG\r\n\x1a\n"), 'Base64 screenshot result');
+                check('original' === file_get_contents($path), 'Base64 screenshot skips file write');
+                try {
+                    $target->screenshot(['path' => $path, 'type' => 'invalid']);
+                    throw new LogicException('Missing invalid screenshot type error');
+                } catch (RuntimeException) {
+                    check('original' === file_get_contents($path), 'Invalid screenshot type does not overwrite file');
+                }
+            }
         } finally {
             if (is_file($path)) {
                 unlink($path);
