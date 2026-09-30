@@ -16,6 +16,8 @@
     "@puppeteer/browsers": "3.2.2",
     "@types/node": "25.6.0",
     "esbuild": "0.25.12",
+    "fingerprint-generator": "^2.1.88",
+    "fingerprint-injector": "^2.1.88",
     "puppeteer-core": "25.11.0",
     "puppeteer-extra-plugin": "3.2.3",
     "puppeteer-extra-plugin-stealth": "2.11.2",

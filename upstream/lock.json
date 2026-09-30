@@ -9,7 +9,7 @@
     "entry": "lib/types.d.ts",
     "declarationSha256": "e1e7f5542b6ecb631777b1bcc1d7088b5ded5c031980f1180f8ac7f807387122"
   },
-  "npmLockSha256": "c54b667fba97ce34ef09ad5bbf374225c13ff252e160685ffa4bb09682700589",
+  "npmLockSha256": "fd66fe6d7f9087573c7352c9a6a3a81d03474faf3c5479ce42d0faffbf6324c6",
   "tools": {
     "@puppeteer/browsers": {
       "version": "3.2.2",
@@ -22,6 +22,14 @@
     "esbuild": {
       "version": "0.25.12",
       "integrity": "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg=="
+    },
+    "fingerprint-generator": {
+      "version": "2.1.88",
+      "integrity": "sha512-rwYKE/UZTAnfu3DoBgFH+otrRewvkscG8TkiDY8xw7QBga0evHoL7H70HrtP/CBqjspVrfqE7ZYt7qDM3dYk+g=="
+    },
+    "fingerprint-injector": {
+      "version": "2.1.88",
+      "integrity": "sha512-npQr/Nc00x3XfbT9TE6RqPLIaYbun63rCL8isGqZVp0mlWw2mAr0J81WsIW3ENZB2w/dkCA9QewA0ufoYMB0Qw=="
     },
     "puppeteer-core": {
       "version": "25.11.0",
