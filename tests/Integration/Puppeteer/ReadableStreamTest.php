@@ -9,6 +9,7 @@ use Amp\ByteStream\ReadableStream;
 use Amp\ByteStream\StreamException;
 use Amp\CancelledException;
 use Amp\DeferredCancellation;
+use Amp\File\FilesystemException;
 use Nesk\Puphpeteer\Client;
 use Nesk\Puphpeteer\Puppeteer\Page;
 use Override;
@@ -117,6 +118,58 @@ final class ReadableStreamTest extends TestCase
             self::assertSame(1, $js->eval('cancelled'));
         } finally {
             $client->close();
+        }
+    }
+
+    public function testPdfWritesEachChunkBeforeReadingMoreAndCancelsOnFileErrors(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'pdf-stream-write-');
+        self::assertIsString($path);
+        $client = $this->client();
+        $observed = [];
+        try {
+            $js = (new ReflectionProperty($client, 'js'))->getValue($client);
+            $js->register('observePdf', static function () use ($path, &$observed): void {
+                $observed[] = file_get_contents($path);
+            });
+            $js->eval(<<<'JS'
+            let pdfCancelled = 0;
+            __testStreamObjects.get(-1).createPDFStream = () => {
+              const chunks = [new Uint8Array([37, 80, 68, 70, 45, 0, 255]), new Uint8Array([84, 65, 73, 76])];
+              return new ReadableStream({
+                pull(controller) {
+                  php.observePdf();
+                  if (chunks.length) controller.enqueue(chunks.shift());
+                  else controller.close();
+                },
+                cancel() { pdfCancelled++; }
+              }, {highWaterMark: 0});
+            };
+            JS);
+            $page = new Page($client, -1, 'Page');
+            self::assertSame("%PDF-\0\xffTAIL", $page->pdf(['path' => $path]));
+            self::assertSame(['', "%PDF-\0\xff", "%PDF-\0\xffTAIL"], $observed);
+            self::assertSame("%PDF-\0\xffTAIL", file_get_contents($path));
+
+            $errorPaths = [$path . '/missing.pdf'];
+            if (file_exists('/dev/full')) {
+                $errorPaths[] = '/dev/full';
+            }
+            foreach ($errorPaths as $index => $errorPath) {
+                $observed = [];
+                try {
+                    $page->pdf(['path' => $errorPath]);
+                    self::fail('Expected PDF file error');
+                } catch (FilesystemException|StreamException) {
+                    self::assertCount($index, $observed, 'Failed writes must stop reading');
+                }
+                delay(0.001);
+                self::assertSame($index + 1, $js->eval('pdfCancelled'), 'File errors must cancel the source');
+                self::assertSame([], (new ReflectionProperty($client, 'streams'))->getValue($client));
+            }
+        } finally {
+            $client->close();
+            unlink($path);
         }
     }
 

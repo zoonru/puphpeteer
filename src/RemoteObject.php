@@ -10,6 +10,7 @@ use Nesk\Puphpeteer\Puppeteer\ElementHandle;
 use Nesk\Puphpeteer\Puppeteer\Page;
 use RuntimeException;
 
+use function Amp\File\openFile;
 use function Amp\File\write;
 
 class RemoteObject
@@ -31,6 +32,9 @@ class RemoteObject
         $this->assertLive();
         if ($this instanceof Page && 'record' === $method) {
             return Internal\ScreenRecordingStream::start($arguments[0] ?? [], fn (array $options) => $this->client->call($this->id, $method, [$options])->await());
+        }
+        if ($this instanceof Page && 'pdf' === $method) {
+            return $this->capturePdf($arguments[0] ?? []);
         }
         if ('screenshot' === $method && ($this instanceof Page || $this instanceof ElementHandle)) {
             return $this->captureScreenshot($arguments[0] ?? []);
@@ -79,6 +83,33 @@ class RemoteObject
         unset($base64);
         if (isset($options['path']) && '' !== $options['path']) {
             write($options['path'], $bytes);
+        }
+
+        return $bytes;
+    }
+
+    protected function capturePdf(array $options): string
+    {
+        $stream = $this->client->call($this->id, 'createPDFStream', [$options])->await();
+        $file = null;
+        $bytes = '';
+        try {
+            if (isset($options['path']) && '' !== $options['path']) {
+                $file = openFile($options['path'], 'wb');
+            }
+            while (null !== ($chunk = $stream->read())) {
+                $file?->write($chunk);
+                $bytes .= $chunk;
+            }
+        } finally {
+            try {
+                $stream->close();
+            } finally {
+                $file?->close();
+            }
+        }
+        if ('' === $bytes) {
+            throw new RuntimeException('Could not create typed array');
         }
 
         return $bytes;

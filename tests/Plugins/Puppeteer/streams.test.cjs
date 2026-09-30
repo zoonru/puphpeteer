@@ -77,3 +77,32 @@ test('CDP EOF and read errors close the handle', async () => {
     assert.equal(closes, 1);
   }
 });
+
+test('PDF stream sends raw CDP chunks to PHP while JS consumers receive bytes', async () => {
+  const data = Buffer.from(Array.from({length: 65536}, (_, i) => i % 256)).toString('base64');
+  for (const php of [false, true]) {
+    const calls = [];
+    const chunks = [{data: '', base64Encoded: false}, {data, base64Encoded: true}, {data: 'text', eof: true}];
+    const client = {async send(method, params) {
+      calls.push([method, {...params}]);
+      if (method === 'IO.read') return chunks.shift();
+    }};
+    const stream = getReadableFromProtocolStream(client, 'pdf');
+    assert.equal(calls.length, 0);
+    const streams = new GuestReadableStreams();
+    const id = php ? streams.encode(stream).id : null;
+    const reader = php ? null : stream.getReader();
+    const read = async () => php ? streams.read(id) : ((await reader.read()).value ?? null);
+    const first = await read();
+    if (php) {
+      assert.equal(first.data, data);
+      assert.equal(first.base64Encoded, true);
+    } else assert.deepEqual(Buffer.from(first), Buffer.from(data, 'base64'));
+    const last = await read();
+    if (php) { assert.equal(last.data, 'text'); assert.equal(last.base64Encoded, false); }
+    else assert.equal(Buffer.from(last).toString(), 'text');
+    assert.equal(await read(), null);
+    assert.equal(calls.filter(([method]) => method === 'IO.close').length, 1);
+    assert.ok(calls.filter(([method]) => method === 'IO.read').every(([, params]) => params.size === 65536));
+  }
+});

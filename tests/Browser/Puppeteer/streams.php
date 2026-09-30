@@ -41,8 +41,16 @@ try {
         throw new RuntimeException('Amp buffer failed');
     }
     $saved = $page->pdf(['path' => $file]);
+    if (!str_starts_with($saved, '%PDF-') || !str_contains(substr($saved, -1024), '%%EOF')) {
+        throw new RuntimeException('Incomplete PDF returned by pdf()');
+    }
     if ($saved !== file_get_contents($file)) {
         throw new RuntimeException('PDF file differs from returned bytes');
+    }
+    foreach ([[], ['path' => '']] as $options) {
+        if (!str_starts_with($page->pdf($options), '%PDF-')) {
+            throw new RuntimeException('PDF without a file path failed');
+        }
     }
     echo 'PDF streaming, early close, Amp buffer and PDF file output PASS', PHP_EOL;
 } finally {
