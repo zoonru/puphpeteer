@@ -46,6 +46,24 @@ const decodedFunctions = new Map();
 const pinnedCallbacks = new Set();
 const eventCallbacks = new Map();
 const eventListeners = new Map();
+// Count operations, not callback invocations: an operation can use a callback
+// zero or many times, and concurrent operations can share the same PHP closure.
+function releaseCallback(callbackId) {
+  if (temporaryCallbacks.has(callbackId) || pinnedCallbacks.has(callbackId) || eventCallbacks.has(callbackId)) return;
+  decodedFunctions.delete(`callback:${callbackId}`);
+  emit('releaseCallback', callbackId);
+}
+const temporaryCallbacks = new Map();
+function releaseTemporaryCallbacks(temporary) {
+  for (const callbackId of temporary) {
+    const users = temporaryCallbacks.get(callbackId);
+    if (users === undefined) continue;
+    const remaining = users - 1;
+    if (remaining) temporaryCallbacks.set(callbackId, remaining);
+    else temporaryCallbacks.delete(callbackId);
+    releaseCallback(callbackId);
+  }
+}
 function dropEvent(entry) {
   const listeners = eventListeners.get(entry.objectId);
   if (!listeners?.delete(entry)) return;
@@ -55,10 +73,7 @@ function dropEvent(entry) {
   if (remaining) eventCallbacks.set(entry.callbackId, remaining);
   else {
     eventCallbacks.delete(entry.callbackId);
-    if (!pinnedCallbacks.has(entry.callbackId)) {
-      decodedFunctions.delete(`callback:${entry.callbackId}`);
-      emit('releaseCallback', entry.callbackId);
-    }
+    releaseCallback(entry.callbackId);
   }
 }
 function clearEvents(objectId, event) {
@@ -147,7 +162,10 @@ function decode(value, pin = true, temporary = null) {
   }
   if (value.$quickjs === 'callback') {
     if (pin) pinnedCallbacks.add(value.id);
-    else temporary?.add(value.id);
+    else if (temporary && !temporary.has(value.id)) {
+      temporary.add(value.id);
+      temporaryCallbacks.set(value.id, (temporaryCallbacks.get(value.id) ?? 0) + 1);
+    }
     const key = `callback:${value.id}`;
     if (decodedFunctions.has(key)) return decodedFunctions.get(key);
     const fn = (...args) => hostRequest('callback', {callback: value.id, args: args.map(item => encode(item))});
@@ -196,12 +214,7 @@ async function call(request) {
         if (typeof fn !== 'function') throw new TypeError('JsRuntime.run expects a function');
         return await Reflect.apply(fn, undefined, args);
       } finally {
-        for (const callbackId of temporary) {
-          if (!pinnedCallbacks.has(callbackId) && !eventCallbacks.has(callbackId)) {
-            decodedFunctions.delete(`callback:${callbackId}`);
-            emit('releaseCallback', callbackId);
-          }
-        }
+        releaseTemporaryCallbacks(temporary);
       }
     }
     throw new Error(`Unknown runtime operation: ${method}`);
@@ -229,7 +242,10 @@ async function call(request) {
   if (!object) throw new Error(`Unknown remote object ${request.object}`);
   if (request.operation === 'invoke') {
     if (typeof object !== 'function') throw new TypeError('Remote value is not callable');
-    return Reflect.apply(object, undefined, request.args.map(item => decode(item)));
+    const temporary = new Set();
+    try {
+      return await Reflect.apply(object, undefined, request.args.map(item => decode(item, false, temporary)));
+    } finally { releaseTemporaryCallbacks(temporary); }
   }
   if (request.operation === 'static') object = publicConstructors[remoteClass(object)];
   if (request.operation === 'readable' && object instanceof ScreenRecording) return recordings.readable(object);
@@ -261,7 +277,7 @@ async function call(request) {
     const entries = [...(eventListeners.get(request.object) ?? [])];
     const entry = entries.findLast(entry => entry.event === event && entry.callbackId === handler.id);
     if (entry) dropEvent(entry);
-    else if (!eventCallbacks.has(handler.id) && !pinnedCallbacks.has(handler.id)) emit('releaseCallback', handler.id);
+    else releaseCallback(handler.id);
     return object;
   }
   if (method === 'removeAllListeners' || (method === 'off' && handler === undefined)) clearEvents(request.object, event);
@@ -273,12 +289,7 @@ async function call(request) {
     if (result instanceof Page) await plugins.page(result);
     return result;
   } finally {
-    for (const callbackId of temporary) {
-      if (!pinnedCallbacks.has(callbackId) && !eventCallbacks.has(callbackId)) {
-        decodedFunctions.delete(`callback:${callbackId}`);
-        emit('releaseCallback', callbackId);
-      }
-    }
+    releaseTemporaryCallbacks(temporary);
   }
 }
 let messageParts = [];
@@ -320,6 +331,7 @@ globalThis.__quickjsDispatch = (kind, payload) => {
     pinnedCallbacks.clear();
     eventCallbacks.clear();
     eventListeners.clear();
+    temporaryCallbacks.clear();
     objects.clear();
     transport.onmessage = undefined;
     transport.onclose = undefined;
