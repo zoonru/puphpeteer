@@ -68,6 +68,10 @@ final class ReadableStream implements \Amp\ByteStream\ReadableStream, IteratorAg
 
                 return null;
             }
+            if (is_array($chunk) && is_string($chunk['data'] ?? null) && is_bool($chunk['base64Encoded'] ?? null)) {
+                $data = $chunk['data'];
+                $chunk = $chunk['base64Encoded'] ? base64_decode($data, true) : $data;
+            }
             if (!is_string($chunk) || strlen($chunk) > 65536) {
                 throw new StreamException('Invalid QuickJS stream chunk');
             }

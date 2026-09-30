@@ -1,4 +1,4 @@
-import {stringToTypedArray} from 'puppeteer-core/lib/puppeteer/util/encoding.js';
+import {protocolReadableStream} from './readable-streams.js';
 
 const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 
@@ -21,7 +21,7 @@ export class Recordings {
     const entry = {client, handle, stream: null, stop: null, stopping: false, closed: false};
     this.#entries.set(recording, entry);
     recording.stop = () => this.stop(recording);
-    entry.stream = new ReadableStream({
+    entry.stream = protocolReadableStream({
       pull: async controller => {
         try {
           const chunk = await this.#read(entry);
@@ -29,7 +29,7 @@ export class Recordings {
         } catch (error) { await this.discard(recording).catch(() => {}); controller.error(error); }
       },
       cancel: () => this.discard(recording),
-    }, {highWaterMark: 0});
+    });
     return recording;
   }
 
@@ -62,7 +62,7 @@ export class Recordings {
       try {
         const result = await entry.client.send('IO.read', {handle: entry.handle, size: 65536});
         if (result.eof && entry.stopping) await this.#close(entry);
-        if (result.data) return stringToTypedArray(result.data, result.base64Encoded ?? false);
+        if (result.data) return {data: result.data, base64Encoded: result.base64Encoded ?? false};
         if (entry.closed) return null;
       } catch (error) {
         if (!error.message.includes('Read failed')) {

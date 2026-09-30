@@ -73,6 +73,53 @@ final class ReadableStreamTest extends TestCase
         return $client;
     }
 
+    public function testProtocolChunksDecodeInPhpAndInvalidBase64ClosesStream(): void
+    {
+        $file = tempnam(sys_get_temp_dir(), 'quickjs-protocol-test-');
+        self::assertIsString($file);
+        file_put_contents($file, <<<'JS'
+        let ready = false, cancelled = 0;
+        const chunks = [
+          {data: 'AP8=', base64Encoded: true},
+          {data: 'plain text', base64Encoded: false},
+          {data: '', base64Encoded: false},
+          {data: 'AAAA'.repeat(21845) + 'AA==', base64Encoded: true},
+          {data: 'invalid!', base64Encoded: true},
+        ];
+        globalThis.__quickjsDispatch = (kind, request) => {
+          if (kind !== 'call') return;
+          if (request.method === 'cancel') cancelled++;
+          quickjs.postMessage(['result', {id: request.id, value: request.method === 'read' ? chunks.shift() : null}]);
+          ready = true;
+        };
+        globalThis.__quickjsDrain = () => { const result = ready; ready = false; return result; };
+        JS);
+        try {
+            $client = new Client($file);
+        } finally {
+            unlink($file);
+        }
+        try {
+            $stream = new \Nesk\Puphpeteer\Internal\ReadableStream($client, 1);
+            self::assertSame("\x00\xff", $stream->read());
+            self::assertSame('plain text', $stream->read());
+            self::assertSame('', $stream->read());
+            self::assertSame(str_repeat("\0", 65536), $stream->read());
+            try {
+                $stream->read();
+                self::fail('Expected invalid base64 to fail');
+            } catch (StreamException $error) {
+                self::assertStringContainsString('Invalid QuickJS stream chunk', $error->getMessage());
+            }
+            self::assertTrue($stream->isClosed());
+            delay(0.001);
+            $js = (new ReflectionProperty($client, 'js'))->getValue($client);
+            self::assertSame(1, $js->eval('cancelled'));
+        } finally {
+            $client->close();
+        }
+    }
+
     public function testAsyncEventFailureIsLoggedWithoutAnotherRemoteCall(): void
     {
         $client = $this->client();

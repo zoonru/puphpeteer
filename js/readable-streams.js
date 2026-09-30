@@ -1,3 +1,37 @@
+import {stringToTypedArray} from 'puppeteer-core/lib/puppeteer/util/encoding.js';
+
+const protocolStreams = new WeakMap();
+
+// JS consumers need bytes; PHP consumers decode the original CDP data themselves.
+export function protocolReadableStream(source) {
+  const raw = new ReadableStream(source, {highWaterMark: 0});
+  let reader;
+  let cancelled = false;
+  const stream = new ReadableStream({
+    async pull(controller) {
+      reader ??= raw.getReader();
+      try {
+        const {value, done} = await reader.read();
+        if (cancelled) return;
+        if (done) { reader.releaseLock(); controller.close(); }
+        else controller.enqueue(stringToTypedArray(value.data, value.base64Encoded));
+      } catch (error) {
+        await reader.cancel(error).catch(() => {});
+        reader.releaseLock();
+        if (!cancelled) controller.error(error);
+      }
+    },
+    async cancel(reason) {
+      cancelled = true;
+      if (!reader) return raw.cancel(reason);
+      try { await reader.cancel(reason); }
+      finally { reader.releaseLock(); }
+    },
+  }, {highWaterMark: 0});
+  protocolStreams.set(stream, raw);
+  return stream;
+}
+
 // A reference crosses the bridge; at most one bounded chunk crosses per read.
 export class GuestReadableStreams {
   #entries = new Map();
@@ -9,7 +43,8 @@ export class GuestReadableStreams {
     if (!this.#entries.has(id)) {
       id = ++this.#sequence;
       this.#identities.set(stream, id);
-      this.#entries.set(id, {stream, reader: null, buffer: null, offset: 0, pending: false, closed: false});
+      const protocol = protocolStreams.get(stream);
+      this.#entries.set(id, {stream: protocol ?? stream, protocol: !!protocol, reader: null, buffer: null, offset: 0, pending: false, closed: false});
     }
     return {$quickjs: 'stream', id};
   }
@@ -30,6 +65,7 @@ export class GuestReadableStreams {
           entry.reader.releaseLock();
           return null;
         }
+        if (entry.protocol) return value;
         if (!(value instanceof Uint8Array)) throw new TypeError('Expected a stream of Uint8Array chunks');
         entry.buffer = value;
         entry.offset = 0;

@@ -4,13 +4,13 @@ const {build} = require('esbuild');
 const vm = require('node:vm');
 const path = require('node:path');
 const {ReadableStream} = require('web-streams-polyfill');
-let Recordings, ScreenRecording;
+let Recordings, ScreenRecording, GuestReadableStreams;
 
 before(async () => {
-  const result = await build({stdin: {contents: `export {Recordings} from './js/recordings.js'; export {ScreenRecording} from 'puppeteer-core/lib/puppeteer/api/ScreenRecording.js';`, resolveDir: path.resolve(__dirname, '../../..')}, bundle: true, platform: 'node', format: 'cjs', write: false});
+  const result = await build({stdin: {contents: `export {Recordings} from './js/recordings.js'; export {GuestReadableStreams} from './js/readable-streams.js'; export {ScreenRecording} from 'puppeteer-core/lib/puppeteer/api/ScreenRecording.js';`, resolveDir: path.resolve(__dirname, '../../..')}, bundle: true, platform: 'node', format: 'cjs', write: false});
   const context = {module: {exports: {}}, ReadableStream, setTimeout, atob};
   vm.runInNewContext(result.outputFiles[0].text, context);
-  ({Recordings, ScreenRecording} = context.module.exports);
+  ({Recordings, ScreenRecording, GuestReadableStreams} = context.module.exports);
 });
 
 function fixture(results = []) {
@@ -99,5 +99,21 @@ test('stop failure closes the CDP handle and remains idempotent', async () => {
   await assert.rejects(recordings.stop(recording), /connection lost/);
   await assert.rejects(recordings.stop(recording), /connection lost/);
   assert.equal(calls.filter(([method]) => method === 'Page.stopScreenRecording').length, 1);
+  assert.equal(calls.filter(([method]) => method === 'IO.close').length, 1);
+});
+
+test('PHP boundary receives original CDP data without JS base64 decoding', async () => {
+  const data = Buffer.from(Array.from({length: 65536}, (_, i) => i % 256)).toString('base64');
+  const {page, calls} = fixture([{data, base64Encoded: true}, {data: '', eof: false}, {data: 'plain text', base64Encoded: false}]);
+  const recordings = new Recordings();
+  const recording = await recordings.start(page);
+  const streams = new GuestReadableStreams();
+  const {id} = streams.encode(recordings.readable(recording));
+  assert.equal(calls.filter(([method]) => method === 'IO.read').length, 0);
+  const chunk = await streams.read(id);
+  assert.equal(chunk.data, data);
+  assert.equal(chunk.base64Encoded, true);
+  assert.equal((await streams.read(id)).data, 'plain text');
+  await streams.cancel(id);
   assert.equal(calls.filter(([method]) => method === 'IO.close').length, 1);
 });
