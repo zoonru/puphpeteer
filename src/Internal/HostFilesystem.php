@@ -19,6 +19,9 @@ use function Amp\File\write as writeFile;
 /** @internal Filesystem operations requested by the Puppeteer environment. */
 final class HostFilesystem
 {
+    // Invalid UTF-8 forces QuickJS to transfer a Uint8Array even for text or empty files.
+    private const string BINARY_MARKER = "\xff";
+
     /** @var array<int, File> */
     private array $handles = [];
     private int $sequence = 0;
@@ -27,7 +30,7 @@ final class HostFilesystem
     {
         try {
             return match ($operation) {
-                'read' => base64_encode(readFile($arguments[0])),
+                'read' => self::BINARY_MARKER . readFile($arguments[0]),
                 'write' => $this->write($arguments[0], $arguments[1]),
                 'mkdir' => $this->mkdir($arguments[0], $arguments[1]),
                 'open' => $this->open($arguments[0]),

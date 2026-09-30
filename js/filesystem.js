@@ -1,4 +1,3 @@
-import {stringToTypedArray} from 'puppeteer-core/lib/puppeteer/util/encoding.js';
 import {environment} from 'puppeteer-core/lib/puppeteer/environment.js';
 
 // Files belong to the PHP host, including when Chrome runs remotely.
@@ -26,7 +25,8 @@ export function installFilesystem(request) {
   };
   Object.assign(environment.value, {
     async readFile(path, encoding) {
-      const bytes = stringToTypedArray(await call('read', path), true);
+      // Strip the marker the host uses to force a native byte array.
+      const bytes = (await call('read', path)).subarray(1);
       if (encoding === undefined) return bytes;
       if (encoding === 'ascii') return Array.from(bytes, byte => String.fromCharCode(byte & 0x7f)).join('');
       if (encoding !== 'utf8') throw new TypeError(`Unsupported file encoding: ${encoding}`);

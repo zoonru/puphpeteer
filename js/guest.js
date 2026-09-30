@@ -155,6 +155,7 @@ function decodeRecord(value, pin, temporary) {
   return record;
 }
 function decode(value, pin = true, temporary = null) {
+  if (value instanceof Uint8Array) return value;
   if (value === null || typeof value !== 'object') return value;
   if (Array.isArray(value)) return value.map(item => decode(item, pin, temporary));
   if (value.$quickjs === 'record') return decodeRecord(value.value, pin, temporary);

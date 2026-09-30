@@ -5,16 +5,27 @@ const vm = require('node:vm');
 const path = require('node:path');
 function environment(request) {
   const source = buildSync({stdin: {contents: `export {installFilesystem} from './js/filesystem.js'; export {environment} from 'puppeteer-core/lib/puppeteer/environment.js';`, resolveDir: path.resolve(__dirname, '../../..')}, bundle: true, platform: 'node', format: 'cjs', write: false}).outputFiles[0].text;
-  const context = {module: {exports: {}}, Uint8Array, TextDecoder, atob};
+  const context = {module: {exports: {}}, Uint8Array, TextDecoder};
   vm.runInNewContext(source, context);
   context.module.exports.installFilesystem(request);
   return context.module.exports.environment.value;
 }
 test('UTF-8, ASCII and raw bytes preserve upstream readFile contract', async () => {
-  const fs = environment(async () => Buffer.from([0xc3, 0xa9, 0, 0xff]).toString('base64'));
+  const fs = environment(async () => new Uint8Array([255, 0xc3, 0xa9, 0, 0xff]));
   assert.deepEqual([...await fs.readFile('x')], [195, 169, 0, 255]);
   assert.equal(await fs.readFile('x', 'utf8'), 'é\0�');
   assert.equal(await fs.readFile('x', 'ascii'), 'C)\0\x7f');
+});
+test('empty and UTF-8 files stay byte arrays without a base64 codec', async () => {
+  for (const content of [[], [65, 83, 67, 73, 73], [0xc3, 0xa9], [255]]) {
+    const fs = environment(async () => new Uint8Array([255, ...content]));
+    const bytes = await fs.readFile('x');
+    assert.ok(bytes instanceof Uint8Array);
+    assert.deepEqual([...bytes], content);
+  }
+  const fs = environment(async () => new Uint8Array([255, 0xef, 0xbb, 0xbf, 65]));
+  assert.equal(await fs.readFile('x', 'utf8'), 'A');
+  await assert.rejects(fs.readFile('x', 'latin1'), /Unsupported file encoding/);
 });
 test('file handles append in order, close once and reject writes after close', async () => {
   const calls = [];

@@ -24,6 +24,10 @@ final class HostFilesystemBridgeTest extends TestCase
             if (payload.method === 'write') args.push({$quickjs:'bytes', value:new Uint8Array([0,255,195,169])});
             __testEmit('filesystem', {id:payload.id, operation:payload.method, args});
           } else if (kind === 'callbackResult') {
+            if (!payload.error && payload.value instanceof Uint8Array) {
+              if (payload.value[0] !== 255) throw new Error('Missing host binary marker');
+              payload.value = {$quickjs:'bytes', value:payload.value.subarray(1)};
+            }
             __testEmit('result', payload);
           }
         };
@@ -33,14 +37,19 @@ final class HostFilesystemBridgeTest extends TestCase
             try {
                 $client->call(1, 'write', [$output])->await();
                 self::assertSame("\0\xffé", file_get_contents($output));
-                self::assertSame(base64_encode("\0\xffé"), $client->call(1, 'read', [$output])->await());
+                self::assertSame("\0\xffé", $client->call(1, 'read', [$output])->await());
+                foreach (['', 'ASCII', 'é', implode('', array_map(chr(...), range(0, 255)))] as $content) {
+                    file_put_contents($output, $content);
+                    self::assertSame($content, $client->call(1, 'read', [$output])->await());
+                }
+                file_put_contents($output, "\0\xffé");
                 try {
                     $client->call(1, 'read', [$output . '/missing'])->await();
                     self::fail('Expected error');
                 } catch (RuntimeException $error) {
                     self::assertStringContainsString('Filesystem read failed:', $error->getMessage());
                 }
-                self::assertSame(base64_encode("\0\xffé"), $client->call(1, 'read', [$output])->await(), 'I/O error must not close the client');
+                self::assertSame("\0\xffé", $client->call(1, 'read', [$output])->await(), 'I/O error must not close the client');
             } finally {
                 $client->close();
             }
