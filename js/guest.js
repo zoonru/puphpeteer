@@ -43,6 +43,13 @@ let nextObject = 0;
 let nextCallback = 0;
 const callbacks = new Map();
 const decodedFunctions = new Map();
+// This observation hook exists only in the dedicated integration-test bundle.
+if (__QUICKJS_TEST__) {
+  globalThis.__quickjsTest = {
+    functionCacheSize: () => decodedFunctions.size,
+    registerObject: (id, object) => objects.set(id, object),
+  };
+}
 const pinnedCallbacks = new Set();
 const eventCallbacks = new Map();
 const eventListeners = new Map();

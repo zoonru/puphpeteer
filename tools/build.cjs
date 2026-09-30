@@ -4,11 +4,14 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const check = process.argv.includes('--check');
 const debug = process.argv.includes('--debug');
+const test = process.argv.includes('--test');
+const outfile = test ? '.build/puppeteer.test.js' : 'resources/puppeteer.js';
 (async () => {
   const result = await esbuild.build({
     absWorkingDir: root,
     entryPoints: ['js/guest.js'],
-    outfile: 'resources/puppeteer.js',
+    outfile,
+    define: {__QUICKJS_TEST__: String(test)},
     bundle: true, platform: 'browser', format: 'iife', target: 'esnext',
     minify: !debug, legalComments: debug ? 'eof' : 'none', sourcemap: false, write: false,
     metafile: true,
@@ -19,20 +22,22 @@ const debug = process.argv.includes('--debug');
     throw new Error('Bundle unexpectedly contains WebDriver BiDi modules');
   }
   const outputs = result.outputFiles.map(file => ({path: file.path, contents: Buffer.from(file.contents)}));
-  const puppeteer = require('puppeteer-core');
-  const launchDefaults = Object.fromEntries(await Promise.all([true, false, 'shell'].flatMap(headless => [false, true].map(async devtools => [
-    `${headless}:${devtools}`, (await puppeteer.defaultArgs({headless, devtools})).filter(arg => arg !== 'about:blank'),
-  ]))));
-  outputs.push({path: path.join(root, 'resources/launch-defaults.json'), contents: Buffer.from(JSON.stringify(launchDefaults, null, 2) + '\n')});
+  if (!test) {
+    const puppeteer = require('puppeteer-core');
+    const launchDefaults = Object.fromEntries(await Promise.all([true, false, 'shell'].flatMap(headless => [false, true].map(async devtools => [
+      `${headless}:${devtools}`, (await puppeteer.defaultArgs({headless, devtools})).filter(arg => arg !== 'about:blank'),
+    ]))));
+    outputs.push({path: path.join(root, 'resources/launch-defaults.json'), contents: Buffer.from(JSON.stringify(launchDefaults, null, 2) + '\n')});
+  }
   for (const file of outputs) {
     if (check) {
       if (!fs.existsSync(file.path) || !fs.readFileSync(file.path).equals(file.contents)) {
-        throw new Error(`${path.relative(root, file.path)} is missing or outdated; run php bin/console build and commit resources.`);
+        throw new Error(`${path.relative(root, file.path)} is missing or outdated; run ${test ? 'node tools/build.cjs --test' : 'php bin/console build and commit resources'}.`);
       }
     } else {
       fs.mkdirSync(path.dirname(file.path), {recursive: true});
       fs.writeFileSync(file.path, file.contents);
     }
   }
-  console.log(check ? 'Bundle is up to date.' : `Bundle written to resources/ (${debug ? 'debug' : 'production'} build).`);
+  console.log(check ? 'Bundle is up to date.' : `Bundle written to ${outfile} (${test ? 'test' : debug ? 'debug' : 'production'} build).`);
 })().catch(error => { console.error(error); process.exitCode = 1; });
