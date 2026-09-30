@@ -1,5 +1,5 @@
 ARG PHP_VERSION=8.5
-ARG PHP_QUICKJS_REF=70b7c7d59f6d26f1ae22699fec3caf13b912b692
+ARG PHP_QUICKJS_REF=289c409717aca5aa705b27085d952fb7813285ff
 ARG UV_REF=670a609efc36c9043be37bae4126f06ed30fde21
 FROM node:22-bookworm-slim AS node
 FROM composer:2 AS composer
@@ -27,7 +27,7 @@ RUN git init && git remote add origin https://github.com/xtrime-ru/php-quickjs.g
     && git fetch --depth=1 origin "$PHP_QUICKJS_REF" && git checkout --detach FETCH_HEAD \
     && cargo build --release --locked
 RUN composer install --no-interaction --prefer-dist \
-    && cargo test --lib --locked \
+    && cargo test --release --lib --locked \
     && for test in tests/php/[0-9]*.php; do php -d extension=/build/target/release/libphp_quickjs.so "$test" || exit 1; done
 
 FROM php-base
