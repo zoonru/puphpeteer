@@ -13,46 +13,25 @@
 
 ## Содержание
 
-- [Использование](#использование)
 - [Требования](#требования)
 - [Установка](#установка)
+- [Использование](#использование)
 - [Использование с browserless](#использование-с-browserless)
 - [Основные отличия от Puppeteer](#основные-отличия-от-puppeteer)
 - [Плагины Puppeteer](#плагины-puppeteer)
-- [Поддержка IDE и генерация API](#поддержка-ide-и-генерация-api)
-- [Обновление с v2](#обновление-с-v2)
-- [Разработка](#разработка)
+- [Host API](#host-api)
 - [Жизненный цикл runtime](#жизненный-цикл-runtime)
-- [Контракт расширения](#контракт-расширения)
-- [Проверки релиза](#проверки-релиза)
+- [Поддержка IDE](#поддержка-ide)
+- [Обновление с v2](#обновление-с-v2)
 - [Результаты benchmark](#результаты-benchmark)
+- [Разработка](#разработка)
 - [Лицензия](#лицензия)
 - [Авторы логотипа](#авторы-логотипа)
-
-## Использование
-
-Открыть страницу и сохранить скриншот:
-
-```php
-require 'vendor/autoload.php';
-
-use Nesk\Puphpeteer\Puppeteer\Puppeteer;
-
-$puppeteer = new Puppeteer();
-$browser = $puppeteer->launch();
-try {
-    $page = $browser->newPage();
-    $page->goto('https://example.com');
-    $page->screenshot(['path' => 'example.png']);
-} finally {
-    $browser->close();
-}
-```
 
 ## Требования
 
 - PHP **8.4+** и Composer.
-- Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs). [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
+- Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs) **>= 0.0.3**. [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
 - Локальный Chrome или подключение к Browserless.
 - Для надёжного завершения локальных процессов Chrome в Unix: необязательные расширения `pcntl` и `posix`.
 - Для скачивания локального Chrome: HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`.
@@ -103,7 +82,29 @@ Composer не запускает scripts зависимостей. Для авт
 | `PUPPETEER_SKIP_DOWNLOAD=true` | Пропустить скачивание браузера |
 | `PUPPETEER_CHROME_SKIP_DOWNLOAD=true` | Пропустить Chrome; также принимается `PUPPETEER_SKIP_CHROME_DOWNLOAD` |
 
+## Использование
+
+Открыть страницу и сохранить скриншот:
+
+```php
+require 'vendor/autoload.php';
+
+use Nesk\Puphpeteer\Puppeteer\Puppeteer;
+
+$puppeteer = new Puppeteer();
+$browser = $puppeteer->launch();
+try {
+    $page = $browser->newPage();
+    $page->goto('https://example.com');
+    $page->screenshot(['path' => 'example.png']);
+} finally {
+    $browser->close();
+}
+```
+
 ## Использование с browserless
+
+Следующий пример запускается из этого репозитория после [настройки окружения разработки](#docker-для-разработки):
 
 ```sh
 docker compose up -d browserless
@@ -123,7 +124,9 @@ Compose задаёт `BROWSER_WS` с токеном. Вне Compose переда
 
 ## Основные отличия от Puppeteer
 
-API браузера находится в `Nesk\Puphpeteer\Puppeteer` (например, `Puppeteer`, `Page`, `Browser`). Общий `JsFunction` остаётся в `Nesk\Puphpeteer`; старые импорты доступны через алиасы.
+Поддерживается только Chrome/Chromium через CDP. Firefox/BiDi, pipe transport, Node.js writable streams, старый `screencast()` и `followSymlinks: false` не поддерживаются.
+
+API браузера находится в `Nesk\Puphpeteer\Puppeteer` (например, `Puppeteer`, `Page`, `Browser`). Общий `JsFunction` остаётся в `Nesk\Puphpeteer`; алиасы старых импортов ресурсов описаны в разделе [Обновление с v2](#обновление-с-v2).
 
 ### Создайте экземпляр Puppeteer
 
@@ -203,7 +206,7 @@ try {
 
 ### Чтение потоков
 
-`createPDFStream()` возвращает `Amp\ByteStream\ReadableStream`. Сам поток остаётся в QuickJS: PHP запрашивает порции до 64 КиБ и уступает event loop между чтениями. Мост не накапливает файл целиком. Источник может иметь собственный буфер; синхронная генерация данных в JS и передача каждой порции всё равно занимают процессорное время.
+`createPDFStream()` возвращает `Amp\ByteStream\ReadableStream`. QuickJS читает CDP-поток порциями до 64 КиБ; PHP декодирует бинарные данные и уступает event loop между чтениями. Мост не накапливает файл целиком. Источник может иметь собственный буфер; синхронная генерация данных в JS и передача каждой порции всё равно занимают процессорное время.
 
 ```php
 $stream = $page->createPDFStream();
@@ -255,10 +258,14 @@ $stealth = $js->require('puppeteer-extra-plugin-stealth');
 $puppeteer = new Puppeteer(runtime: $js);
 $puppeteer->use($stealth());
 $browser = $puppeteer->launch();
-$page = $newInjectedPage($browser, [
-    'fingerprintOptions' => ['devices' => ['mobile'], 'operatingSystems' => ['ios']],
-]);
-$page->goto('https://example.com');
+try {
+    $page = $newInjectedPage($browser, [
+        'fingerprintOptions' => ['devices' => ['mobile'], 'operatingSystems' => ['ios']],
+    ]);
+    $page->goto('https://example.com');
+} finally {
+    $browser->close();
+}
 ```
 
 При развёртывании сохраняйте `node_modules` и файлы данных пакетов. Фиксируйте версии пакетов в `package-lock.json`. Обновление плагина не требует пересборки PuPHPeteer. Если другому пакету необходим ESM или неподдерживаемый синтаксис, соберите его в CommonJS стандартным инструментом и передайте путь к файлу в `require()`.
@@ -281,40 +288,67 @@ $puppeteer->use($stealth(['enabledEvasions' => [
 
 ### Ограничения плагинов
 
-1. **Плагины работают с Chrome через CDP.** Firefox и протокол WebDriver BiDi не поддерживаются. Например, `launch(['headless' => true])` запускает Chrome, а `connect(['browserWSEndpoint' => $url])` подключается к CDP-адресу Chrome. Адрес Firefox для такого подключения не подходит.
+1. **Изменения страницы применяются при загрузке документа.** `newPage()` ждёт завершения обработчика плагина `onPageCreated()`, поэтому последующий `goto()` загружает документ с зарегистрированными изменениями. Подключение к уже открытой странице не меняет результаты выполненных скриптов. Например, если сайт прочитал `navigator.webdriver` до подключения со stealth, прежний результат останется у сайта. Перезагрузка страницы применит скрипты из `evaluateOnNewDocument()` к новому документу.
 
-2. **Изменения страницы применяются при загрузке документа.** `newPage()` ждёт завершения обработчика плагина `onPageCreated()`, поэтому последующий `goto()` загружает документ с зарегистрированными изменениями. Подключение к уже открытой странице не меняет результаты выполненных скриптов. Например, если сайт прочитал `navigator.webdriver` до подключения со stealth, прежний результат останется у сайта. Перезагрузка страницы применит скрипты из `evaluateOnNewDocument()` к новому документу.
+2. **Первый документ popup может загрузиться раньше плагина.** Например, сайт вызывает `window.open('/check')`, и скрипты `/check` успевают выполниться до подготовки popup плагином stealth. Если изменения нужны с самого начала, получите страницу popup и повторно перейдите на `/check`. Они подействуют при новой загрузке, но не отменят проверки и запросы, выполненные при первой.
 
-3. **Первый документ popup может загрузиться раньше плагина.** Например, сайт вызывает `window.open('/check')`, и скрипты `/check` успевают выполниться до подготовки popup плагином stealth. Если изменения нужны с самого начала, получите страницу popup и повторно перейдите на `/check`. Они подействуют при новой загрузке, но не отменят проверки и запросы, выполненные при первой.
+3. **Настройка языка действует через соединение с браузером и не сохраняется в профиле.** Например, stealth evasion `user-agent-override` с locale `de-DE,de` задаёт язык через CDP и для headless, и для видимого Chrome. Плагин не записывает язык в файл `Preferences`: при следующем запуске того же профиля без плагина эта настройка не сохранится. Порядок HTTP-заголовков также может отличаться от puppeteer-extra, запущенного через Node.js.
 
-4. **Настройка языка действует через соединение с браузером и не сохраняется в профиле.** Например, stealth evasion `user-agent-override` с locale `de-DE,de` задаёт язык через CDP и для headless, и для видимого Chrome. Плагин не записывает язык в файл `Preferences`: при следующем запуске того же профиля без плагина эта настройка не сохранится. Порядок HTTP-заголовков также может отличаться от puppeteer-extra, запущенного через Node.js.
+4. **Ошибка плагина превращается в PHP-исключение, иногда при следующем вызове.** Например, если `onPageCreated()` падает во время `$browser->newPage()`, исключение выбросит этот вызов. Если обработчик упал в фоне при появлении popup, исключение может выбросить следующая операция клиента, хотя она не создавала popup. Закрывайте браузер в `finally`: `close()` и `disconnect()` доступны после ошибок плагина. Если страница просто закрылась во время инициализации, исчезновение её target считается обычной очисткой.
 
-5. **Ошибка плагина превращается в PHP-исключение, иногда при следующем вызове.** Например, если `onPageCreated()` падает во время `$browser->newPage()`, исключение выбросит этот вызов. Если обработчик упал в фоне при появлении popup, исключение может выбросить следующая операция клиента, хотя она не создавала popup. Закрывайте браузер в `finally`: `close()` и `disconnect()` доступны после ошибок плагина. Если страница просто закрылась во время инициализации, исчезновение её target считается обычной очисткой.
+5. **Собственный плагин должен ожидать свои асинхронные операции.** Например: `async onPageCreated(page) { await page.evaluateOnNewDocument(patch); }`. Если запустить эту операцию без `await` и не вернуть её Promise, `newPage()` может завершиться до регистрации скрипта, а адаптер не сможет надёжно передать ошибку этой операции в PHP.
 
-6. **Собственный плагин должен ожидать свои асинхронные операции.** Например: `async onPageCreated(page) { await page.evaluateOnNewDocument(patch); }`. Если запустить эту операцию без `await` и не вернуть её Promise, `newPage()` может завершиться до регистрации скрипта, а адаптер не сможет надёжно передать ошибку этой операции в PHP.
-
-7. **Stealth не гарантирует, что сайт примет браузер за человека.** Например, скрытый `navigator.webdriver` не мешает сайту показать CAPTCHA из-за IP-адреса или повторяющихся запросов. Наши тесты проверяют отдельные свойства браузера и выполнение плагинов, но не гарантируют незаметность автоматизации.
+6. **Stealth не гарантирует, что сайт примет браузер за человека.** Например, скрытый `navigator.webdriver` не мешает сайту показать CAPTCHA из-за IP-адреса или повторяющихся запросов. Наши тесты проверяют отдельные свойства браузера и выполнение плагинов, но не гарантируют незаметность автоматизации.
 
 Исходники upstream: [хуки плагинов](https://github.com/berstend/puppeteer-extra/tree/master/packages/puppeteer-extra-plugin), [stealth](https://github.com/berstend/puppeteer-extra/tree/master/packages/puppeteer-extra-plugin-stealth).
 
-## Поддержка IDE и генерация API
+## Host API
 
-Из деклараций закреплённого Puppeteer генерируются реальные PHP-классы, методы, getter-свойства, сигнатуры и PHPDoc. PhpStorm использует эти классы для автодополнения; Psalm проверяет типы. Возвращаемый JS Promise преобразуется в PHP-тип результата.
+API доступны в QuickJS (`JsRuntime::run()` и npm-модули). Код страницы использует API Chrome. Нативные реализации сохраняются.
 
-Покрытие частичное: генерация выводит пропущенные объявления и причины только с `--verbose`; ограничения типов описаны в [контракте генератора](upstream/README.md). Ошибки парсинга и TypeScript останавливают генерацию до записи файлов.
+- Базовые API: `URL`, `URLSearchParams`, `structuredClone`, `DOMException`, `setImmediate`, `clearImmediate`, `ReadableStream`.
+- UTF-8: `TextEncoder`, `TextDecoder` с `{stream: true}` и завершающим `decode()`.
+- Отмена: `AbortController`, `AbortSignal`, `reason`, `throwIfAborted()`, `abort()`, `timeout()`, `any()`; fetch отменяет и PHP I/O.
+- Crypto через PHP: `getRandomValues()` для целочисленных typed arrays (до 65 536 байт), `randomUUID()` и `subtle.digest()` для SHA-1/256/384/512. Другие методы `subtle` отклоняются с `NotSupportedError`.
+- HTTP через Amp: `fetch`, `Headers`, `Request`, `Response`; потоковые ответы до 64 КиБ на порцию, `text()`, `json()`, `arrayBuffer()`, `bodyUsed`, `clone()` и redirects `follow/manual/error`. `text()` использует потоковый UTF-8 декодер. HTTP 4xx/5xx возвращают Response, сетевые ошибки отклоняют Promise. При закрытии клиента запросы освобождаются.
 
-```sh
-docker compose run --rm php composer update-php
-docker compose run --rm php composer verify-php
-# Показать причины пропущенных объявлений
-docker compose run --rm php composer update-php -- --verbose
+```php
+$runtime = new \Nesk\Puphpeteer\JsRuntime();
+$result = $runtime->run(new \Nesk\Puphpeteer\JsFunction(<<<'JS'
+    async url => {
+        const response = await fetch(url, {signal: AbortSignal.timeout(5000)});
+        return {status: response.status, text: await response.text(), id: crypto.randomUUID()};
+    }
+    JS), 'https://example.com/');
 ```
 
-Первая команда обновляет обёртки и алиасы совместимости; вторая проверяет их без изменения файлов. Ручные изменения сгенерированных файлов перезаписываются. Удалённые из upstream классы, методы и соответствующие алиасы удаляются из результата генерации.
+Host fetch не наследует cookies, proxy и авторизацию Chrome; cookie jar, CORS-проверки и HTTP-кеша нет. `manual` возвращает статус и заголовки перенаправления. Тела запросов: строки, URLSearchParams и BufferSource; потоковые uploads, Blob/FormData не поддерживаются. `text()`/`json()`/`arrayBuffer()` собирают результат целиком; `response.body` остаётся потоковым, а `clone()` может буферизовать медленную ветку.
+
+## Жизненный цикл runtime
+
+Диагностика QuickJS использует PSR-3. По умолчанию PuPHPeteer асинхронно пишет её в stderr. Любой PSR-3 логгер, включая Monolog, можно передать вторым аргументом конструктора:
+
+```php
+$puppeteer = new Puppeteer(logger: $logger);
+```
+
+JavaScript-методы `console.debug`, `console.log`/`console.info`, `console.warn` и `console.error` соответствуют уровням PSR-3 `debug`, `info`, `warning` и `error`.
+
+- Закрывайте страницы/контексты через `close()`, JS handles — через `dispose()`, желательно в `finally`. `release()` удаляет только ссылку моста. Не передавайте объекты между клиентами.
+- `on()`, `once()` и `off()` сохраняют идентичность обработчика. Последняя снятая регистрация освобождает callback; остальные callbacks, например `exposeFunction()`, удерживаются до закрытия соединения.
+- Ошибки event callbacks отправляются в логгер; callbacks с возвращаемым результатом отклоняют JS Promise.
+- Обычные JS-ошибки и таймауты операций не закрывают соединение. Сбой транспорта очищает вызовы, таймеры и реестры; после него создайте новое соединение.
+- `undefined` становится `null`, binary — PHP-строкой, пустые JS object и array — `[]`. Точные целые должны укладываться в ±9 007 199 254 740 991. BigInt/non-finite результаты — tagged-массивы; циклические и слишком глубокие данные отклоняются.
+
+PHP-обёртки не предоставляют параметры `AbortSignal` из Puppeteer; отмена внутри QuickJS доступна через [Host API](#host-api).
+
+## Поддержка IDE
+
+Пакет уже содержит PHP-классы, методы, getter-свойства, сигнатуры и PHPDoc, сгенерированные из деклараций закреплённого Puppeteer. Автодополнение в PhpStorm работает после установки через Composer, без дополнительных команд. Psalm проверяет эти типы; возвращаемый JS Promise преобразуется в PHP-тип результата. Покрытие API частичное; ограничения типов описаны в [контракте генератора](upstream/README.md).
 
 ## Обновление с v2
 
-Установите PHP 8.4+, совместимое расширение QuickJS и Chrome по инструкции выше. Node.js нужен только для разработки.
+Установите PHP 8.4+, совместимое расширение QuickJS и Chrome по инструкции выше. Для npm-плагинов установите пакеты по инструкции в разделе [Плагины Puppeteer](#плагины-puppeteer).
 
 Composer подключает алиасы по принципу **best effort только для `Nesk\Puphpeteer\Resources\…`**. Импорты `Puppeteer` и `JsFunction` нужно обновить. В новом коде используйте:
 
@@ -396,149 +430,10 @@ $function = new JsFunction('(element) => element.textContent');
 - Настройки Node, параметр logger из v2 и `js_extra` вызывают исключение. PSR-3 логгер передаётся как `new Puppeteer(logger: $logger)`. Локальный запуск использует установленный Chrome, `executablePath` или `PUPPETEER_EXECUTABLE_PATH`; системный Chrome автоматически не выбирается.
 - Scope и значения параметров функции по умолчанию принимают скаляры, массивы и `JsFunction`; remote handles передавайте отдельными аргументами `evaluate()`. PHP callbacks должны быть объектами `Closure`. Для конкурентности используйте `Amp\async()`; вручную вызывать `await()` для публичных результатов не нужно.
 - `undefined` превращается в `null`, бинарные результаты — в PHP-строки. Файловые операции скриншотов, PDF, загрузки скриптов и стилей выполняются на PHP-хосте. Скриншот в base64 возвращается без записи в `path`.
-- Firefox, pipe transport, Node.js writable streams, старый API `screencast()` и `followSymlinks: false` не поддерживаются.
-
-## Host API
-
-API доступны в QuickJS (`JsRuntime::run()` и npm-модули). Код страницы использует API Chrome. Нативные реализации сохраняются.
-
-- Базовые API: `URL`, `URLSearchParams`, `structuredClone`, `DOMException`, `setImmediate`, `clearImmediate`, `ReadableStream`.
-- UTF-8: `TextEncoder`, `TextDecoder` с `{stream: true}` и завершающим `decode()`.
-- Отмена: `AbortController`, `AbortSignal`, `reason`, `throwIfAborted()`, `abort()`, `timeout()`, `any()`; fetch отменяет и PHP I/O.
-- Crypto через PHP: `getRandomValues()` для целочисленных typed arrays (до 65 536 байт), `randomUUID()` и `subtle.digest()` для SHA-1/256/384/512. Другие методы `subtle` отклоняются с `NotSupportedError`.
-- HTTP через Amp: `fetch`, `Headers`, `Request`, `Response`; потоковые ответы до 64 КиБ на порцию, `text()`, `json()`, `arrayBuffer()`, `bodyUsed`, `clone()` и redirects `follow/manual/error`. `text()` использует потоковый UTF-8 декодер. HTTP 4xx/5xx возвращают Response, сетевые ошибки отклоняют Promise. При закрытии клиента запросы освобождаются.
-
-```php
-$runtime = new \Nesk\Puphpeteer\JsRuntime();
-$result = $runtime->run(new \Nesk\Puphpeteer\JsFunction(<<<'JS'
-    async url => {
-        const response = await fetch(url, {signal: AbortSignal.timeout(5000)});
-        return {status: response.status, text: await response.text(), id: crypto.randomUUID()};
-    }
-    JS), 'https://example.com/');
-```
-
-Host fetch не наследует cookies, proxy и авторизацию Chrome; cookie jar, CORS-проверки и HTTP-кеша нет. `manual` возвращает статус и заголовки перенаправления. Тела запросов: строки, URLSearchParams и BufferSource; потоковые uploads, Blob/FormData не поддерживаются. `text()`/`json()`/`arrayBuffer()` собирают результат целиком; `response.body` остаётся потоковым, а `clone()` может буферизовать медленную ветку.
-
-## Разработка
-
-### Docker для разработки
-
-Команды ниже выполняются из checkout репозитория и предназначены для разработки пакета. Для генерации, сборки и JS-тестов нужны Node.js **22+** и npm; они включены в образы.
-
-Нужны Docker и Compose **2.17+**. Образ собирает закреплённый SHA форка и подключает расширение через PHP ini; PHP/Rust на хосте не нужны.
-
-```sh
-docker compose build php chrome
-docker compose run --rm php composer install
-docker compose run --rm php npm ci
-docker compose run --rm chrome php examples/01_page_open.php
-```
-
-`Dockerfile` содержит PHP, QuickJS, Composer и Node.js без браузера. `Dockerfile-chrome` устанавливает Chrome из `upstream/lock.json` тем же PHP-установщиком в `/opt/chrome` и задаёт `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. В образах нет кода приложения и его зависимостей; автоматически ничего не запускается. В обоих образах есть Node.js и npm для разработки. Compose монтирует весь checkout в `/app`, включая `vendor` и `node_modules`; зависимости устанавливаются прямо в каталог на хосте. `npm ci` устанавливает только инструменты разработки. При переключении между macOS и Linux повторите `npm ci` в целевом окружении: нативные npm-бинарники зависят не только от архитектуры, но и от ОС. После изменения Dockerfile, расширения или закреплённого Chrome пересоберите образ.
-
-Архитектура соответствует хосту; доступность Chrome зависит от закреплённой версии. Chrome-сервис использует `SYS_ADMIN` для sandbox. Графического дисплея в образе нет.
-
-#### Примеры
-
-Запуск: `docker compose run --rm chrome php examples/<имя файла>`.
-
-| Файл | Что показывает |
-| --- | --- |
-| [01_page_open.php](examples/01_page_open.php) | Опции launch, viewport, таймаут и evaluate |
-| [02_page_screenshot.php](examples/02_page_screenshot.php) | Stealth, User-Agent, язык, масштаб viewport и screenshot |
-| [04_form_intercept.php](examples/04_form_intercept.php) | Ожидание POST до клика, вывод данных и отмена запроса |
-| [05_video_stream.php](examples/05_video_stream.php) | Потоковая запись MP4 в файл через Amp `pipe()` |
-
-Используются локальные HTML без HTTP-сервера; скриншот сохраняется на хосте. Для видимого браузера на хосте с PHP/QuickJS и графическим дисплеем: `php examples/01_page_open.php --headful` (`headless => false`).
-
-#### Обновление через Docker
-
-Обновить PHP-зависимости и установить JS-зависимости из lock-файла:
-
-```sh
-docker compose run --rm php composer update
-docker compose run --rm php npm ci
-```
-
-Обновить Puppeteer и поддерживаемый Chrome:
-
-```sh
-docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@latest
-docker compose run --rm php php bin/console generate
-docker compose run --rm php php bin/console build
-docker compose build chrome
-docker compose run --rm chrome php bin/console test all --no-interaction
-```
-
-После обновления `upstream/lock.json` командой `generate` пересоберите `chrome`: путь из ENV выбирает браузер внутри образа. Генерация API и сборка bundle — отдельные команды. Изменения `package.json`, `package-lock.json`, `upstream/` и `resources/` будут видны в Git на хосте. Composer lock сохраняется на хосте, но в этом пакете не коммитится.
-
-
-После установки Docker-окружения запускайте функциональные и статические проверки:
-
-```sh
-docker compose run --rm chrome composer test
-```
-
-Стиль PHP — Symfony (`PHP CS Fixer`) с пробелами вокруг `.` и импортом классов, включая встроенные. Проверка: `composer cs:check`, исправление всех PHP-файлов: `composer cs:fix` (также через `docker compose run --rm php ...`). Генератор применяет те же правила. Проверка включена в `composer test` и CI.
-
-`php bin/console build` собирает минифицированный CDP bundle пакета; `--debug` создаёт читаемый JS. Обычно приложение загружает CommonJS npm-пакеты напрямую; ESM-only пакеты при необходимости можно отдельно собрать стандартным инструментом. Коммитьте ресурсы пакета вместе с исходниками и lock-файлами. `package-lock.json` фиксирует JS-зависимости пакета; приложению следует отдельно фиксировать версии плагинов. `composer.lock` остаётся локальным, PHP-версии разрешает приложение.
-
-Без расширения доступны только unit-тесты и Psalm: `PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs`, затем `php vendor/bin/phpunit` и `composer psalm`.
-
-Отдельный набор: `php bin/console test unit` (или `integration` / `browser`); отдельные тесты: `php vendor/bin/phpunit --filter=...`. `composer test` включает PHP/JS-тесты, Psalm, проверку генерации API и bundle; `composer test-release` добавляет нагрузочные циклы; `composer benchmark` измеряет производительность отдельно.
-
-Список CLI-команд: `docker compose run --rm php php bin/console`. `doctor` проверяет окружение; `--no-interaction` отключает вопросы, `--json` включает машинный вывод.
-
-## Жизненный цикл runtime
-
-Диагностика QuickJS использует PSR-3. По умолчанию PuPHPeteer асинхронно пишет её в stderr. Любой PSR-3 логгер, включая Monolog, можно передать вторым аргументом конструктора:
-
-```php
-$puppeteer = new Puppeteer(logger: $logger);
-```
-
-JavaScript-методы `console.debug`, `console.log`/`console.info`, `console.warn` и `console.error` соответствуют уровням PSR-3 `debug`, `info`, `warning` и `error`.
-
-- Закрывайте страницы/контексты через `close()`, JS handles — через `dispose()`, желательно в `finally`. `release()` удаляет только ссылку моста. Не передавайте объекты между клиентами.
-- `on()`, `once()` и `off()` сохраняют идентичность обработчика. Последняя снятая регистрация освобождает callback; остальные callbacks, например `exposeFunction()`, удерживаются до закрытия соединения.
-- Ошибки event callbacks отправляются в логгер; callbacks с возвращаемым результатом отклоняют JS Promise.
-- Обычные JS-ошибки и таймауты операций не закрывают соединение. Сбой транспорта очищает вызовы, таймеры и реестры; после него создайте новое соединение.
-- `undefined` становится `null`, binary — PHP-строкой, пустые JS object и array — `[]`. Точные целые должны укладываться в ±9 007 199 254 740 991. BigInt/non-finite результаты — tagged-массивы; циклические и слишком глубокие данные отклоняются.
-- Поддерживается CDP Chrome. Firefox/BiDi, публичный `AbortSignal` и произвольные Node API недоступны.
-
-## Контракт расширения
-
-Используйте SHA форка, закреплённый в `Dockerfile`. Мост требует автоматического ожидания Promise через Revolt, `quickjs.postMessage()` и `QuickJS::drainMessages()`. [Интеграционные тесты](tests/Integration/) проверяют типы, лимиты, восстановление, освобождение ресурсов и Fibers на фактически установленном расширении.
-
-Канонические stubs нативного API принадлежат [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` — копия для Psalm; интеграционные тесты сравнивают её сигнатуры с загруженным расширением. `Client` исполняет готовый JavaScript bundle через `eval($source, typescript: false)`, пропуская Oxc и его transpile cache. Для старого поддерживаемого расширения с одним аргументом `eval()` прежний вызов выбирается по сигнатуре метода.
-
-Один асинхронный JS-потребитель ждёт уведомления расширения; host I/O обслуживает Amp. Сообщения копируются через нативную очередь (по умолчанию 32 МиБ). PuPHPeteer ограничивает JS heap до 256 МиБ и stack до 512 КиБ. Таймауты операций контролируют Puppeteer и Amp; отдельный таймаут нативного исполнения больше не задаётся. Глубина преобразования значений моста ограничена 64 уровнями; отдельный TypeScript transpile cache по умолчанию удерживает до 256 записей и 32 МиБ строк исходников, JavaScript и source maps. Этот бюджет не охватывает все выделения памяти Oxc. Эти лимиты не ограничивают PHP callbacks и память Chrome.
-
-При сбое моста клиент закрывает транспорт без повторного вызова; JS-изменения не откатываются. PHP callbacks запускаются вне нативного JS-стека и могут приостанавливать Fiber.
-
-## Проверки релиза
-
-[GitHub Actions](.github/workflows/tests.yaml) на push, PR и ручной запуск проверяет PHPUnit/Psalm для PHP 8.4/8.5, JS, bundle, нативную интеграцию, браузерные сценарии и примеры. Composer и образы кешируются; тесты проекта выполняются и при cache hit.
-
-Нагрузку и benchmark запускаем только для релизов:
-
-```sh
-docker compose run --rm chrome composer test-release -- --cycles=50 --timeout=600
-docker compose run --rm chrome composer benchmark -- --trials=5 --iterations=1000
-```
-
-Каждый цикл нагрузки проверяет две страницы, listeners, освобождение handles и восстановление после ошибок; каждый десятый создаёт PNG/PDF. Реестры ресурсов должны возвращаться к исходному уровню. `--timeout` ограничивает нагрузку в секундах; для длительного прогона увеличьте оба аргумента. Эти проверки не доказывают отсутствие всех нативных утечек.
-
-Release workflow запускается **после публикации**, включая prerelease, и не блокирует её. До публикации проверьте аудит зависимостей и целевые платформы: hosted runtime CI покрывает Linux amd64.
-
-### Методика benchmark
-
-Прогон: 1 000 evaluate, 100 возвратов 64 КиБ, 20 конкурентных ожиданий по 25 мс и 20 навигаций. `--iterations` меняет число evaluate. CPU/RSS не включают Chrome; опрос раз в 25 мс может пропускать пики. Сравнивайте на одинаковом оборудовании, PHP, Chrome, расширении и bundle. Поддерживаются macOS/Linux с `ps` и `/usr/bin/time` (GNU time на Linux).
 
 ## Результаты benchmark
 
-Последние оптимизированные прогоны QuickJS выполнены на macOS arm64, PHP 8.5.7
+Приведённые для сравнения прогоны QuickJS выполнены на macOS arm64, PHP 8.5.7
 и управляемом Chrome 144.0.7559.96. Значения ниже — средние; запуск benchmark
 описан в [методике benchmark](#методика-benchmark).
 
@@ -553,6 +448,110 @@ Release workflow запускается **после публикации**, в�
 | 20 ожиданий по 25 мс | 545,30 мс | **29,64 мс** | 29,86 мс |
 | CPU клиентского процесса | 830 мс | **360 мс** | 428 мс |
 | Пиковая RSS клиента | 123,55 МиБ | **38,14 МиБ** | 56,53 МиБ |
+
+## Разработка
+
+Команды этого раздела предназначены для разработки пакета и выполняются из checkout репозитория. Для генерации API, сборки и JS-тестов нужны Node.js **22+** и npm; они включены в Docker-образы.
+
+### Docker для разработки
+
+Нужны Docker и Compose **2.17+**. Образ собирает закреплённый SHA форка и подключает расширение через PHP ini; PHP/Rust на хосте не нужны.
+
+```sh
+docker compose build php chrome
+docker compose run --rm php composer install
+docker compose run --rm php npm ci
+docker compose run --rm chrome php examples/01_page_open.php
+```
+
+`Dockerfile` содержит PHP, QuickJS, Composer и Node.js без браузера. `Dockerfile-chrome` устанавливает Chrome из `upstream/lock.json` тем же PHP-установщиком в `/opt/chrome` и задаёт `PUPPETEER_EXECUTABLE_PATH=/usr/local/bin/chrome`. В образах нет кода приложения и его зависимостей; автоматически ничего не запускается. Compose монтирует весь checkout в `/app`, включая `vendor` и `node_modules`; зависимости устанавливаются прямо в каталог на хосте. `npm ci` устанавливает инструменты сборки/тестирования и npm-плагины для примеров. При переключении между macOS и Linux повторите `npm ci` в целевом окружении: нативные npm-бинарники зависят не только от архитектуры, но и от ОС. После изменения Dockerfile, расширения или закреплённого Chrome пересоберите образ.
+
+Архитектура соответствует хосту; доступность Chrome зависит от закреплённой версии. Chrome-сервис использует `SYS_ADMIN` для sandbox. Графического дисплея в образе нет.
+
+### Обновление Puppeteer и генерация API
+
+При обновлении версии Puppeteer установите новую зависимость, пересоздайте PHP API, соберите JS bundle и пересоберите образ Chrome:
+
+```sh
+docker compose run --rm php npm install --save-dev --save-exact puppeteer-core@latest
+docker compose run --rm php composer update-php
+docker compose run --rm php composer build
+docker compose build chrome
+docker compose run --rm chrome composer test
+```
+
+`composer update-php` обновляет PHP-обёртки, алиасы совместимости, бейджи README и `upstream/lock.json`. Удалённые из upstream классы, методы и алиасы исчезают из результата; ручные изменения сгенерированных файлов перезаписываются. Пропущенные объявления и причины выводятся с `composer update-php -- --verbose`. Ошибки парсинга и TypeScript останавливают генерацию до записи файлов.
+
+`composer verify-php` проверяет результат без изменения файлов. Генерация API и сборка bundle — отдельные шаги: после изменения JS-исходников или их зависимостей запускайте `composer build`; для читаемого bundle используйте `php bin/console build --debug`.
+
+Коммитьте исходники, сгенерированные файлы, `resources/`, `upstream/` и изменения `package.json`/`package-lock.json` вместе. Lock-файл фиксирует JS-зависимости пакета; приложения отдельно фиксируют версии своих плагинов. `composer.lock` в этом пакете не коммитится. Для отдельного обновления PHP-зависимостей используйте `docker compose run --rm php composer update`.
+
+### Тесты и стиль кода
+
+Полная проверка изменений:
+
+```sh
+docker compose run --rm chrome composer test
+```
+
+Она включает PHP unit/integration/browser-тесты, JS-тесты, Psalm, стиль PHP, проверку генерации API и JS bundle. Нагрузочные проверки и benchmark описаны в [проверках релиза](#проверки-релиза).
+
+Для отдельного PHP-набора используйте `php bin/console test unit` (или `integration` / `browser`); для отдельных тестов — `php vendor/bin/phpunit --filter=...`. Эти команды также запускаются через `docker compose run --rm chrome`.
+
+Стиль PHP — Symfony (`PHP CS Fixer`) с пробелами вокруг `.` и импортом классов, включая встроенные. `composer cs:check` проверяет стиль, `composer cs:fix` исправляет его. Генератор применяет те же правила.
+
+Без расширения QuickJS доступны PHP unit-тесты и Psalm:
+
+```sh
+PUPPETEER_SKIP_DOWNLOAD=true composer install --ignore-platform-req=ext-php_quickjs
+php vendor/bin/phpunit
+composer psalm
+```
+
+Список CLI-команд: `docker compose run --rm php php bin/console`. `doctor` проверяет окружение; `--no-interaction` отключает вопросы, `--json` включает машинный вывод.
+
+### Примеры
+
+Запуск: `docker compose run --rm chrome php examples/<имя файла>`.
+
+| Файл | Что показывает |
+| --- | --- |
+| [01_page_open.php](examples/01_page_open.php) | Опции launch, viewport, таймаут и evaluate |
+| [02_page_screenshot.php](examples/02_page_screenshot.php) | Stealth, User-Agent, язык, масштаб viewport и screenshot |
+| [04_form_intercept.php](examples/04_form_intercept.php) | Ожидание POST до клика, вывод данных и отмена запроса |
+| [05_video_stream.php](examples/05_video_stream.php) | Потоковая запись MP4 в файл через Amp `pipe()` |
+| [06_stealth_fingerprint.php](examples/06_stealth_fingerprint.php) | Stealth и мобильный fingerprint через npm-пакеты |
+
+Используются локальные HTML без HTTP-сервера; скриншот сохраняется на хосте. Для видимого браузера на хосте с PHP/QuickJS и графическим дисплеем: `php examples/01_page_open.php --headful` (`headless => false`).
+
+### Контракт расширения
+
+Используйте SHA форка, закреплённый в `Dockerfile`. Мост требует автоматического ожидания Promise через Revolt, `quickjs.postMessage()` и `QuickJS::drainMessages()`. [Интеграционные тесты](tests/Integration/) проверяют типы, лимиты, восстановление, освобождение ресурсов и Fibers на фактически установленном расширении.
+
+Канонические stubs нативного API принадлежат [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` — копия для Psalm; интеграционные тесты сравнивают её сигнатуры с загруженным расширением. `Client` исполняет готовый JavaScript bundle через `eval($source, typescript: false)`, пропуская Oxc и его transpile cache. Для старого поддерживаемого расширения с одним аргументом `eval()` прежний вызов выбирается по сигнатуре метода.
+
+Один асинхронный JS-потребитель ждёт уведомления расширения; host I/O обслуживает Amp. Сообщения копируются через нативную очередь (по умолчанию 32 МиБ). PuPHPeteer ограничивает JS heap до 256 МиБ и stack до 512 КиБ. Таймауты операций контролируют Puppeteer и Amp; отдельный таймаут нативного исполнения больше не задаётся. Глубина преобразования значений моста ограничена 64 уровнями; отдельный TypeScript transpile cache по умолчанию удерживает до 256 записей и 32 МиБ строк исходников, JavaScript и source maps. Этот бюджет не охватывает все выделения памяти Oxc. Эти лимиты не ограничивают PHP callbacks и память Chrome.
+
+При сбое моста клиент закрывает транспорт без повторного вызова; JS-изменения не откатываются. PHP callbacks запускаются вне нативного JS-стека и могут приостанавливать Fiber.
+
+### Проверки релиза
+
+[GitHub Actions](.github/workflows/tests.yaml) на push, PR и ручной запуск проверяет PHPUnit/Psalm для PHP 8.4/8.5, JS, bundle, нативную интеграцию, браузерные сценарии и примеры. Composer и образы кешируются; тесты проекта выполняются и при cache hit.
+
+Нагрузку и benchmark запускаем только для релизов:
+
+```sh
+docker compose run --rm chrome composer test-release -- --cycles=50 --timeout=600
+docker compose run --rm chrome composer benchmark -- --trials=5 --iterations=1000
+```
+
+Каждый цикл нагрузки проверяет две страницы, listeners, освобождение handles и восстановление после ошибок; каждый десятый создаёт PNG/PDF. Реестры ресурсов должны возвращаться к исходному уровню. `--timeout` ограничивает нагрузку в секундах; для длительного прогона увеличьте оба аргумента. Эти проверки не доказывают отсутствие всех нативных утечек.
+
+Release workflow запускается **после публикации**, включая prerelease, и не блокирует её. До публикации проверьте аудит зависимостей и целевые платформы: hosted runtime CI покрывает Linux amd64.
+
+#### Методика benchmark
+
+Прогон: 1 000 evaluate, 100 возвратов 64 КиБ, 20 конкурентных ожиданий по 25 мс и 20 навигаций. `--iterations` меняет число evaluate. CPU/RSS не включают Chrome; опрос раз в 25 мс может пропускать пики. Сравнивайте на одинаковом оборудовании, PHP, Chrome, расширении и bundle. Поддерживаются macOS/Linux с `ps` и `/usr/bin/time` (GNU time на Linux).
 
 ## Лицензия
 
