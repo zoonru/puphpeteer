@@ -9,8 +9,12 @@ import 'core-js/actual/clear-immediate.js';
 
 if (typeof globalThis.ReadableStream === 'undefined') globalThis.ReadableStream = ReadableStream;
 
-// QuickJS does not provide the Encoding Web API. Puppeteer uses UTF-8
-// TextEncoder/TextDecoder when transferring intercepted response bodies.
+// QuickJS has no Encoding Web API; Puppeteer decodes complete response bodies.
+// Keep this UTF-8-only codec: in our QuickJS benchmarks @kayahr/text-encoding
+// was 4-7x slower at encoding and 2-10x slower at decoding than the original codec.
+// fast-text-encoding lacks fatal decoding and encodeInto, and its JS fallback
+// drops lone high surrogates. Native implementations are preserved below.
+// Streaming calls retain only an incomplete UTF-8 scalar (at most three bytes).
 class QuickTextEncoder {
   get encoding() { return 'utf-8'; }
   encode(input = '') {
@@ -27,63 +31,28 @@ class QuickTextEncoder {
       for (let index = 0; index < source.length; index++) bytes[index] = source.charCodeAt(index);
       return bytes;
     }
-    const bytes = new Uint8Array(source.length * 4);
-    let written = 0;
-    for (let index = 0; index < source.length; index++) {
-      let codePoint = source.charCodeAt(index);
-      if (codePoint >= 0xd800 && codePoint <= 0xdbff) {
-        const low = source.charCodeAt(index + 1);
-        if (low >= 0xdc00 && low <= 0xdfff) {
-          codePoint = 0x10000 + ((codePoint - 0xd800) << 10) + low - 0xdc00;
-          index++;
-        } else {
-          codePoint = 0xfffd;
-        }
-      } else if (codePoint >= 0xdc00 && codePoint <= 0xdfff) {
-        codePoint = 0xfffd;
-      }
-      if (codePoint <= 0x7f) bytes[written++] = codePoint;
-      else if (codePoint <= 0x7ff) {
-        bytes[written++] = 0xc0 | (codePoint >> 6);
-        bytes[written++] = 0x80 | (codePoint & 0x3f);
-      } else if (codePoint <= 0xffff) {
-        bytes[written++] = 0xe0 | (codePoint >> 12);
-        bytes[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
-        bytes[written++] = 0x80 | (codePoint & 0x3f);
-      } else {
-        bytes[written++] = 0xf0 | (codePoint >> 18);
-        bytes[written++] = 0x80 | ((codePoint >> 12) & 0x3f);
-        bytes[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
-        bytes[written++] = 0x80 | (codePoint & 0x3f);
-      }
-    }
+    const bytes = new Uint8Array(source.length * 3);
+    const {written} = this.encodeInto(source, bytes);
     return bytes.subarray(0, written);
   }
   encodeInto(source, destination) {
+    if (!(destination instanceof Uint8Array)) throw new TypeError('Expected Uint8Array');
     const input = String(source);
     let read = 0;
     let written = 0;
-    while (read < input.length) {
-      let next = read + 1;
-      let codePoint = input.charCodeAt(read);
-      if (codePoint >= 0xd800 && codePoint <= 0xdbff) {
-        const low = input.charCodeAt(next);
-        if (low >= 0xdc00 && low <= 0xdfff) {
-          codePoint = 0x10000 + ((codePoint - 0xd800) << 10) + low - 0xdc00;
-          next++;
-        } else {
-          codePoint = 0xfffd;
-        }
-      } else if (codePoint >= 0xdc00 && codePoint <= 0xdfff) {
-        codePoint = 0xfffd;
+    const safeEnd = destination.length - 4;
+    for (; read < input.length; read++) {
+      let codePoint = input.codePointAt(read);
+      if (codePoint >= 0xd800 && codePoint <= 0xdfff) codePoint = 0xfffd;
+      if (written > safeEnd) {
+        const length = codePoint <= 0x7f ? 1 : codePoint <= 0x7ff ? 2 : codePoint <= 0xffff ? 3 : 4;
+        if (written + length > destination.length) break;
       }
-      const length = codePoint <= 0x7f ? 1 : codePoint <= 0x7ff ? 2 : codePoint <= 0xffff ? 3 : 4;
-      if (written + length > destination.length) break;
-      if (length === 1) destination[written++] = codePoint;
-      else if (length === 2) {
+      if (codePoint <= 0x7f) destination[written++] = codePoint;
+      else if (codePoint <= 0x7ff) {
         destination[written++] = 0xc0 | (codePoint >> 6);
         destination[written++] = 0x80 | (codePoint & 0x3f);
-      } else if (length === 3) {
+      } else if (codePoint <= 0xffff) {
         destination[written++] = 0xe0 | (codePoint >> 12);
         destination[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
         destination[written++] = 0x80 | (codePoint & 0x3f);
@@ -92,8 +61,8 @@ class QuickTextEncoder {
         destination[written++] = 0x80 | ((codePoint >> 12) & 0x3f);
         destination[written++] = 0x80 | ((codePoint >> 6) & 0x3f);
         destination[written++] = 0x80 | (codePoint & 0x3f);
+        read++;
       }
-      read = next;
     }
     // Encoding Web API reports UTF-16 code units consumed, not UTF-8 bytes.
     return {read, written};
@@ -103,12 +72,35 @@ class QuickTextEncoder {
 class QuickTextDecoder {
   constructor(label = 'utf-8', options = {}) {
     if (String(label).toLowerCase() !== 'utf-8' && String(label).toLowerCase() !== 'utf8') throw new RangeError(`Unsupported encoding: ${label}`);
-    this.fatal = Boolean(options.fatal);
-    this.ignoreBOM = Boolean(options.ignoreBOM);
+    this.fatal = Boolean(options?.fatal);
+    this.ignoreBOM = Boolean(options?.ignoreBOM);
+    this.streaming = false;
+    this.pending = null;
+    this.bomSeen = false;
   }
   get encoding() { return 'utf-8'; }
-  decode(input = new Uint8Array()) {
-    const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+  decode(input = new Uint8Array(), options = {}) {
+    let bytes = input instanceof Uint8Array ? input
+      : ArrayBuffer.isView(input) ? new Uint8Array(input.buffer, input.byteOffset, input.byteLength)
+      : new Uint8Array(input);
+    if (!this.streaming) {
+      this.pending = null;
+      this.bomSeen = false;
+    }
+    this.streaming = Boolean(options?.stream);
+    if (this.pending) {
+      const joined = new Uint8Array(this.pending.length + bytes.length);
+      joined.set(this.pending);
+      joined.set(bytes, this.pending.length);
+      bytes = joined;
+      this.pending = null;
+    }
+    const decoded = this.decodeBytes(bytes);
+    if (!decoded.length || this.bomSeen) return decoded;
+    this.bomSeen = true;
+    return !this.ignoreBOM && decoded.charCodeAt(0) === 0xfeff ? decoded.slice(1) : decoded;
+  }
+  decodeBytes(bytes) {
     let ascii = true;
     for (let index = 0; index < bytes.length; index++) {
       if (bytes[index] > 0x7f) {
@@ -121,39 +113,73 @@ class QuickTextDecoder {
       for (let index = 0; index < bytes.length; index += 32768) {
         chunks.push(String.fromCharCode.apply(null, bytes.subarray(index, index + 32768)));
       }
-      let output = chunks.join('');
-      if (!this.ignoreBOM && output.charCodeAt(0) === 0xfeff) output = output.slice(1);
-      return output;
+      return chunks.join('');
     }
-    let output = '';
+    // Batch UTF-16 output to avoid a string allocation for each decoded scalar.
+    // Bound apply() arguments to the same safe size as the ASCII path.
+    const output = new Uint16Array(Math.min(bytes.length, 32768));
+    const chunks = [];
+    let written = 0;
     for (let index = 0; index < bytes.length;) {
       const first = bytes[index++];
       let codePoint;
-      let width;
-      if (first <= 0x7f) { codePoint = first; width = 0; }
-      else if (first >= 0xc2 && first <= 0xdf) { codePoint = first & 0x1f; width = 1; }
-      else if (first >= 0xe0 && first <= 0xef) { codePoint = first & 0x0f; width = 2; }
-      else if (first >= 0xf0 && first <= 0xf4) { codePoint = first & 0x07; width = 3; }
-      else { output += this.invalid(); continue; }
-      if (width) {
-        const start = index;
-        let valid = index + width <= bytes.length;
-        for (let offset = 0; valid && offset < width; offset++) valid = bytes[index + offset] >= 0x80 && bytes[index + offset] <= 0xbf;
+      if (first <= 0x7f) codePoint = first;
+      else if (first >= 0xc2 && first <= 0xdf) {
+        const second = bytes[index];
+        if ((second & 0xc0) === 0x80) {
+          index++;
+          codePoint = ((first & 0x1f) << 6) | (second & 0x3f);
+        } else if (index === bytes.length && this.streaming) {
+          this.pending = bytes.slice(index - 1);
+          break;
+        } else codePoint = this.invalid();
+      } else if (first >= 0xe0 && first <= 0xf4) {
+        const width = first <= 0xef ? 2 : 3;
+        const second = bytes[index];
+        const third = bytes[index + 1];
+        const fourth = bytes[index + 2];
+        const lower = first === 0xe0 ? 0xa0 : first === 0xf0 ? 0x90 : 0x80;
+        const upper = first === 0xed ? 0x9f : first === 0xf4 ? 0x8f : 0xbf;
+        const valid = second >= lower && second <= upper
+          && (third & 0xc0) === 0x80
+          && (width < 3 || (fourth & 0xc0) === 0x80);
         if (valid) {
-          for (let offset = 0; offset < width; offset++) codePoint = (codePoint << 6) | (bytes[index++] & 0x3f);
-          valid = (width === 1 && codePoint >= 0x80)
-            || (width === 2 && codePoint >= 0x800 && !(codePoint >= 0xd800 && codePoint <= 0xdfff))
-            || (width === 3 && codePoint >= 0x10000 && codePoint <= 0x10ffff);
+          codePoint = width === 2 ? ((first & 0x0f) << 12) | ((second & 0x3f) << 6) | (third & 0x3f)
+            : ((first & 7) << 18) | ((second & 0x3f) << 12) | ((third & 0x3f) << 6) | (fourth & 0x3f);
+          index += width;
+        } else {
+          // Consume the valid prefix, but reprocess an offending byte. This
+          // gives the same replacement characters regardless of chunk splits.
+          let consumed = 0;
+          while (consumed < width && index < bytes.length) {
+            const next = bytes[index];
+            if (consumed === 0 ? next < lower || next > upper : (next & 0xc0) !== 0x80) break;
+            index++;
+            consumed++;
+          }
+          if (consumed < width && index === bytes.length && this.streaming) {
+            // Copy rather than retain the caller's potentially large buffer.
+            this.pending = bytes.slice(index - consumed - 1);
+            break;
+          }
+          codePoint = this.invalid();
         }
-        if (!valid) { index = start; index++; output += this.invalid(); continue; }
+      } else codePoint = this.invalid();
+      if (codePoint <= 0xffff) output[written++] = codePoint;
+      else {
+        codePoint -= 0x10000;
+        output[written++] = 0xd800 | (codePoint >> 10);
+        output[written++] = 0xdc00 | (codePoint & 0x3ff);
       }
-      if (codePoint <= 0xffff) output += String.fromCharCode(codePoint);
-      else { codePoint -= 0x10000; output += String.fromCharCode(0xd800 | (codePoint >> 10), 0xdc00 | (codePoint & 0x3ff)); }
+      if (written >= output.length - 1) {
+        chunks.push(String.fromCharCode.apply(null, output.subarray(0, written)));
+        written = 0;
+      }
     }
-    if (!this.ignoreBOM && output.charCodeAt(0) === 0xfeff) output = output.slice(1);
-    return output;
+    if (written) chunks.push(String.fromCharCode.apply(null, output.subarray(0, written)));
+    return chunks.join('');
   }
-  invalid() { if (this.fatal) throw new TypeError('The encoded data was not valid UTF-8'); return '\ufffd'; }
+  invalid() { if (this.fatal) throw new TypeError('The encoded data was not valid UTF-8'); return 0xfffd; }
 }
 
 if (typeof globalThis.TextEncoder === 'undefined') globalThis.TextEncoder = QuickTextEncoder;
