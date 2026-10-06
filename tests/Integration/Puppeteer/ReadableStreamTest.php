@@ -179,7 +179,6 @@ final class ReadableStreamTest extends TestCase
         $logger = new class extends AbstractLogger {
             public array $messages = [];
 
-            /** @psalm-external-mutation-free */
             #[Override]
             public function log($level, Stringable|string $message, array $context = []): void
             {
