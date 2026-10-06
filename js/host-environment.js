@@ -1,8 +1,13 @@
 import './abort-controller.js';
 import {emit} from './bridge.js';
 import {ReadableStream} from 'web-streams-polyfill';
+import 'core-js/actual/url/index.js';
+import 'core-js/actual/url-search-params/index.js';
+import 'core-js/actual/structured-clone.js';
+import 'core-js/actual/set-immediate.js';
+import 'core-js/actual/clear-immediate.js';
 
-globalThis.ReadableStream = ReadableStream;
+if (typeof globalThis.ReadableStream === 'undefined') globalThis.ReadableStream = ReadableStream;
 
 // QuickJS does not provide the Encoding Web API. Puppeteer uses UTF-8
 // TextEncoder/TextDecoder when transferring intercepted response bodies.
@@ -188,4 +193,22 @@ export function fireTimer(id) {
   }
 }
 
-export function clearTimers() { timers.clear(); }
+// Keep core-js's pending callback queue bounded by this client's lifetime.
+const immediates = new Set();
+const scheduleImmediate = globalThis.setImmediate;
+const cancelImmediate = globalThis.clearImmediate;
+globalThis.setImmediate = (fn, ...args) => {
+  const id = scheduleImmediate(() => { immediates.delete(id); fn(...args); });
+  immediates.add(id);
+  return id;
+};
+globalThis.clearImmediate = id => {
+  immediates.delete(id);
+  cancelImmediate(id);
+};
+
+export function clearTimers() {
+  for (const id of immediates) cancelImmediate(id);
+  immediates.clear();
+  timers.clear();
+}

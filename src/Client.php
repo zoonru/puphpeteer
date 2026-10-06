@@ -334,14 +334,17 @@ final class Client
         $data = $payload;
         if ('timer' === $kind) {
             $id = $data['id'];
-            $this->timers[$id] = EventLoop::delay($data['milliseconds'] / 1000, function () use ($id): void {
+            $callback = function () use ($id): void {
                 unset($this->timers[$id]);
                 try {
                     $this->deliver('timer', (string) $id);
                 } catch (Throwable $e) {
                     $this->stop($e);
                 }
-            });
+            };
+            $this->timers[$id] = $data['milliseconds'] > 0
+                ? EventLoop::delay($data['milliseconds'] / 1000, $callback)
+                : EventLoop::defer($callback);
         } elseif ('callback' === $kind || 'filesystem' === $kind) {
             $fn = 'filesystem' === $kind
                 ? fn (...$arguments) => ($this->filesystem ??= new Internal\HostFilesystem())->call($data['operation'], $arguments)
