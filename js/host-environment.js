@@ -209,6 +209,7 @@ globalThis.clearInterval = globalThis.clearTimeout;
 globalThis.performance = {now: () => php.now()};
 const logLevels = {log: 'info', warn: 'warning', error: 'error', debug: 'debug', info: 'info'};
 globalThis.console = Object.fromEntries(Object.entries(logLevels).map(([method, level]) => [method, (...args) => emit('log', {level, message: args.map(String).join(' ')})]));
+globalThis.console.assert = (condition, ...args) => { if (!condition) globalThis.console.error('Assertion failed:', ...args); };
 export function fireTimer(id) {
   const timer = timers.get(id);
   if (!timer) return;

@@ -9,7 +9,7 @@
     "entry": "lib/types.d.ts",
     "declarationSha256": "e1e7f5542b6ecb631777b1bcc1d7088b5ded5c031980f1180f8ac7f807387122"
   },
-  "npmLockSha256": "ad7b811c0d8d8a2009dc9c872958ec65e52bb52f30773dc1a15a0ebef4678aed",
+  "npmLockSha256": "05b615c1758db60e163be5ab3486b5333e21961868c9114424d9fb7140b57823",
   "tools": {
     "@puppeteer/browsers": {
       "version": "3.2.2",
@@ -18,6 +18,10 @@
     "@types/node": {
       "version": "25.6.0",
       "integrity": "sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ=="
+    },
+    "abort-controller": {
+      "version": "3.0.0",
+      "integrity": "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="
     },
     "core-js": {
       "version": "3.50.0",

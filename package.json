@@ -15,6 +15,7 @@
   "devDependencies": {
     "@puppeteer/browsers": "3.2.2",
     "@types/node": "25.6.0",
+    "abort-controller": "3.0.0",
     "core-js": "3.50.0",
     "esbuild": "0.25.12",
     "fingerprint-generator": "^2.1.88",
