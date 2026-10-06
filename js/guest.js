@@ -3,6 +3,7 @@ import {Recordings} from './recordings.js';
 import {GuestReadableStreams} from './readable-streams.js';
 import {installFilesystem} from './filesystem.js';
 import {installCrypto} from './crypto.js';
+import {installFetch, closeFetch} from './fetch.js';
 import {PluginAdapter} from './plugins/adapter.js';
 import {installNpmLoader} from './npm-loader.js';
 import {createNodeCompat} from './node-compat.js';
@@ -101,6 +102,7 @@ function hostRequest(kind, payload) {
   });
 }
 installCrypto((algorithm, bytes) => hostRequest('crypto', {args: [algorithm, encode(bytes)]}));
+installFetch((operation, token, args) => hostRequest('http', {operation, token, args: [encode(args)]}));
 installFilesystem((operation, args) => hostRequest('filesystem', {operation, args: args.map(item => encode(item))}));
 const recordings = new Recordings();
 function encodeRecord(value, ancestors) {
@@ -334,6 +336,7 @@ globalThis.__quickjsDispatch = (kind, payload) => {
     messageParts = [];
     transport.onclose?.();
     streams.close();
+    closeFetch();
     for (const pending of callbacks.values()) pending.reject(new Error('PHP transport closed'));
     clearTimers();
     callbacks.clear();

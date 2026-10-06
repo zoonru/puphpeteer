@@ -15,3 +15,12 @@ test('host polyfills preserve native URL, encoding and stream constructors', () 
   assert.equal(context.TextDecoder, TextDecoder);
   assert.equal(context.ReadableStream, ReadableStream);
 });
+
+test('host services preserve native crypto and fetch implementations', () => {
+  const crypto = {getRandomValues() { throw new Error('Native crypto must not be called during installation'); }};
+  const fetch = () => { throw new Error('Native fetch must not be called during installation'); };
+  const context = vm.createContext({crypto, fetch, php: {now: () => 0}, quickjs: {postMessage() {}}});
+  vm.runInContext(bundle, context);
+  assert.equal(context.crypto, crypto);
+  assert.equal(context.fetch, fetch);
+});

@@ -63,6 +63,7 @@ final class Client
     /** @var array<int, WeakReference<Internal\ReadableStream>> */
     private array $streams = [];
     private ?Internal\HostFilesystem $filesystem = null;
+    private ?Internal\HostHttp $http = null;
     private LoggerInterface $logger;
 
     public function __construct(?string $bundle = null, ?LoggerInterface $logger = null, ?NpmModuleHost $moduleHost = null)
@@ -314,6 +315,11 @@ final class Client
 
             return;
         }
+        if ('httpCancel' === $kind) {
+            $this->http?->close((int) $payload);
+
+            return;
+        }
         if ('result' === $kind) {
             $future = $this->pending[$payload['id']] ?? null;
             unset($this->pending[$payload['id']]);
@@ -346,11 +352,20 @@ final class Client
             $this->timers[$id] = $data['milliseconds'] > 0
                 ? EventLoop::delay($data['milliseconds'] / 1000, $callback)
                 : EventLoop::defer($callback);
-        } elseif (in_array($kind, ['callback', 'filesystem', 'crypto'], true)) {
+        } elseif (in_array($kind, ['callback', 'filesystem', 'http', 'crypto'], true)) {
+            if ('http' === $kind && 'start' === $data['operation']) {
+                ($this->http ??= new Internal\HostHttp())->begin($data['token']);
+            }
             $fn = match ($kind) {
                 'callback' => $this->callbacks[$data['callback']] ?? null,
                 'filesystem' => fn (...$args) => ($this->filesystem ??= new Internal\HostFilesystem())->call($data['operation'], $args),
                 'crypto' => Internal\HostCrypto::digest(...),
+                'http' => fn ($options) => match ($data['operation']) {
+                    'start' => $this->http?->start($data['token'], $options),
+                    'read' => $this->http?->read($data['token']),
+                    'close' => $this->http?->close($data['token']),
+                    default => throw new RuntimeException('Unknown HTTP operation'),
+                },
             };
             async(function () use ($kind, $data, $fn): void {
                 if ($this->closed) {
@@ -366,7 +381,7 @@ final class Client
                     }
                     $result = ['id' => $data['id'], 'value' => $this->encode($value)];
                 } catch (Throwable $e) {
-                    $result = ['id' => $data['id'], 'error' => ['name' => 'crypto' === $kind ? 'TypeError' : $e::class, 'message' => $e->getMessage()]];
+                    $result = ['id' => $data['id'], 'error' => ['name' => in_array($kind, ['http', 'crypto'], true) ? 'TypeError' : $e::class, 'message' => $e->getMessage()]];
                 }
                 if ($this->isClosed()) {
                     return;
@@ -613,6 +628,7 @@ final class Client
         $this->timers = [];
         $this->writes = [];
         $this->filesystem?->closeAll();
+        $this->http?->closeAll();
         $this->callbacks = [];
         $this->functionIds = null;
         $this->functionReferences = null;
