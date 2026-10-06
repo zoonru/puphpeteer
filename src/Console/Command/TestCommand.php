@@ -64,7 +64,7 @@ final class TestCommand extends ProcessCommand
             $command = match ($current) {
                 'unit' => $this->phpCommand('vendor/bin/phpunit'),
                 'integration' => $this->phpCommand('vendor/bin/phpunit', 'tests/Integration'),
-                'browser' => $this->phpCommand('tests/Browser/Puppeteer/run-smoke.php'),
+                'browser' => $this->phpCommand('tests/Browser/run-smoke.php'),
                 'release' => $this->phpCommand('tests/Release/Puppeteer/run.php', '--cycles=' . (string) $input->getOption('cycles'), '--timeout=' . (string) $input->getOption('timeout')),
             };
             $result = $this->runProcess($io, $command, message: $current . '…');
