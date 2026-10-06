@@ -398,6 +398,28 @@ $function = new JsFunction('(element) => element.textContent');
 - `undefined` превращается в `null`, бинарные результаты — в PHP-строки. Файловые операции скриншотов, PDF, загрузки скриптов и стилей выполняются на PHP-хосте. Скриншот в base64 возвращается без записи в `path`.
 - Firefox, pipe transport, Node.js writable streams, старый API `screencast()` и `followSymlinks: false` не поддерживаются.
 
+## Host API
+
+API доступны в QuickJS (`JsRuntime::run()` и npm-модули). Код страницы использует API Chrome. Нативные реализации сохраняются.
+
+- Базовые API: `URL`, `URLSearchParams`, `structuredClone`, `DOMException`, `setImmediate`, `clearImmediate`, `ReadableStream`.
+- UTF-8: `TextEncoder`, `TextDecoder` с `{stream: true}` и завершающим `decode()`.
+- Отмена: `AbortController`, `AbortSignal`, `reason`, `throwIfAborted()`, `abort()`, `timeout()`, `any()`; fetch отменяет и PHP I/O.
+- Crypto через PHP: `getRandomValues()` для целочисленных typed arrays (до 65 536 байт), `randomUUID()` и `subtle.digest()` для SHA-1/256/384/512. Другие методы `subtle` отклоняются с `NotSupportedError`.
+- HTTP через Amp: `fetch`, `Headers`, `Request`, `Response`; потоковые ответы до 64 КиБ на порцию, `text()`, `json()`, `arrayBuffer()`, `bodyUsed`, `clone()` и redirects `follow/manual/error`. `text()` использует потоковый UTF-8 декодер. HTTP 4xx/5xx возвращают Response, сетевые ошибки отклоняют Promise. При закрытии клиента запросы освобождаются.
+
+```php
+$runtime = new \Nesk\Puphpeteer\JsRuntime();
+$result = $runtime->run(new \Nesk\Puphpeteer\JsFunction(<<<'JS'
+    async url => {
+        const response = await fetch(url, {signal: AbortSignal.timeout(5000)});
+        return {status: response.status, text: await response.text(), id: crypto.randomUUID()};
+    }
+    JS), 'https://example.com/');
+```
+
+Host fetch не наследует cookies, proxy и авторизацию Chrome; cookie jar, CORS-проверки и HTTP-кеша нет. `manual` возвращает статус и заголовки перенаправления. Тела запросов: строки, URLSearchParams и BufferSource; потоковые uploads, Blob/FormData не поддерживаются. `text()`/`json()`/`arrayBuffer()` собирают результат целиком; `response.body` остаётся потоковым, а `clone()` может буферизовать медленную ветку.
+
 ## Разработка
 
 ### Docker для разработки

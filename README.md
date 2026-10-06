@@ -401,6 +401,28 @@ Other behavior changes:
 - `undefined` becomes `null`; binary results are PHP strings. Screenshot, PDF and script/style filesystem operations run on the PHP host. A base64 screenshot returns without writing `path`.
 - Firefox, pipe transport, Node.js writable streams, the old `screencast()` API and `followSymlinks: false` are unsupported.
 
+## Host APIs
+
+APIs run in QuickJS (`JsRuntime::run()` and npm modules). Page code uses Chrome APIs. Native implementations are preserved.
+
+- Basics: `URL`, `URLSearchParams`, `structuredClone`, `DOMException`, `setImmediate`, `clearImmediate`, `ReadableStream`.
+- UTF-8: `TextEncoder`, `TextDecoder` with `{stream: true}` and a final `decode()` flush.
+- Cancellation: `AbortController`, `AbortSignal`, `reason`, `throwIfAborted()`, `abort()`, `timeout()`, `any()`; fetch also cancels PHP I/O.
+- Crypto via PHP: `getRandomValues()` for integer typed arrays (up to 65,536 bytes), `randomUUID()` and `subtle.digest()` for SHA-1/256/384/512. Other `subtle` methods reject with `NotSupportedError`.
+- HTTP via Amp: `fetch`, `Headers`, `Request`, `Response`; streamed responses in chunks up to 64 KiB, `text()`, `json()`, `arrayBuffer()`, `bodyUsed`, `clone()` and redirects `follow/manual/error`. `text()` uses the streaming UTF-8 decoder. HTTP error statuses return Response objects; network errors reject. Client shutdown releases requests.
+
+```php
+$runtime = new \Nesk\Puphpeteer\JsRuntime();
+$result = $runtime->run(new \Nesk\Puphpeteer\JsFunction(<<<'JS'
+    async url => {
+        const response = await fetch(url, {signal: AbortSignal.timeout(5000)});
+        return {status: response.status, text: await response.text(), id: crypto.randomUUID()};
+    }
+    JS), 'https://example.com/');
+```
+
+Host fetch does not inherit Chrome cookies, proxies or authentication; there is no cookie jar, CORS enforcement or HTTP cache. Manual redirects expose their status and headers. Request bodies support strings, URLSearchParams and BufferSource; streaming uploads and Blob/FormData are unsupported. `text()`/`json()`/`arrayBuffer()` buffer the result; `response.body` remains streamed, while `clone()` may buffer a slower branch.
+
 ## Development
 
 ### Development Docker environment
