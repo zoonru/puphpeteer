@@ -2,6 +2,7 @@ import {fireTimer, clearTimers} from './host-environment.js';
 import {Recordings} from './recordings.js';
 import {GuestReadableStreams} from './readable-streams.js';
 import {installFilesystem} from './filesystem.js';
+import {installCrypto} from './crypto.js';
 import {PluginAdapter} from './plugins/adapter.js';
 import {installNpmLoader} from './npm-loader.js';
 import {createNodeCompat} from './node-compat.js';
@@ -99,6 +100,7 @@ function hostRequest(kind, payload) {
     catch (error) { callbacks.delete(id); reject(error); }
   });
 }
+installCrypto((algorithm, bytes) => hostRequest('crypto', {args: [algorithm, encode(bytes)]}));
 installFilesystem((operation, args) => hostRequest('filesystem', {operation, args: args.map(item => encode(item))}));
 const recordings = new Recordings();
 function encodeRecord(value, ancestors) {

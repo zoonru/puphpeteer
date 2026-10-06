@@ -72,6 +72,7 @@ final class Client
         }
         $this->logger = $logger ?? new Internal\StderrLogger();
         $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, maxStack: 512 * 1024);
+        $this->js->register('randomBytes', Internal\HostCrypto::randomBytes(...));
         $this->js->register('now', static fn (): float => (float) hrtime(true) / 1e6);
         if (null !== $moduleHost) {
             $this->js->register('npm.resolve', $moduleHost->resolve(...));
@@ -345,11 +346,13 @@ final class Client
             $this->timers[$id] = $data['milliseconds'] > 0
                 ? EventLoop::delay($data['milliseconds'] / 1000, $callback)
                 : EventLoop::defer($callback);
-        } elseif ('callback' === $kind || 'filesystem' === $kind) {
-            $fn = 'filesystem' === $kind
-                ? fn (...$arguments) => ($this->filesystem ??= new Internal\HostFilesystem())->call($data['operation'], $arguments)
-                : ($this->callbacks[$data['callback']] ?? null);
-            async(function () use ($data, $fn): void {
+        } elseif (in_array($kind, ['callback', 'filesystem', 'crypto'], true)) {
+            $fn = match ($kind) {
+                'callback' => $this->callbacks[$data['callback']] ?? null,
+                'filesystem' => fn (...$args) => ($this->filesystem ??= new Internal\HostFilesystem())->call($data['operation'], $args),
+                'crypto' => Internal\HostCrypto::digest(...),
+            };
+            async(function () use ($kind, $data, $fn): void {
                 if ($this->closed) {
                     return;
                 }
@@ -363,7 +366,10 @@ final class Client
                     }
                     $result = ['id' => $data['id'], 'value' => $this->encode($value)];
                 } catch (Throwable $e) {
-                    $result = ['id' => $data['id'], 'error' => ['name' => $e::class, 'message' => $e->getMessage()]];
+                    $result = ['id' => $data['id'], 'error' => ['name' => 'crypto' === $kind ? 'TypeError' : $e::class, 'message' => $e->getMessage()]];
+                }
+                if ($this->isClosed()) {
+                    return;
                 }
                 try {
                     $this->deliver('callbackResult', $result);

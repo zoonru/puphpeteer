@@ -214,9 +214,12 @@ export function createNodeCompat({readBinary, exists, root, inflateRaw, deflateR
     deprecate: fn => fn,
     formatWithOptions(_options, ...values) { return values.map(value => typeof value === 'string' ? value : String(value)).join(' '); },
   });
-  const crypto = Object.freeze({randomFillSync(buffer) {
+  const crypto = Object.freeze({randomFillSync(buffer, offset = 0, size = buffer.byteLength - offset) {
     if (!globalThis.crypto?.getRandomValues) throw new Error('Unsupported Node API: crypto.randomFillSync');
-    for (let offset = 0; offset < buffer.length; offset += 65536) globalThis.crypto.getRandomValues(buffer.subarray(offset, offset + 65536));
+    if (!(buffer instanceof ArrayBuffer) && !ArrayBuffer.isView(buffer)) throw new TypeError('Expected BufferSource');
+    if (!Number.isInteger(offset) || !Number.isInteger(size) || offset < 0 || size < 0 || offset + size > buffer.byteLength) throw new RangeError('Invalid random fill range');
+    const bytes = new Uint8Array(buffer.buffer ?? buffer, (buffer.byteOffset ?? 0) + offset, size);
+    for (let index = 0; index < bytes.length; index += 65536) globalThis.crypto.getRandomValues(bytes.subarray(index, index + 65536));
     return buffer;
   }});
   const builtins = {fs, path, buffer: {Buffer: CompatBuffer}, zlib, crypto, tty, util};

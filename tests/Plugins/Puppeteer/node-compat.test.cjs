@@ -105,3 +105,23 @@ test('debug terminal builtins stay inert', () => {
   assert.equal(modules.util.deprecate(() => 7, 'unused')(), 7);
   assert.equal(modules['node:tty'], modules.tty);
 });
+
+test('Node crypto randomFillSync fills only the requested byte view and respects the Web Crypto quota', () => {
+  const sizes = [];
+  const randomContext = vm.createContext({Uint8Array, ArrayBuffer, DataView, crypto: {getRandomValues(bytes) {
+    sizes.push(bytes.length);
+    assert.ok(bytes.length <= 65536);
+    bytes.fill(0x7a);
+    return bytes;
+  }}});
+  vm.runInContext(source, randomContext);
+  const crypto = randomContext.compat.createNodeCompat({root: '/app', readBinary() { assert.fail('Unexpected filesystem read'); }, exists() { return false; }, decodeUtf8() { assert.fail('Unexpected decoding'); }, crc32() { assert.fail('Unexpected CRC32'); }}).crypto;
+  const bytes = new Uint8Array(70010).fill(0x55);
+  const view = new DataView(bytes.buffer, 5, 70000);
+  assert.equal(crypto.randomFillSync(view, 2, 69990), view);
+  assert.deepEqual(sizes, [65536, 4454]);
+  assert.ok(bytes.subarray(0, 7).every(byte => byte === 0x55));
+  assert.ok(bytes.subarray(7, 69997).every(byte => byte === 0x7a));
+  assert.ok(bytes.subarray(69997).every(byte => byte === 0x55));
+  assert.throws(() => crypto.randomFillSync(view, -1), {name: 'RangeError'});
+});
