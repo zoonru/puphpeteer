@@ -13,14 +13,14 @@
     "test-plugins": "node --test tests/Plugins/Puppeteer/*.test.cjs"
   },
   "devDependencies": {
-    "@puppeteer/browsers": "3.2.2",
+    "@puppeteer/browsers": "3.2.3",
     "@types/node": "25.6.0",
     "abort-controller": "3.0.0",
     "core-js": "3.50.0",
     "esbuild": "0.25.12",
     "fingerprint-generator": "^2.1.88",
     "fingerprint-injector": "^2.1.88",
-    "puppeteer-core": "25.11.0",
+    "puppeteer-core": "25.12.0",
     "puppeteer-extra-plugin": "3.2.3",
     "puppeteer-extra-plugin-stealth": "2.11.2",
     "typescript": "5.9.3",

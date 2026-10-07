@@ -1,7 +1,7 @@
 # PuPHPeteer
 
-[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.11.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.11.0)
-[![Chrome](https://img.shields.io/badge/Chrome-153.0.8010.36-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
+[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.12.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.12.0)
+[![Chrome](https://img.shields.io/badge/Chrome-154.0.8037.57-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
 
 <img src="https://user-images.githubusercontent.com/817508/100672192-dd258500-3361-11eb-845f-e8b5109752e4.png" style="max-width:100%;" width="190px" align="right">
 
