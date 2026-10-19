@@ -46,6 +46,7 @@ final class Client
     private bool $writing = false;
     private bool $connecting = false;
     private bool $closed = false;
+    private ?Throwable $closeCause = null;
     private string $endpoint = '';
     private ?float $protocolTimeout = null;
     private int $sequence = 0;
@@ -181,7 +182,7 @@ final class Client
     public function call(int $object, string $method, array $arguments, string $operation = 'call', ?Cancellation $cancellation = null): Future
     {
         if ($this->closed) {
-            return Future::error(new RuntimeException('QuickJS client is closed'));
+            return Future::error(new RuntimeException('QuickJS client is closed', previous: $this->closeCause));
         }
         try {
             $cancellation?->throwIfRequested();
@@ -272,7 +273,7 @@ final class Client
                         }
                     }
                     if ($transportClosed) {
-                        $this->stop();
+                        $this->stop(reason: 'Puppeteer requested transport close');
                     }
                 }
             } catch (Throwable $error) {
@@ -611,12 +612,14 @@ final class Client
         $this->stop();
     }
 
-    private function stop(?Throwable $error = null): void
+    private function stop(?Throwable $error = null, string $reason = 'Client::close() was called'): void
     {
         if ($this->closed) {
             return;
         }
         $this->closed = true;
+        // Retain the first cause and its stack even after cleanup or repeated close() calls.
+        $this->closeCause = $error ?? new RuntimeException($reason);
         // Drop JS transport callbacks, timers and object roots as well as PHP bookkeeping.
         try {
             ($this->dispatch)('closed', null);

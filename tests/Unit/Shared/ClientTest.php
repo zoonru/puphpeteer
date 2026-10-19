@@ -16,6 +16,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use RuntimeException;
+use Throwable;
 
 final class ClientTest extends TestCase
 {
@@ -52,6 +53,46 @@ final class ClientTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('QuickJS client is closed');
         $page->__call('title', []);
+    }
+
+    public function testClosedClientPreservesFirstCause(): void
+    {
+        $client = $this->client();
+        $cause = new RuntimeException('Browser transport closed', previous: new RuntimeException('Connection reset'));
+        $pending = new DeferredFuture();
+        (new ReflectionProperty(Client::class, 'pending'))->setValue($client, [1 => $pending]);
+        $stop = new ReflectionMethod(Client::class, 'stop');
+        $stop->invoke($client, $cause);
+        $client->close();
+        $stop->invoke($client, new RuntimeException('Later failure'));
+
+        try {
+            $pending->getFuture()->await();
+            self::fail('Pending call must fail');
+        } catch (Throwable $error) {
+            self::assertSame($cause, $error);
+        }
+        try {
+            $client->call(7, 'createBrowserContext', [])->await();
+            self::fail('Closed client must reject calls');
+        } catch (RuntimeException $error) {
+            self::assertSame($cause, $error->getPrevious());
+            self::assertSame('QuickJS client is closed', $error->getMessage());
+            self::assertSame('Connection reset', $error->getPrevious()?->getPrevious()?->getMessage());
+        }
+    }
+
+    public function testExplicitCloseRetainsDiagnosticStack(): void
+    {
+        $client = $this->client();
+        $client->close();
+        try {
+            $client->call(7, 'title', [])->await();
+            self::fail('Closed client must reject calls');
+        } catch (RuntimeException $error) {
+            self::assertSame('Client::close() was called', $error->getPrevious()?->getMessage());
+            self::assertNotEmpty($error->getPrevious()?->getTrace());
+        }
     }
 
     public function testNestedDataRoundTripsWithoutChangingBinaryOrScalarValues(): void
