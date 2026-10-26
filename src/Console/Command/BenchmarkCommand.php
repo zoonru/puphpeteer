@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Console\Command;
 
+use InvalidArgumentException;
 use Override;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,7 +17,8 @@ final class BenchmarkCommand extends ProcessCommand
     #[Override]
     protected function configure(): void
     {
-        $this->setDescription('Run the QuickJS benchmark')
+        $this->setDescription('Run browser client benchmarks')
+            ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'Client: quickjs, quickjs-baseline, rialto or native', 'quickjs')
             ->addOption('trials', null, InputOption::VALUE_REQUIRED, 'Number of trials', '5')
             ->addOption('iterations', null, InputOption::VALUE_REQUIRED, 'Number of evaluate calls per trial', '1000');
     }
@@ -25,6 +27,10 @@ final class BenchmarkCommand extends ProcessCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $backend = $input->getOption('backend');
+        if (!in_array($backend, ['quickjs', 'quickjs-baseline', 'rialto', 'native'], true)) {
+            throw new InvalidArgumentException('--backend must be quickjs, quickjs-baseline, rialto or native');
+        }
         $trials = filter_var($input->getOption('trials'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $iterations = filter_var($input->getOption('iterations'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         if (false === $trials || false === $iterations) {
@@ -38,14 +44,14 @@ final class BenchmarkCommand extends ProcessCommand
         }
         $bar = null;
         if (!$this->jsonOutput) {
-            $io->title('Benchmark QuickJS');
+            $io->title('Benchmark ' . $backend);
             $bar = $io->createProgressBar($trials);
             $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%%  %message%');
             $bar->setMessage('preparing');
             $bar->start();
         }
         /** @var list<string> $command */
-        $command = $this->phpCommand('benchmarks/run.php', '--trials=' . $trials, '--iterations=' . $iterations);
+        $command = $this->phpCommand('benchmarks/run.php', '--trials=' . $trials, '--iterations=' . $iterations, '--backend=' . $backend);
         $result = $this->runProcess(
             $io,
             $command,
@@ -56,7 +62,7 @@ final class BenchmarkCommand extends ProcessCommand
                 if (!isset($bar)) {
                     return;
                 }
-                if (preg_match('/Running quickjs (\d+)\/(\d+)/i', $line, $match)) {
+                if (preg_match('/Running [\w-]+ (\d+)\/(\d+)/i', $line, $match)) {
                     $bar->setProgress((int) $match[1]);
                     $bar->setMessage('trial ' . $match[1] . '/' . $match[2]);
                 }
@@ -92,6 +98,7 @@ final class BenchmarkCommand extends ProcessCommand
                 'evaluate' => $phase('evaluate'),
                 'p50' => $phase('evaluate', 'p50_ms'),
                 'p95' => $phase('evaluate', 'p95_ms'),
+                'loop' => $phase('evaluate', 'max_loop_lag_ms'),
                 'payload' => $phase('payload_64k'),
                 'concurrent' => $phase('concurrent_20x25ms'),
                 'navigation' => $phase('navigate_title'),
@@ -108,6 +115,7 @@ final class BenchmarkCommand extends ProcessCommand
                 sprintf('%.2f ms', $phase('evaluate')),
                 sprintf('%.3f ms', $phase('evaluate', 'p50_ms')),
                 sprintf('%.3f ms', $phase('evaluate', 'p95_ms')),
+                sprintf('%.3f ms', $phase('evaluate', 'max_loop_lag_ms')),
                 sprintf('%.2f ms', $phase('payload_64k')),
                 sprintf('%.2f ms', $phase('concurrent_20x25ms')),
                 sprintf('%.2f ms', $phase('navigate_title')),
@@ -125,6 +133,7 @@ final class BenchmarkCommand extends ProcessCommand
                 sprintf('%.2f ms', $totals['evaluate'] / $count),
                 sprintf('%.3f ms', $totals['p50'] / $count),
                 sprintf('%.3f ms', $totals['p95'] / $count),
+                sprintf('%.3f ms', $totals['loop'] / $count),
                 sprintf('%.2f ms', $totals['payload'] / $count),
                 sprintf('%.2f ms', $totals['concurrent'] / $count),
                 sprintf('%.2f ms', $totals['navigation'] / $count),
@@ -138,7 +147,7 @@ final class BenchmarkCommand extends ProcessCommand
             return 0;
         }
         if ([] !== $rows) {
-            $io->table(['Backend', 'Trial', 'Setup', 'Evaluate', 'Eval p50', 'Eval p95', '64 KiB', '20×25 ms', 'Navigation', 'CPU total', 'Peak RSS'], $rows);
+            $io->table(['Backend', 'Trial', 'Setup', 'Evaluate', 'Eval p50', 'Eval p95', 'Eval loop max', '64 KiB', '20×25 ms', 'Navigation', 'CPU total', 'Peak RSS'], $rows);
         }
         $io->success(sprintf('Benchmark completed in %.2f s.', $result['elapsed']));
 

@@ -436,21 +436,34 @@ Other behavior changes:
 
 ## Benchmark results
 
-The reference QuickJS runs were measured on macOS arm64 with PHP 8.5.7
-and managed Chrome 144.0.7559.96. Values below are means; benchmark execution is
-documented in [performance measurements](#repeatable-performance-measurements).
+Linux ARM64, PHP 8.5.11, uv 0.3.0 (`UvDriver`), Chrome 154.0.8037.57;
+`sockets` is loaded in every run in the same container. Rialto and Native PHP
+are means of five trials; QuickJS 0.0.3 is the mean of ten paired trials from
+October 26, 2026. Worker `45e1617` is the mean of five trials from October 27 with
+the current client and Puppeteer 25.12.0 bundle; comparison with historical 0.0.3
+does not isolate the extension's contribution.
 
-- **Rialto** — PHP controls a separate Node.js process over a socket; Puppeteer runs in Node.js.
-- **Native PHP** — a PHP implementation speaks CDP directly, without Node.js or QuickJS; API coverage is partial.
-- **QuickJS** — the Puppeteer bundle runs inside an embedded QuickJS runtime in PHP; Amp handles CDP WebSocket I/O.
+- **Rialto** — PHP and a separate Node.js with Puppeteer 24.36.1; client source `89bb34b`.
+- **Native PHP** — partial CDP implementation in PHP, source `0a9fab3`.
+- **QuickJS** — Puppeteer in the extension; 0.0.3 executes JS on the PHP thread, Worker 0.1.0 on a dedicated native thread.
 
-| Measurement | Rialto | Native PHP | QuickJS optimized |
-| --- | ---: | ---: | ---: |
-| 1,000 `evaluate` calls | 413.02 ms | **331.68 ms** | 354.34 ms |
-| 100 returns of 64 KiB | 114.60 ms | 103.78 ms | **76.92 ms** |
-| 20 waits of 25 ms | 545.30 ms | **29.64 ms** | 29.86 ms |
-| Total client CPU | 830 ms | **360 ms** | 428 ms |
-| Peak client RSS | 123.55 MiB | **38.14 MiB** | 56.53 MiB |
+| Measurement | Rialto | Native PHP | QuickJS 0.0.3 | QuickJS Worker 0.1.0 |
+| --- | ---: | ---: | ---: | ---: |
+| 1,000 `evaluate` calls | 46,850.61 ms | **312.43 ms** | 368.78 ms | 365.19 ms |
+| 100 returns of 64 KiB | 181.66 ms | 129.46 ms | 127.52 ms | **123.31 ms** |
+| 20 waits of 25 ms | 1,559.77 ms | 31.19 ms | 32.43 ms | **30.57 ms** |
+| Total client process/tree CPU | 4,394 ms | **338 ms** | 361 ms | 356 ms |
+| Peak client process/tree RSS | 110.40 MiB | **39.56 MiB** | 46.81 MiB | 45.49 MiB |
+| `php.map`: 1,000 × 100 items, nested JS callbacks | — | — | **141.09 ms** | 3,427.18 ms |
+| `php.map` CPU, both threads combined | — | — | **141.09 ms (~100% of one core)** | 2,609.03 ms (76.1% of one core) |
+| 100 ms JS loop + PHP `usleep(100 ms)`, sequential | — | — | 209.41 ms | **207.55 ms** |
+| Same operations via `Amp\async()`, testing thread overlap | — | — | 208.28 ms | **110.77 ms** |
+
+Last four rows: October 27, no Chrome, Worker `45e1617`, means of five paired runs.
+
+Rialto retains its default TCP transport settings; its Linux results differ
+substantially from the earlier macOS measurements. CPU/RSS exclude Chrome;
+Rialto includes PHP and its child Node.js. [Method and commands](#repeatable-performance-measurements).
 
 ## Development
 
@@ -554,7 +567,31 @@ The release workflow runs **after publication**, including prereleases, and does
 
 #### Repeatable performance measurements
 
+`Dockerfile-benchmark` inherits PHP/uv/Chrome from the main image and builds 0.0.3
+alongside the current Worker. Repositories and SHAs are pinned in
+`benchmarks/versions.json`; reference clients live in `/opt/benchmarks/reference`.
+Native PHP is a SHA-256-checked archive because its original commit is unpublished.
+
+```sh
+docker compose --profile benchmark build benchmark
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=rialto
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=native
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=quickjs-baseline
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=quickjs
+docker compose --profile benchmark run --rm benchmark php benchmarks/extension.php
+docker compose --profile benchmark run --rm -e PHP_INI_SCAN_DIR=/opt/benchmarks/ini benchmark php benchmarks/extension.php
+```
+
+`quickjs-baseline` runs the historical client and extension 0.0.3; `quickjs` runs
+the current client and Worker. All clients use the same base image's PHP/uv versions.
+
 Each trial measures 1,000 evaluates, 100 × 64 KiB returns, 20 concurrent 25 ms waits and 20 navigations. `--iterations` changes evaluate count. CPU/RSS exclude Chrome; 25 ms sampling may miss peaks. Compare on identical hardware, PHP, Chrome, extension and bundle. macOS/Linux require `ps` and `/usr/bin/time` (GNU time on Linux).
+
+CPU includes all native threads and the entire client lifecycle: setup, warmup,
+measured operations and shutdown. Each phase also measures maximum PHP event-loop
+lag with a 1 ms timer; `Eval loop max` is the mean of the per-trial maxima.
+`composer benchmark -- --json` outputs each trial’s measurements, PHP/uv/Chrome/
+extension versions, event-loop driver and bundle SHA-256.
 
 ## License
 

@@ -1,0 +1,24 @@
+{
+    "quickjs": {
+        "repository": "https://github.com/xtrime-ru/php-quickjs.git",
+        "ref": "c9159b6fc4223272c86aad8935cf5f31cdb8c594"
+    },
+    "clients": {
+        "rialto": {
+            "repository": "https://github.com/zoonru/puphpeteer.git",
+            "ref": "89bb34bf7513cf7804667bf7787965db62fc00a2"
+        },
+        "native": {
+            "repository": "https://github.com/zoonru/puphpeteer.git",
+            "ref": "0a9fab3eceb5d168e027bffbfb94c2384f50b626",
+            "archive": "sources/native-0a9fab3.tar.gz",
+            "sha256": "b9a0e33190879375355bc62b162f91d7466cc1b5ae253351c78600da695fa307"
+        },
+        "quickjs": {
+            "repository": "https://github.com/zoonru/puphpeteer.git",
+            "ref": "56a038f274b3fa696159ca8f5c9d38e569c255a7"
+        }
+    },
+    "rialto_node": "https://codeload.github.com/zoonru/rialto/tar.gz/4aac724b2c319155fcd330b7fab664df0c963969",
+    "puppeteer": "24.36.1"
+}

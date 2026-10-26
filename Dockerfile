@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && git remote add origin https://github.com/amphp/ext-uv.git \
     && git fetch --depth=1 origin "$UV_REF" \
     && git checkout --detach FETCH_HEAD \
-    && docker-php-ext-install -j2 intl zip pcntl uv \
+    && docker-php-ext-install -j2 intl zip pcntl sockets uv \
     && rm -rf /var/lib/apt/lists/*
 
 FROM php-base AS extension

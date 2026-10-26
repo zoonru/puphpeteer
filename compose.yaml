@@ -24,6 +24,22 @@ services:
     shm_size: 1gb
     cap_add:
       - SYS_ADMIN
+  benchmark:
+    profiles: [benchmark]
+    image: puphpeteer-benchmark
+    build:
+      context: .
+      dockerfile: Dockerfile-benchmark
+      additional_contexts:
+        base: service:chrome
+      args:
+        BASE_IMAGE: base
+    init: true
+    volumes:
+      - .:/app
+    shm_size: 1gb
+    cap_add:
+      - SYS_ADMIN
   browserless:
     image: ghcr.io/browserless/chromium:latest
     init: true

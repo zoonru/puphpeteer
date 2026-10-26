@@ -54,17 +54,25 @@ function sample(int $rootPid): array
     return array_values(array_filter($rows, static fn (array $row): bool => $row['pid'] !== $rootPid && isset($selected[$row['pid']])));
 }
 
-function runTrial(int $trial, int $iterations): array
+function runTrial(int $trial, int $iterations, string $backend, string $reference): array
 {
-    $extensionVersion = phpversion('php_quickjs');
-    $bundleHash = hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js');
+    $bundle = ('quickjs-baseline' === $backend ? $reference . '/quickjs' : dirname(__DIR__)) . '/resources/puppeteer.js';
+    $bundleHash = hash_file('sha256', $bundle);
+    $environment = [...getenv(), 'LC_ALL' => 'C'];
+    if ('quickjs-baseline' === $backend) {
+        $ini = getenv('PUPPETEER_BENCHMARK_BASELINE_INI');
+        if (!$ini || !is_file($ini . '/quickjs.ini')) {
+            throw new RuntimeException('quickjs-baseline requires the benchmark Docker image.');
+        }
+        $environment['PHP_INI_SCAN_DIR'] = $ini;
+    }
     $browser = (new Puppeteer())->launch(['headless' => true, 'args' => ['--no-proxy-server']]);
     try {
         $endpoint = parse_url($browser->wsEndpoint());
         $response = HttpClientBuilder::buildDefault()->request(new Request('http://' . $endpoint['host'] . ':' . $endpoint['port'] . '/json/version'));
         $version = json_decode(buffer($response->getBody()), true, 512, JSON_THROW_ON_ERROR)['Browser'];
-        $command = [PHP_BINARY, __DIR__ . '/benchmark.php', '--iterations=' . $iterations];
-        $child = Process::start(['/usr/bin/time', ...(PHP_OS_FAMILY === 'Darwin' ? ['-l'] : ['-f', 'PUPHPETEER_TIME %e %U %S']), ...$command], environment: [...getenv(), 'BROWSER_WS' => $browser->wsEndpoint(), 'LC_ALL' => 'C']);
+        $command = [PHP_BINARY, __DIR__ . '/benchmark.php', '--iterations=' . $iterations, '--backend=' . $backend, '--reference=' . $reference];
+        $child = Process::start(['/usr/bin/time', ...(PHP_OS_FAMILY === 'Darwin' ? ['-l'] : ['-f', 'PUPHPETEER_TIME %e %U %S']), ...$command], environment: [...$environment, 'BROWSER_WS' => $browser->wsEndpoint()]);
         $active = $started = false;
         $measurement = null;
         $seen = $startCpu = [];
@@ -118,9 +126,9 @@ function runTrial(int $trial, int $iterations): array
         }
         $stderr = $result['stderr'] . $samplingErrors;
         if (0 !== $result['code'] || null === $measurement) {
-            throw new RuntimeException("QuickJS trial $trial failed ({$result['code']}): " . substr($stderr, 0, 1500) . substr($result['stdout'], -1000));
+            throw new RuntimeException("$backend trial $trial failed ({$result['code']}): " . substr($stderr, 0, 1500) . substr($result['stdout'], -1000));
         }
-        if ($bundleHash !== hash_file('sha256', dirname(__DIR__) . '/resources/puppeteer.js')) {
+        if ($bundleHash !== hash_file('sha256', $bundle)) {
             throw new RuntimeException('Bundle changed during trial; freeze build artifacts before benchmarking.');
         }
         if ('' !== $samplingErrors || 0 === $samples) {
@@ -135,7 +143,7 @@ function runTrial(int $trial, int $iterations): array
             throw new RuntimeException('Cannot parse /usr/bin/time output; inspect raw benchmark logs.');
         }
 
-        return [...$measurement, 'extension_version' => $extensionVersion, 'bundle_sha256' => $bundleHash, 'trial' => $trial, 'chrome' => $version, 'resources' => [
+        return [...$measurement, 'bundle_sha256' => $bundleHash, 'trial' => $trial, 'chrome' => $version, 'resources' => [
             'sampled_tree_peak_rss_bytes' => $peakRss,
             'sampled_steady_tree_peak_rss_bytes' => $steadyPeakRss,
             'sampled_steady_tree_cpu_ms' => $steadyCpu,
@@ -151,7 +159,15 @@ try {
     if (!in_array(PHP_OS_FAMILY, ['Darwin', 'Linux'], true)) {
         throw new RuntimeException('Resource benchmark requires macOS or Linux with /usr/bin/time and ps.');
     }
-    $options = getopt('', ['trials:', 'iterations:']);
+    $options = getopt('', ['trials:', 'iterations:', 'backend:', 'reference:']);
+    $backend = $options['backend'] ?? 'quickjs';
+    $reference = $options['reference'] ?? getenv('PUPPETEER_BENCHMARK_REFERENCE') ?: dirname(__DIR__) . '/.cache/benchmarks/reference';
+    if (!in_array($backend, ['quickjs', 'quickjs-baseline', 'rialto', 'native'], true)) {
+        throw new InvalidArgumentException('--backend must be quickjs, quickjs-baseline, rialto or native');
+    }
+    if ('quickjs' !== $backend && !is_file($reference . ('quickjs-baseline' === $backend ? '/quickjs' : '/rialto') . '/vendor/autoload.php')) {
+        throw new RuntimeException('Build the benchmark Docker image or run php benchmarks/prepare.php.');
+    }
     $trials = filter_var($options['trials'] ?? '5', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $iterations = filter_var($options['iterations'] ?? '1000', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if (false === $trials || false === $iterations) {
@@ -159,12 +175,20 @@ try {
     }
     $runs = [];
     for ($trial = 0; $trial < $trials; ++$trial) {
-        echo 'Running quickjs ', $trial + 1, '/', $trials, "\n";
-        $run = runTrial($trial, $iterations);
+        echo 'Running ', $backend, ' ', $trial + 1, '/', $trials, "\n";
+        $run = runTrial($trial, $iterations, $backend, $reference);
         $runs[] = $run;
         echo json_encode([
-            'backend' => 'quickjs',
+            'backend' => $backend,
             'trial' => $trial + 1,
+            'php' => $run['php'],
+            'uv' => $run['uv'],
+            'event_loop' => $run['event_loop'],
+            'os' => $run['os'],
+            'arch' => $run['arch'],
+            'extension_version' => $run['extension_version'],
+            'chrome' => $run['chrome'],
+            'bundle_sha256' => $run['bundle_sha256'],
             'setup_ms' => $run['setup_ms'],
             'phases' => $run['phases'],
             'resources' => $run['resources'],

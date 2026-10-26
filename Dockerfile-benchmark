@@ -1,0 +1,25 @@
+ARG BASE_IMAGE=puphpeteer-chrome
+FROM ${BASE_IMAGE} AS references
+USER root
+WORKDIR /build/project
+COPY composer.json ./composer.json
+COPY benchmarks/prepare.php benchmarks/versions.json ./benchmarks/
+COPY benchmarks/sources/ ./benchmarks/sources/
+RUN apt-get update && apt-get install -y --no-install-recommends clang libclang-dev curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN php benchmarks/prepare.php --destination=/opt/benchmarks/reference --extension-source=/build/quickjs \
+    && cd /build/quickjs && cargo build --release --locked \
+    && cp target/release/libphp_quickjs.so /opt/benchmarks/quickjs-0.0.3.so \
+    && rm -rf /opt/benchmarks/reference/*/.git \
+    && mkdir /opt/benchmarks/ini \
+    && cp /usr/local/etc/php/conf.d/*.ini /opt/benchmarks/ini/ \
+    && echo 'extension=/opt/benchmarks/quickjs-0.0.3.so' > /opt/benchmarks/ini/quickjs.ini
+
+FROM ${BASE_IMAGE}
+USER root
+COPY --from=references /opt/benchmarks /opt/benchmarks
+ENV PUPPETEER_BENCHMARK_REFERENCE=/opt/benchmarks/reference \
+    PUPPETEER_BENCHMARK_BASELINE_INI=/opt/benchmarks/ini
+USER app

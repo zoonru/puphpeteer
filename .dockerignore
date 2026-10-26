@@ -1,6 +1,13 @@
 *
 !Dockerfile
 !Dockerfile-chrome
+!Dockerfile-benchmark
+!composer.json
+!benchmarks/
+!benchmarks/prepare.php
+!benchmarks/versions.json
+!benchmarks/sources/
+!benchmarks/sources/*.tar.gz
 !upstream/
 !upstream/lock.json
 

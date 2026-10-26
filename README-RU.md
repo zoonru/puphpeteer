@@ -433,21 +433,33 @@ $function = new JsFunction('(element) => element.textContent');
 
 ## Результаты benchmark
 
-Приведённые для сравнения прогоны QuickJS выполнены на macOS arm64, PHP 8.5.7
-и управляемом Chrome 144.0.7559.96. Значения ниже — средние; запуск benchmark
-описан в [методике benchmark](#методика-benchmark).
+Linux ARM64, PHP 8.5.11, uv 0.3.0 (`UvDriver`), Chrome 154.0.8037.57;
+`sockets` загружен во всех прогонах одного контейнера. Rialto и Native PHP — средние
+пяти прогонов, QuickJS 0.0.3 — десяти парных прогонов от 26 октября 2026 года.
+Worker `45e1617` — средние пяти прогонов от 27 октября с текущими клиентом и bundle
+Puppeteer 25.12.0; сравнение с историческим 0.0.3 не изолирует влияние расширения.
 
-- **Rialto** — PHP управляет отдельным процессом Node.js через сокет; Puppeteer выполняется в Node.js.
-- **Native PHP** — реализация на PHP напрямую работает с CDP, без Node.js и QuickJS; покрытие API частичное.
-- **QuickJS** — bundle Puppeteer выполняется во встроенном QuickJS внутри PHP; Amp обслуживает WebSocket CDP.
+- **Rialto** — PHP и отдельный Node.js с Puppeteer 24.36.1; исходники клиента `89bb34b`.
+- **Native PHP** — частичная реализация CDP на PHP, исходники `0a9fab3`.
+- **QuickJS** — Puppeteer внутри расширения; 0.0.3 исполняет JS в PHP-потоке, Worker 0.1.0 — в отдельном native-потоке.
 
-| Измерение | Rialto | Native PHP | QuickJS, оптимизированный |
-| --- | ---: | ---: | ---: |
-| 1 000 вызовов `evaluate` | 413,02 мс | **331,68 мс** | 354,34 мс |
-| 100 возвратов строки 64 КиБ | 114,60 мс | 103,78 мс | **76,92 мс** |
-| 20 ожиданий по 25 мс | 545,30 мс | **29,64 мс** | 29,86 мс |
-| CPU клиентского процесса | 830 мс | **360 мс** | 428 мс |
-| Пиковая RSS клиента | 123,55 МиБ | **38,14 МиБ** | 56,53 МиБ |
+| Измерение | Rialto | Native PHP | QuickJS 0.0.3 | QuickJS Worker 0.1.0 |
+| --- | ---: | ---: | ---: | ---: |
+| 1 000 вызовов `evaluate` | 46 850,61 мс | **312,43 мс** | 368,78 мс | 365,19 мс |
+| 100 возвратов строки 64 КиБ | 181,66 мс | 129,46 мс | 127,52 мс | **123,31 мс** |
+| 20 ожиданий по 25 мс | 1 559,77 мс | 31,19 мс | 32,43 мс | **30,57 мс** |
+| CPU клиентского процесса/дерева | 4 394 мс | **338 мс** | 361 мс | 356 мс |
+| Пиковая RSS клиента/дерева | 110,40 МиБ | **39,56 МиБ** | 46,81 МиБ | 45,49 МиБ |
+| `php.map`: 1 000 × 100 элементов, вложенные JS-callback | — | — | **141,09 мс** | 3 427,18 мс |
+| CPU `php.map`, суммарно оба потока | — | — | **141,09 мс (~100% ядра)** | 2 609,03 мс (76,1% ядра) |
+| JS-цикл 100 мс + PHP `usleep(100 мс)`, последовательно | — | — | 209,41 мс | **207,55 мс** |
+| Те же операции через `Amp\async()`, проверка перекрытия потоков | — | — | 208,28 мс | **110,77 мс** |
+
+Последние четыре строки: 27 октября, без Chrome, Worker `45e1617`, средние пяти парных прогонов.
+
+В Rialto сохранены стандартные настройки TCP-транспорта; его Linux-результаты
+заметно отличаются от прежних macOS-замеров. Chrome исключён из CPU/RSS,
+для Rialto учитываются PHP и дочерний Node.js. [Методика и команды](#методика-benchmark).
 
 ## Разработка
 
@@ -551,7 +563,32 @@ Release workflow запускается **после публикации**, в�
 
 #### Методика benchmark
 
+`Dockerfile-benchmark` наследует PHP/uv/Chrome от основного образа и собирает
+0.0.3 рядом с текущим Worker. Репозитории и SHA закреплены в
+`benchmarks/versions.json`, эталонные клиенты находятся в `/opt/benchmarks/reference`.
+Native PHP хранится архивом с SHA-256: его исходный коммит не опубликован.
+
+```sh
+docker compose --profile benchmark build benchmark
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=rialto
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=native
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=quickjs-baseline
+docker compose --profile benchmark run --rm benchmark composer benchmark -- --backend=quickjs
+docker compose --profile benchmark run --rm benchmark php benchmarks/extension.php
+docker compose --profile benchmark run --rm -e PHP_INI_SCAN_DIR=/opt/benchmarks/ini benchmark php benchmarks/extension.php
+```
+
+`quickjs-baseline` запускает исторический клиент и расширение 0.0.3; `quickjs` —
+текущий клиент и Worker. Базовый образ использует ту же версию PHP/uv для всех клиентов.
+
 Прогон: 1 000 evaluate, 100 возвратов 64 КиБ, 20 конкурентных ожиданий по 25 мс и 20 навигаций. `--iterations` меняет число evaluate. CPU/RSS не включают Chrome; опрос раз в 25 мс может пропускать пики. Сравнивайте на одинаковом оборудовании, PHP, Chrome, расширении и bundle. Поддерживаются macOS/Linux с `ps` и `/usr/bin/time` (GNU time на Linux).
+
+CPU включает все native-потоки и весь жизненный цикл клиента: setup, прогрев,
+измеряемые операции и завершение. Для каждой фазы также измеряется максимальная
+задержка PHP event loop таймером 1 мс; `Eval loop max` — среднее максимумов
+прогонов.
+`composer benchmark -- --json` выводит замеры каждого прогона, версии PHP/uv/Chrome/
+расширения, драйвер event loop и SHA-256 bundle.
 
 ## Лицензия
 
