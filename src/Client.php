@@ -309,9 +309,6 @@ final class Client
         if ($this->closed) {
             return;
         }
-        if ('fatal' === $kind) {
-            throw $this->guestError($payload);
-        }
         if ('send' === $kind) {
             $this->writes[] = $payload;
             $this->write();

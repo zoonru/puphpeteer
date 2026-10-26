@@ -309,7 +309,6 @@ async function call(request) {
   }
 }
 let messageParts = [];
-let closed = false;
 function background(task) {
   task.finally(() => emit('idle', null)).catch(fail);
 }
@@ -329,7 +328,6 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   }
   if (kind === 'message') { transport.onmessage?.(payload); return; }
   if (kind === 'closed') {
-    closed = true;
     emit('closed', null);
     messageParts = [];
     transport.onclose?.();
