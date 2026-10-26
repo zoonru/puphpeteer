@@ -24,7 +24,6 @@ use Nesk\Puphpeteer\Internal\RemoteObjectFactory;
 use Nesk\Puphpeteer\Puppeteer\Browser;
 use Psr\Log\LoggerInterface;
 use QuickJS;
-use ReflectionMethod;
 use Revolt\EventLoop;
 use RuntimeException;
 use Throwable;
@@ -40,9 +39,6 @@ final class Client
 {
     private QuickJS $js;
     private Callback $dispatch;
-    private Callback $drain;
-    private bool $nativeMessages = false;
-    private bool $nativePost = false;
     private LocalSemaphore $dispatchSlots;
     private int $dispatching = 0;
     /** @var DeferredFuture<null>|null */
@@ -81,15 +77,13 @@ final class Client
 
     public function __construct(?string $bundle = null, ?LoggerInterface $logger = null, ?NpmModuleHost $moduleHost = null)
     {
-        if (!method_exists(QuickJS::class, 'drainMessages')) {
-            throw new RuntimeException('Load php-quickjs with automatic Promise awaiting and QuickJS::drainMessages().');
+        if (!method_exists(QuickJS::class, 'awaitMessages') || !method_exists(QuickJS::class, 'close') || !method_exists(Callback::class, 'post')) {
+            throw new RuntimeException('Load php-quickjs with QuickJS::awaitMessages(), QuickJS::close() and Js\\Callback::post().');
         }
         $this->logger = $logger ?? new Internal\StderrLogger();
         $this->dispatchSlots = new LocalSemaphore(64);
         $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, maxStack: 512 * 1024);
-        $this->nativeMessages = method_exists($this->js, 'awaitMessages');
         $this->js->register('randomBytes', Internal\HostCrypto::randomBytes(...));
-        $this->js->register('now', static fn (): float => (float) hrtime(true) / 1e6);
         if (null !== $moduleHost) {
             $this->js->register('npm.resolve', $moduleHost->resolve(...));
             $this->js->register('npm.root', $moduleHost->root(...));
@@ -102,16 +96,8 @@ final class Client
             $this->js->register('npm.deflateRaw', $moduleHost->deflateRaw(...));
         }
         $source = read($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
-        static $supportsJavascript = null;
-        $supportsJavascript ??= (new ReflectionMethod(QuickJS::class, 'eval'))->getNumberOfParameters() >= 2;
-        if ($supportsJavascript) {
-            $this->js->eval($source, typescript: false);
-        } else {
-            $this->js->eval($source);
-        }
+        $this->js->eval($source, typescript: false);
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
-        $this->drain = $this->js->eval('globalThis.__quickjsDrain');
-        $this->nativePost = $this->nativeMessages && method_exists($this->dispatch, 'post');
     }
 
     /**
@@ -271,11 +257,7 @@ final class Client
             if ($this->isClosed()) {
                 return;
             }
-            if ($this->nativePost) {
-                $this->dispatch->post($kind, $payload);
-            } else {
-                ($this->dispatch)($kind, $payload);
-            }
+            $this->dispatch->post($kind, $payload);
             ++$this->driveGeneration;
             $this->drive();
         } finally {
@@ -298,14 +280,7 @@ final class Client
             try {
                 while (!$this->closed) {
                     $generation = $this->driveGeneration;
-                    if (!$this->nativeMessages && !($this->drain)()) {
-                        if ($generation === $this->driveGeneration) {
-                            break;
-                        }
-                        // A dispatch finished while the previous drain was returning.
-                        continue;
-                    }
-                    $messages = $this->nativeMessages ? $this->js->awaitMessages() : $this->js->drainMessages();
+                    $messages = $this->js->awaitMessages();
                     $transportClosed = false;
                     foreach ($messages as [$kind, $payload]) {
                         if ('close' === $kind) {
@@ -317,7 +292,7 @@ final class Client
                     if ($transportClosed) {
                         $this->stop(reason: 'Puppeteer requested transport close');
                     }
-                    if ($this->nativeMessages && [] === $this->pending && $generation === $this->driveGeneration) {
+                    if ([] === $this->pending && $generation === $this->driveGeneration) {
                         break;
                     }
                 }
@@ -334,7 +309,7 @@ final class Client
         if ($this->closed) {
             return;
         }
-        if ('bridgeError' === $kind || 'fatal' === $kind) {
+        if ('fatal' === $kind) {
             throw $this->guestError($payload);
         }
         if ('send' === $kind) {
@@ -710,7 +685,7 @@ final class Client
         }
         $this->pending = [];
         $this->socket?->close();
-        if (isset($this->js) && method_exists($this->js, 'close')) {
+        if (isset($this->js)) {
             $this->js->close();
         }
     }

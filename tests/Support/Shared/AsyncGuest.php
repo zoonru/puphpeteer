@@ -15,16 +15,7 @@ final class AsyncGuest
     public static function wrap(string $source): string
     {
         return <<<'JS'
-        let pending = false;
-        globalThis.__testEmit = (kind, value) => {
-          quickjs.postMessage([kind, value]);
-          pending = true;
-        };
-        globalThis.__quickjsDrain = async () => {
-          const ready = pending;
-          pending = false;
-          return ready;
-        };
+        globalThis.__testEmit = (kind, value) => quickjs.postMessage([kind, value]);
         JS . "\n" . $source;
     }
 }

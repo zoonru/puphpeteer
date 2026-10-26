@@ -9,7 +9,7 @@ function environment() {
   const calls = [];
   let context;
   let reads = 0;
-  context = vm.createContext({php: {now: () => 0}, quickjs: {postMessage([kind, payload]) {
+  context = vm.createContext({quickjs: {now: () => 0, postMessage([kind, payload]) {
     calls.push({kind, ...payload});
     if (kind !== 'http') return;
     const value = payload.operation === 'start'

@@ -31,7 +31,7 @@
 ## Требования
 
 - PHP **8.4+** и Composer.
-- Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs) **>= 0.0.3** с автоматическим ожиданием Promise и `QuickJS::drainMessages()`. Поддерживаются inline- и worker-реализации. [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
+- Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs) **>= 0.1.0** с `QuickJS::awaitMessages()`, `QuickJS::close()` и `Js\Callback::post()`. [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
 - Локальный Chrome или подключение к Browserless.
 - Для надёжного завершения локальных процессов Chrome в Unix: необязательные расширения `pcntl` и `posix`.
 - Для скачивания локального Chrome: HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`.
@@ -461,6 +461,9 @@ Puppeteer 25.12.0; сравнение с историческим 0.0.3 не и�
 заметно отличаются от прежних macOS-замеров. Chrome исключён из CPU/RSS,
 для Rialto учитываются PHP и дочерний Node.js. [Методика и команды](#методика-benchmark).
 
+Исторический клиент 0.0.3 закреплён в `benchmarks/versions.json` и включён в benchmark-образ;
+текущий клиент не содержит совместимости со старым мостом.
+
 ## Разработка
 
 Команды этого раздела предназначены для разработки пакета и выполняются из checkout репозитория. Для генерации API, сборки и JS-тестов нужны Node.js **22+** и npm; они включены в Docker-образы.
@@ -538,9 +541,9 @@ composer psalm
 
 ### Контракт расширения
 
-Используйте SHA форка, закреплённый в `Dockerfile`. Мост требует автоматического ожидания Promise через Revolt, `quickjs.postMessage()` и `QuickJS::drainMessages()`. [Интеграционные тесты](tests/Integration/) проверяют типы, лимиты, восстановление, освобождение ресурсов и Fibers на фактически установленном расширении.
+Используйте SHA форка, закреплённый в `Dockerfile`. Мост использует `QuickJS::awaitMessages()`, `Js\Callback::post()`, `QuickJS::close()`, `quickjs.postMessage()`, `quickjs.now()` и `quickjs.reportError()`. [Интеграционные тесты](tests/Integration/) проверяют типы, лимиты, восстановление, освобождение ресурсов и Fibers на фактически установленном расширении.
 
-Канонические stubs нативного API принадлежат [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` — копия для Psalm; интеграционные тесты проверяют соответствие расширения интерфейсу клиента. `Client` исполняет готовый JavaScript bundle через `eval($source, typescript: false)`, пропуская Oxc и его transpile cache. Для расширения с одним аргументом `eval()` вызов выбирается по сигнатуре метода. Выбор потока — деталь реализации расширения; необязательный метод `close()` вызывается при закрытии клиента, если доступен.
+Канонические stubs нативного API принадлежат [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` — копия для Psalm; интеграционные тесты проверяют соответствие расширения интерфейсу клиента. `Client` исполняет готовый JavaScript bundle через `eval($source, typescript: false)`, пропуская Oxc и его transpile cache. При закрытии клиента вызывается нативный `close()`. Upstream API расширения, включая isolated-режим, нативные таймауты и вложенные синхронные callbacks, сохраняется.
 
 Один асинхронный JS-потребитель ждёт уведомления расширения; host I/O обслуживает Amp. Сообщения копируются через нативную очередь (по умолчанию 32 МиБ). PuPHPeteer ограничивает JS heap до 256 МиБ и stack до 512 КиБ. Таймауты операций контролируют Puppeteer и Amp; отдельный таймаут нативного исполнения больше не задаётся. Глубина преобразования значений моста ограничена 64 уровнями; отдельный TypeScript transpile cache по умолчанию удерживает до 256 записей и 32 МиБ строк исходников, JavaScript и source maps. Этот бюджет не охватывает все выделения памяти Oxc. Эти лимиты не ограничивают PHP callbacks и память Chrome.
 

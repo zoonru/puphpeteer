@@ -31,7 +31,7 @@ Generated wrappers cover part of Puppeteer's API. npm plugins can be loaded from
 ## Requirements
 
 - PHP **8.4+** and Composer.
-- The enabled [php-quickjs extension fork](https://github.com/xtrime-ru/php-quickjs) **>= 0.0.3** with automatic Promise awaiting and `QuickJS::drainMessages()`. Inline and worker implementations are supported. [Build and installation instructions](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
+- The enabled [php-quickjs extension fork](https://github.com/xtrime-ru/php-quickjs) **>= 0.1.0** with `QuickJS::awaitMessages()`, `QuickJS::close()` and `Js\Callback::post()`. [Build and installation instructions](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
 - Local Chrome or access to Browserless.
 - For reliable cleanup of locally launched Chrome processes on Unix: the optional `pcntl` and `posix` extensions.
 - To download local Chrome: PHP HTTPS streams (`allow_url_fopen=1`, OpenSSL) and the `unzip` command.
@@ -465,6 +465,9 @@ Rialto retains its default TCP transport settings; its Linux results differ
 substantially from the earlier macOS measurements. CPU/RSS exclude Chrome;
 Rialto includes PHP and its child Node.js. [Method and commands](#repeatable-performance-measurements).
 
+The historical 0.0.3 client is pinned in `benchmarks/versions.json` and included in the benchmark image;
+the current client retains no compatibility with the old bridge.
+
 ## Development
 
 Commands in this section maintain the package and run from a repository checkout. API generation, builds and JS tests require Node.js **22+** and npm, which are included in the Docker images.
@@ -542,9 +545,9 @@ Local HTML needs no HTTP server; screenshots persist on the host. For a visible 
 
 ### Extension contract
 
-Use the fork SHA pinned in `Dockerfile`. The bridge requires automatic Promise awaiting through Revolt, `quickjs.postMessage()` and `QuickJS::drainMessages()`. [Integration tests](tests/Integration/) check values, limits, recovery, resource release and Fibers against the installed extension.
+Use the fork SHA pinned in `Dockerfile`. The bridge uses `QuickJS::awaitMessages()`, `Js\Callback::post()`, `QuickJS::close()`, `quickjs.postMessage()`, `quickjs.now()` and `quickjs.reportError()`. [Integration tests](tests/Integration/) check values, limits, recovery, resource release and Fibers against the installed extension.
 
-The canonical native API stubs belong to [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` is a copy for Psalm; integration tests check the loaded extension against the client interface. `Client` uses `eval($source, typescript: false)` when available, bypassing Oxc for the ready bundle; older one-argument `eval()` remains supported. Thread ownership is an extension implementation detail. With the worker extension, QuickJS and Oxc run on a dedicated native thread; PHP callbacks remain on the PHP thread. Closing the client calls the optional native `close()` method when available.
+The canonical native API stubs belong to [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` is a copy for Psalm; integration tests check the loaded extension against the client interface. `Client` uses `eval($source, typescript: false)`, bypassing Oxc for the ready bundle, and native `close()` on shutdown. The extension retains its upstream API, including isolated execution, native timeouts and nested synchronous callbacks.
 
 One asynchronous JS consumer waits for native notifications while Amp handles host I/O. Messages are copied through the native queue (32 MiB by default). PuPHPeteer limits the JS heap to 256 MiB and stack to 512 KiB. Puppeteer and Amp control operation timeouts; PuPHPeteer no longer sets a separate native execution timeout. Bridge values are limited to a conversion depth of 64; the separate TypeScript transpile cache defaults to at most 256 entries and 32 MiB of source, JavaScript and source-map strings. This cache budget does not cover all Oxc allocations. These limits do not bound PHP callbacks or Chrome memory.
 

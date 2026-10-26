@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').resolve(__dirname, '../../../resources/puppeteer.js'), 'utf8');
 
 test('QuickJS cancellation reports a stable reason and invokes listeners once', () => {
-  const context = vm.createContext({console, php: {now: () => 0}, quickjs: {postMessage() {}}});
+  const context = vm.createContext({console, quickjs: {now: () => 0, postMessage() {}}});
   vm.runInContext(source, context);
   const controller = new context.AbortController();
   let calls = 0;
@@ -29,13 +29,13 @@ test('QuickJS cancellation reports a stable reason and invokes listeners once', 
 });
 
 test('native AbortController is preserved', () => {
-  const context = vm.createContext({AbortController, AbortSignal, php: {now: () => 0}, quickjs: {postMessage() {}}});
+  const context = vm.createContext({AbortController, AbortSignal, quickjs: {now: () => 0, postMessage() {}}});
   vm.runInContext(source, context);
   assert.equal(context.AbortController, AbortController);
 });
 
 test('AbortSignal.any accepts iterables, keeps the first reason and cleans source listeners', () => {
-  const context = vm.createContext({php: {now: () => 0}, quickjs: {postMessage() {}}});
+  const context = vm.createContext({quickjs: {now: () => 0, postMessage() {}}});
   vm.runInContext(source, context);
   const first = new context.AbortController();
   const second = new context.AbortController();

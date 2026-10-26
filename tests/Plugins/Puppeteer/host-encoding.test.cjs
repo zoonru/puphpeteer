@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const context = vm.createContext({php: {now: () => 0}, quickjs: {postMessage() {}}});
+const context = vm.createContext({quickjs: {now: () => 0, postMessage() {}}});
 vm.runInContext(fs.readFileSync(path.resolve(__dirname, '../../../resources/puppeteer.js'), 'utf8'), context);
 const HostDecoder = context.TextDecoder;
 

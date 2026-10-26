@@ -161,7 +161,7 @@ final class ClientTest extends TestCase
             CODE, dirname(__DIR__, 3) . '/src/Client.php']);
         $result = ProcessRunner::collect($process, 5);
         self::assertSame(0, $result['code']);
-        self::assertStringContainsString('php-quickjs with automatic Promise awaiting and QuickJS::drainMessages()', $result['stdout']);
+        self::assertStringContainsString('php-quickjs with QuickJS::awaitMessages(), QuickJS::close() and Js\\Callback::post()', $result['stdout']);
         self::assertSame('', $result['stderr']);
     }
 }

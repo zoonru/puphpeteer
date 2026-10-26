@@ -8,7 +8,7 @@ import {PluginAdapter} from './plugins/adapter.js';
 import {installNpmLoader} from './npm-loader.js';
 import {createNodeCompat} from './node-compat.js';
 import {adaptAdmZip} from './adm-zip-adapter.js';
-import {emit, drain, fail} from './bridge.js';
+import {emit, fail} from './bridge.js';
 import puppeteer, {
   Accessibility, Browser, BrowserContext, CDPSession, ConsoleMessage, Coverage,
   Dialog, ElementHandle, FileChooser, Frame, HTTPRequest, HTTPResponse, JSHandle,
@@ -309,22 +309,16 @@ async function call(request) {
   }
 }
 let messageParts = [];
-let operations = 0;
 let closed = false;
 function background(task) {
-  operations++;
-  task.finally(() => { operations--; emit('idle', null); }).catch(fail);
+  task.finally(() => emit('idle', null)).catch(fail);
 }
 async function invoke(request) {
-  operations++;
-  try {
-    try { emit('result', {id: request.id, value: encode(await call(request))}); }
-    catch (error) { emit('result', {id: request.id, error: errorData(error)}); }
-    // Complete disconnect/close before PHP rejects remaining pending calls.
-    if (transportClosing && (request.method === 'close' || request.method === 'disconnect')) emit('close', '');
-  } finally { operations--; }
+  try { emit('result', {id: request.id, value: encode(await call(request))}); }
+  catch (error) { emit('result', {id: request.id, error: errorData(error)}); }
+  // Complete disconnect/close before PHP rejects remaining pending calls.
+  if (transportClosing && (request.method === 'close' || request.method === 'disconnect')) emit('close', '');
 }
-globalThis.__quickjsDrain = () => drain(() => !closed && operations > 0);
 globalThis.__quickjsDispatch = (kind, payload) => {
   if (kind === 'messageChunk') { messageParts.push(payload); return; }
   if (kind === 'messageEnd') {

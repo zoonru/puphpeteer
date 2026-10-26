@@ -36,16 +36,7 @@ final class StubSignaturesTest extends TestCase
             $expected = self::signatures($stub);
             $actual = self::signatures($native);
             foreach ($expected as $method => $signature) {
-                if ('Js\\Callback' === $class && 'post' === $method && !isset($actual[$method])) {
-                    continue;
-                }
-                if ('QuickJS' === $class && in_array($method, ['executionMode', 'close', 'awaitMessages'], true) && !isset($actual[$method])) {
-                    continue; // Optional diagnostics and explicit worker shutdown.
-                }
                 self::assertArrayHasKey($method, $actual, $class . ' must provide ' . $method);
-                if ('QuickJS' === $class && 'eval' === $method && 1 === count($actual[$method][1])) {
-                    $signature[1] = array_slice($signature[1], 0, 1); // Older eval() always transpiles.
-                }
                 self::assertSame($signature, $actual[$method], $class . '::' . $method . ' must support the Psalm signature');
             }
         }

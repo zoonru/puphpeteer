@@ -79,7 +79,7 @@ final class ReadableStreamTest extends TestCase
         $file = tempnam(sys_get_temp_dir(), 'quickjs-protocol-test-');
         self::assertIsString($file);
         file_put_contents($file, <<<'JS'
-        let ready = false, cancelled = 0;
+        let cancelled = 0;
         const chunks = [
           {data: 'AP8=', base64Encoded: true},
           {data: 'plain text', base64Encoded: false},
@@ -91,9 +91,7 @@ final class ReadableStreamTest extends TestCase
           if (kind !== 'call') return;
           if (request.method === 'cancel') cancelled++;
           quickjs.postMessage(['result', {id: request.id, value: request.method === 'read' ? chunks.shift() : null}]);
-          ready = true;
         };
-        globalThis.__quickjsDrain = () => { const result = ready; ready = false; return result; };
         JS);
         try {
             $client = new Client($file);

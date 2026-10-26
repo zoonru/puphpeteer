@@ -23,28 +23,22 @@ final class GuestFunctionLifetimeTest extends TestCase
             throw new RuntimeException('Missing test bundle');
         }
         $js = new QuickJS();
-        $js->register('now', static fn (): float => 0.0);
         $js->eval($source);
         $js->eval(<<<'JS'
         __quickjsTest.registerObject(-1, {retain(fn) { globalThis.__retainedFunction = fn; return fn(); }});
         JS);
         $dispatch = $js->eval('globalThis.__quickjsDispatch');
-        $drain = $js->eval('globalThis.__quickjsDrain');
         self::assertInstanceOf(Callback::class, $dispatch);
         $request = ['id' => 1, 'object' => -1, 'method' => 'retain', 'args' => [
             ['$quickjs' => 'function', 'id' => 7, 'source' => '() => 42'],
         ]];
         $dispatch('call', $request);
-        $ready = $drain();
-        self::assertTrue($ready);
-        self::assertSame([['result', ['id' => 1, 'value' => 42]]], $js->drainMessages());
+        self::assertSame([['result', ['id' => 1, 'value' => 42]]], $js->awaitMessages());
         self::assertSame(1, $js->eval('__quickjsTest.functionCacheSize()'));
         $request['id'] = 2;
         $request['args'][0]['source'] = '() => 99';
         $dispatch('call', $request);
-        $ready = $drain();
-        self::assertTrue($ready);
-        self::assertSame([['result', ['id' => 2, 'value' => 42]]], $js->drainMessages(), 'Live identity must be reused');
+        self::assertSame([['result', ['id' => 2, 'value' => 42]]], $js->awaitMessages(), 'Live identity must be reused');
         $dispatch('releaseFunction', ['id' => 7]);
         self::assertSame(0, $js->eval('__quickjsTest.functionCacheSize()'));
         self::assertSame(42, $js->eval('__retainedFunction()'), 'Listener-held function must remain callable');
@@ -56,7 +50,6 @@ final class GuestFunctionLifetimeTest extends TestCase
         $build = ProcessRunner::collect(Process::start(['node', 'tools/build.cjs', '--test'], $root), 60);
         self::assertSame(0, $build['code'], $build['stdout'] . $build['stderr']);
         $js = new QuickJS();
-        $js->register('now', static fn (): float => 0.0);
         $source = file_get_contents($root . '/.build/puppeteer.test.js');
         self::assertIsString($source);
         $js->eval($source, typescript: false);
@@ -65,21 +58,17 @@ final class GuestFunctionLifetimeTest extends TestCase
         __quickjsTest.registerObject(-1, {shared() { return value; }});
         JS, typescript: false);
         $dispatch = $js->eval('globalThis.__quickjsDispatch');
-        $drain = $js->eval('globalThis.__quickjsDrain');
         $request = ['id' => 1, 'object' => -1, 'method' => 'shared', 'operation' => 'call', 'args' => []];
         $dispatch('call', $request);
-        self::assertTrue($drain());
-        $first = $js->drainMessages()[0][1]['value'];
+        $first = $js->awaitMessages()[0][1]['value'];
         $request['id'] = 2;
         $dispatch('call', $request);
-        self::assertTrue($drain());
-        // Leave the newly encoded reference queued while the old finalizer runs.
+        // Keep the new descriptor undecoded while the old finalizer runs.
+        $second = $js->awaitMessages()[0][1]['value'];
         $dispatch('release', ['id' => $first['id'], 'lease' => $first['lease']]);
-        $second = $js->drainMessages()[0][1]['value'];
         self::assertSame($first['id'], $second['id']);
         self::assertGreaterThan($first['lease'], $second['lease']);
         $dispatch('call', ['id' => 3, 'object' => $second['id'], 'method' => 'ping', 'operation' => 'call', 'args' => []]);
-        self::assertTrue($drain());
-        self::assertSame([['result', ['id' => 3, 'value' => 42]]], $js->drainMessages());
+        self::assertSame([['result', ['id' => 3, 'value' => 42]]], $js->awaitMessages());
     }
 }
