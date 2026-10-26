@@ -97,7 +97,7 @@ final class Client
         }
         $source = read($bundle ?? dirname(__DIR__) . '/resources/puppeteer.js');
         $this->js->eval($source, typescript: false);
-        $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
+        $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch', typescript: false);
     }
 
     /**
