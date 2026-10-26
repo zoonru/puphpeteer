@@ -8,6 +8,7 @@ use Amp\CancelledException;
 use Amp\DeferredCancellation;
 use InvalidArgumentException;
 use Nesk\Puphpeteer\Client;
+use Nesk\Puphpeteer\Internal\ReadableStream;
 use Nesk\Puphpeteer\JsFunction;
 use Nesk\Puphpeteer\RemoteObject;
 use Nesk\Puphpeteer\Tests\Support\Shared\AsyncGuest;
@@ -24,7 +25,15 @@ final class RuntimeLifecycleTest extends TestCase
         }
         file_put_contents($file, AsyncGuest::wrap(<<<'JS'
         const functions = new Set();
+        let releases = 0, cancellations = 0;
         globalThis.__quickjsDispatch = (kind, payload) => {
+          if (kind === 'release') { releases++; return; }
+          if (kind === 'call' && payload.method === 'cancel') {
+            cancellations++; __testEmit('result', {id: payload.id, value: null}); return;
+          }
+          if (kind === 'call' && payload.method === 'cleanupCounts') {
+            __testEmit('result', {id: payload.id, value: [releases, cancellations]}); return;
+          }
           if (kind === 'releaseFunction') { functions.delete(payload.id); return; }
           if (kind === 'call' && payload.method === 'functionCount') {
             __testEmit('result', {id: payload.id, value: functions.size}); return;
@@ -58,6 +67,58 @@ final class RuntimeLifecycleTest extends TestCase
         }
         $this->expectExceptionMessage('QuickJS client is closed');
         $client->call(1, 'next', [])->await();
+    }
+
+    public function testConcurrentBurstUsesBackpressureInsteadOfClosingTheWorker(): void
+    {
+        $client = $this->client();
+        try {
+            $tasks = [];
+            foreach (range(0, 511) as $value) {
+                $tasks[] = \Amp\async(static fn () => $client->call(1, 'echo', [$value])->await());
+            }
+            $values = \Amp\Future\await($tasks);
+            ksort($values); // Amp preserves keys; completion order is independent.
+            self::assertSame(range(0, 511), $values);
+            self::assertFalse($client->isClosed());
+            self::assertSame(42, $client->call(1, 'echo', [42])->await());
+        } finally {
+            $client->close();
+        }
+    }
+
+    public function testCloseRejectsCallersWaitingForDispatchAdmission(): void
+    {
+        $client = $this->client();
+        $tasks = [];
+        foreach (range(0, 511) as $value) {
+            $tasks[] = \Amp\async(static fn () => $client->call(1, 'pending', [$value])->await());
+        }
+        $close = \Amp\async(static fn () => $client->close());
+        [$errors, $values] = \Amp\Future\awaitAll($tasks);
+        $close->await();
+        self::assertCount(512, $errors);
+        self::assertSame([], $values);
+        self::assertTrue($client->isClosed());
+    }
+
+    public function testUnrelatedPendingCallDoesNotHoldObjectOrStreamFinalizers(): void
+    {
+        $client = $this->client();
+        $pending = $client->call(1, 'pending', []);
+        $pending->ignore();
+        try {
+            for ($id = 100; $id < 120; ++$id) {
+                $object = new RemoteObject($client, $id, 'Object');
+                $stream = new ReadableStream($client, $id);
+                unset($object, $stream);
+            }
+            \Amp\delay(.02);
+            self::assertSame([20, 20], $client->call(1, 'cleanupCounts', [])->await());
+            self::assertFalse($pending->isComplete());
+        } finally {
+            $client->close();
+        }
     }
 
     public function testReleaseIsIdempotentAndRejectsUseLocally(): void

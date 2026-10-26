@@ -30,6 +30,7 @@
     "amphp/file": "^4.0",
     "amphp/websocket-client": "^2.0",
     "amphp/process": "^2.1",
+    "amphp/sync": "^2.3",
     "amphp/http-client": "^5.3",
     "amphp/byte-stream": "^2.1",
     "psr/log": "^3.0",

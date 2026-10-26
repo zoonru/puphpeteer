@@ -81,6 +81,7 @@ final class BrowserInstallation
         return "https://storage.googleapis.com/chrome-for-testing-public/{$this->version}/{$this->platform}/chrome-{$this->platform}.zip";
     }
 
+    /** @psalm-pure */
     public static function skipDownload(): bool
     {
         $executable = getenv('PUPPETEER_EXECUTABLE_PATH');

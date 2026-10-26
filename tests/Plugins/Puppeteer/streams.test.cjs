@@ -44,6 +44,18 @@ test('pending read can be cancelled and concurrent reads rejected', async () => 
   assert.equal(cancelled, 1);
   assert.equal(stream.locked, false);
 });
+
+test('a stale finalizer cannot cancel a stream reference still in transit', async () => {
+  const streams = new GuestReadableStreams();
+  let cancelled = 0;
+  const stream = new ReadableStream({cancel() { cancelled++; }}, {highWaterMark: 0});
+  const first = streams.encode(stream);
+  const inTransit = streams.encode(stream);
+  await streams.cancel(first.id, first.lease);
+  assert.equal(cancelled, 0);
+  await streams.cancel(inTransit.id, inTransit.lease);
+  assert.equal(cancelled, 1);
+});
 test('non-byte streams fail and release their source', async () => {
   const streams = new GuestReadableStreams();
   let cancelled = false;

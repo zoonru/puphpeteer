@@ -206,7 +206,7 @@ globalThis.setInterval = (fn, milliseconds = 0, ...args) => {
   return id;
 };
 globalThis.clearInterval = globalThis.clearTimeout;
-globalThis.performance = {now: () => php.now()};
+globalThis.performance = {now: typeof globalThis.quickjs?.now === 'function' ? quickjs.now : () => php.now()};
 const logLevels = {log: 'info', warn: 'warning', error: 'error', debug: 'debug', info: 'info'};
 globalThis.console = Object.fromEntries(Object.entries(logLevels).map(([method, level]) => [method, (...args) => emit('log', {level, message: args.map(String).join(' ')})]));
 globalThis.console.assert = (condition, ...args) => { if (!condition) globalThis.console.error('Assertion failed:', ...args); };

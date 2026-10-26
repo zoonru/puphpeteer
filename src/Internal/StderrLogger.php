@@ -20,6 +20,7 @@ final class StderrLogger extends AbstractLogger
         async(static fn () => \Amp\ByteStream\getStderr()->write($line))->ignore();
     }
 
+    /** @psalm-pure */
     private function interpolate(string $message, array $context): string
     {
         $replace = [];

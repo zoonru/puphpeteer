@@ -49,4 +49,37 @@ final class GuestFunctionLifetimeTest extends TestCase
         self::assertSame(0, $js->eval('__quickjsTest.functionCacheSize()'));
         self::assertSame(42, $js->eval('__retainedFunction()'), 'Listener-held function must remain callable');
     }
+
+    public function testStaleFinalizerDoesNotInvalidateAnObjectReferenceInTransit(): void
+    {
+        $root = dirname(__DIR__, 3);
+        $build = ProcessRunner::collect(Process::start(['node', 'tools/build.cjs', '--test'], $root), 60);
+        self::assertSame(0, $build['code'], $build['stdout'] . $build['stderr']);
+        $js = new QuickJS();
+        $js->register('now', static fn (): float => 0.0);
+        $source = file_get_contents($root . '/.build/puppeteer.test.js');
+        self::assertIsString($source);
+        $js->eval($source, typescript: false);
+        $js->eval(<<<'JS'
+        const value = new class { ping() { return 42; } };
+        __quickjsTest.registerObject(-1, {shared() { return value; }});
+        JS, typescript: false);
+        $dispatch = $js->eval('globalThis.__quickjsDispatch');
+        $drain = $js->eval('globalThis.__quickjsDrain');
+        $request = ['id' => 1, 'object' => -1, 'method' => 'shared', 'operation' => 'call', 'args' => []];
+        $dispatch('call', $request);
+        self::assertTrue($drain());
+        $first = $js->drainMessages()[0][1]['value'];
+        $request['id'] = 2;
+        $dispatch('call', $request);
+        self::assertTrue($drain());
+        // Leave the newly encoded reference queued while the old finalizer runs.
+        $dispatch('release', ['id' => $first['id'], 'lease' => $first['lease']]);
+        $second = $js->drainMessages()[0][1]['value'];
+        self::assertSame($first['id'], $second['id']);
+        self::assertGreaterThan($first['lease'], $second['lease']);
+        $dispatch('call', ['id' => 3, 'object' => $second['id'], 'method' => 'ping', 'operation' => 'call', 'args' => []]);
+        self::assertTrue($drain());
+        self::assertSame([['result', ['id' => 3, 'value' => 42]]], $js->drainMessages());
+    }
 }

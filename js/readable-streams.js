@@ -44,9 +44,9 @@ export class GuestReadableStreams {
       id = ++this.#sequence;
       this.#identities.set(stream, id);
       const protocol = protocolStreams.get(stream);
-      this.#entries.set(id, {stream: protocol ?? stream, protocol: !!protocol, reader: null, buffer: null, offset: 0, pending: false, closed: false});
+      this.#entries.set(id, {stream: protocol ?? stream, protocol: !!protocol, reader: null, buffer: null, offset: 0, pending: false, closed: false, lease: 0});
     }
-    return {$quickjs: 'stream', id};
+    return {$quickjs: 'stream', id, lease: ++this.#entries.get(id).lease};
   }
 
   async read(id) {
@@ -81,9 +81,10 @@ export class GuestReadableStreams {
     } finally { entry.pending = false; }
   }
 
-  async cancel(id) {
+  async cancel(id, lease) {
     const entry = this.#entries.get(id);
     if (!entry) return;
+    if (lease != null && lease !== entry.lease) return;
     this.#entries.delete(id);
     entry.closed = true;
     entry.buffer = null;

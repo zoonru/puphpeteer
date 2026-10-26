@@ -31,6 +31,7 @@ final class LoggingTest extends TestCase
         $logger = new class extends AbstractLogger {
             public array $records = [];
 
+            /** @psalm-external-mutation-free */
             #[Override]
             public function log($level, Stringable|string $message, array $context = []): void
             {

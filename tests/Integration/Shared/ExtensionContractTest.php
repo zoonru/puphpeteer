@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Nesk\Puphpeteer\Tests\Integration\Shared;
 
+use Amp\DeferredFuture;
 use Closure;
-use Fiber;
 use Js\Callback;
 use PHPUnit\Framework\TestCase;
 use QuickJS;
@@ -61,14 +61,18 @@ final class ExtensionContractTest extends TestCase
     {
         $js = new QuickJS();
         $send = $this->jsCallback($js, '(value) => quickjs.postMessage(value)');
-        $fiber = new Fiber(static function () use ($send): void {
+        $first = new DeferredFuture();
+        $next = new DeferredFuture();
+        $fiber = \Amp\async(static function () use ($send, $first, $next): void {
             $send(1);
-            Fiber::suspend();
+            $first->complete();
+            $next->getFuture()->await();
             $send(3);
         });
-        $fiber->start();
+        $first->getFuture()->await();
         $send(2);
-        $fiber->resume();
+        $next->complete();
+        $fiber->await();
         self::assertSame([1, 2, 3], $js->drainMessages());
     }
 

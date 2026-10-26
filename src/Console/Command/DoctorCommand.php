@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nesk\Puphpeteer\Console\Command;
 
 use Override;
+use QuickJS;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -24,9 +25,10 @@ final class DoctorCommand extends ProcessCommand
     {
         $io = new SymfonyStyle($input, $output);
         $extensionReady = extension_loaded('php_quickjs');
+        $interfaceReady = $extensionReady && method_exists(QuickJS::class, 'drainMessages');
         $checks = [
             ['PHP', PHP_VERSION, version_compare(PHP_VERSION, '8.4.0', '>=')],
-            ['php-quickjs', $extensionReady ? 'loaded in PHP' : 'not loaded', $extensionReady],
+            ['php-quickjs', $extensionReady ? (phpversion('php_quickjs') ?: 'unknown') . ($interfaceReady ? '' : ' (QuickJS::drainMessages() required)') : 'not loaded', $interfaceReady],
             ['bundle', $this->root . '/resources/puppeteer.js', isFile($this->root . '/resources/puppeteer.js')],
         ];
         $failed = count(array_filter($checks, static fn (array $check): bool => !$check[2]));

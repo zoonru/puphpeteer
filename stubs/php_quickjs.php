@@ -52,6 +52,16 @@ namespace {
         {
         }
 
+        /** JavaScript execution mode. */
+        public static function executionMode(): string
+        {
+        }
+
+        /** Stop this runtime; future entries fail. */
+        public function close(): void
+        {
+        }
+
         /** Whether Promise jobs are ready (shared mode only). Does not include host I/O. */
         public function hasPendingJobs(): bool
         {
@@ -68,6 +78,11 @@ namespace {
          * @return list<mixed>
          */
         public function drainMessages(): mixed
+        {
+        }
+
+        /** Await a message batch and enable automatic jobs; one consumer, non-isolated runtime. */
+        public function awaitMessages(): mixed
         {
         }
 
@@ -116,6 +131,11 @@ namespace Js {
 
         /** Invoke the JS function, awaiting a returned Promise. */
         public function call(mixed ...$args): mixed
+        {
+        }
+
+        /** Queue a bounded call; discard its value, deliver failures to awaitMessages(). */
+        public function post(mixed ...$args): void
         {
         }
     }

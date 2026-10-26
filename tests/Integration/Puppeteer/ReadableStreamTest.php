@@ -155,6 +155,7 @@ final class ReadableStreamTest extends TestCase
             if (file_exists('/dev/full')) {
                 $errorPaths[] = '/dev/full';
             }
+            $cancelledCount = $js->eval('() => pdfCancelled');
             foreach ($errorPaths as $index => $errorPath) {
                 $observed = [];
                 try {
@@ -164,7 +165,7 @@ final class ReadableStreamTest extends TestCase
                     self::assertCount($index, $observed, 'Failed writes must stop reading');
                 }
                 delay(0.001);
-                self::assertSame($index + 1, $js->eval('pdfCancelled'), 'File errors must cancel the source');
+                self::assertSame($index + 1, $cancelledCount(), 'File errors must cancel the source');
                 self::assertSame([], (new ReflectionProperty($client, 'streams'))->getValue($client));
             }
         } finally {
@@ -179,6 +180,7 @@ final class ReadableStreamTest extends TestCase
         $logger = new class extends AbstractLogger {
             public array $messages = [];
 
+            /** @psalm-external-mutation-free */
             #[Override]
             public function log($level, Stringable|string $message, array $context = []): void
             {

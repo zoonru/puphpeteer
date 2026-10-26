@@ -31,7 +31,7 @@
 ## Требования
 
 - PHP **8.4+** и Composer.
-- Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs) **>= 0.0.3**. [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
+- Подключённый [форк расширения php-quickjs](https://github.com/xtrime-ru/php-quickjs) **>= 0.0.3** с автоматическим ожиданием Promise и `QuickJS::drainMessages()`. Поддерживаются inline- и worker-реализации. [Инструкция по сборке и установке](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/docs/install.md).
 - Локальный Chrome или подключение к Browserless.
 - Для надёжного завершения локальных процессов Chrome в Unix: необязательные расширения `pcntl` и `posix`.
 - Для скачивания локального Chrome: HTTPS streams в PHP (`allow_url_fopen=1`, OpenSSL) и команда `unzip`.
@@ -540,7 +540,7 @@ composer psalm
 
 Используйте SHA форка, закреплённый в `Dockerfile`. Мост требует автоматического ожидания Promise через Revolt, `quickjs.postMessage()` и `QuickJS::drainMessages()`. [Интеграционные тесты](tests/Integration/) проверяют типы, лимиты, восстановление, освобождение ресурсов и Fibers на фактически установленном расширении.
 
-Канонические stubs нативного API принадлежат [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` — копия для Psalm; интеграционные тесты сравнивают её сигнатуры с загруженным расширением. `Client` исполняет готовый JavaScript bundle через `eval($source, typescript: false)`, пропуская Oxc и его transpile cache. Для старого поддерживаемого расширения с одним аргументом `eval()` прежний вызов выбирается по сигнатуре метода.
+Канонические stubs нативного API принадлежат [php-quickjs](https://github.com/xtrime-ru/php-quickjs/blob/async-jobs-fibers/stubs/php_quickjs.stubs.php). `stubs/php_quickjs.php` — копия для Psalm; интеграционные тесты проверяют соответствие расширения интерфейсу клиента. `Client` исполняет готовый JavaScript bundle через `eval($source, typescript: false)`, пропуская Oxc и его transpile cache. Для расширения с одним аргументом `eval()` вызов выбирается по сигнатуре метода. Выбор потока — деталь реализации расширения; необязательный метод `close()` вызывается при закрытии клиента, если доступен.
 
 Один асинхронный JS-потребитель ждёт уведомления расширения; host I/O обслуживает Amp. Сообщения копируются через нативную очередь (по умолчанию 32 МиБ). PuPHPeteer ограничивает JS heap до 256 МиБ и stack до 512 КиБ. Таймауты операций контролируют Puppeteer и Amp; отдельный таймаут нативного исполнения больше не задаётся. Глубина преобразования значений моста ограничена 64 уровнями; отдельный TypeScript transpile cache по умолчанию удерживает до 256 записей и 32 МиБ строк исходников, JavaScript и source maps. Этот бюджет не охватывает все выделения памяти Oxc. Эти лимиты не ограничивают PHP callbacks и память Chrome.
 

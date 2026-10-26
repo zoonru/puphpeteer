@@ -8,6 +8,7 @@ use Amp\Cancellation;
 use Amp\CancelledException;
 use Amp\DeferredFuture;
 use Amp\Future;
+use Amp\Sync\LocalSemaphore;
 use Amp\TimeoutCancellation;
 use Amp\Websocket\Client\Rfc6455ConnectionFactory;
 use Amp\Websocket\Client\Rfc6455Connector;
@@ -40,7 +41,14 @@ final class Client
     private QuickJS $js;
     private Callback $dispatch;
     private Callback $drain;
+    private bool $nativeMessages = false;
+    private bool $nativePost = false;
+    private LocalSemaphore $dispatchSlots;
+    private int $dispatching = 0;
+    /** @var DeferredFuture<null>|null */
+    private ?DeferredFuture $dispatchIdle = null;
     private bool $draining = false;
+    private int $driveGeneration = 0;
     private ?WebsocketConnection $socket = null;
     private array $writes = [];
     private bool $writing = false;
@@ -52,6 +60,10 @@ final class Client
     private int $sequence = 0;
     /** @var array<int, DeferredFuture<mixed>> */
     private array $pending = [];
+    /** @var array<int, int> */
+    private array $objectLeases = [];
+    /** @var array<int, int> */
+    private array $streamLeases = [];
     private array $callbacks = [];
     /** @var WeakMap<Closure|JsFunction, int>|null */
     private ?WeakMap $functionIds = null;
@@ -70,10 +82,12 @@ final class Client
     public function __construct(?string $bundle = null, ?LoggerInterface $logger = null, ?NpmModuleHost $moduleHost = null)
     {
         if (!method_exists(QuickJS::class, 'drainMessages')) {
-            throw new RuntimeException('Load php-quickjs >=0.0.3 with automatic Promise awaiting and QuickJS::drainMessages().');
+            throw new RuntimeException('Load php-quickjs with automatic Promise awaiting and QuickJS::drainMessages().');
         }
         $this->logger = $logger ?? new Internal\StderrLogger();
+        $this->dispatchSlots = new LocalSemaphore(64);
         $this->js = new QuickJS(memoryLimit: 256 * 1024 * 1024, maxStack: 512 * 1024);
+        $this->nativeMessages = method_exists($this->js, 'awaitMessages');
         $this->js->register('randomBytes', Internal\HostCrypto::randomBytes(...));
         $this->js->register('now', static fn (): float => (float) hrtime(true) / 1e6);
         if (null !== $moduleHost) {
@@ -97,6 +111,7 @@ final class Client
         }
         $this->dispatch = $this->js->eval('globalThis.__quickjsDispatch');
         $this->drain = $this->js->eval('globalThis.__quickjsDrain');
+        $this->nativePost = $this->nativeMessages && method_exists($this->dispatch, 'post');
     }
 
     /**
@@ -250,8 +265,27 @@ final class Client
         if ($this->closed) {
             return;
         }
-        ($this->dispatch)($kind, $payload);
-        $this->drive();
+        $slot = $this->dispatchSlots->acquire();
+        ++$this->dispatching;
+        try {
+            if ($this->isClosed()) {
+                return;
+            }
+            if ($this->nativePost) {
+                $this->dispatch->post($kind, $payload);
+            } else {
+                ($this->dispatch)($kind, $payload);
+            }
+            ++$this->driveGeneration;
+            $this->drive();
+        } finally {
+            if (0 === --$this->dispatching) {
+                $idle = $this->dispatchIdle;
+                $this->dispatchIdle = null;
+                $idle?->complete(null);
+            }
+            $slot->release();
+        }
     }
 
     private function drive(): void
@@ -262,8 +296,16 @@ final class Client
         $this->draining = true;
         async(function (): void {
             try {
-                while (!$this->closed && ($this->drain)()) {
-                    $messages = $this->js->drainMessages();
+                while (!$this->closed) {
+                    $generation = $this->driveGeneration;
+                    if (!$this->nativeMessages && !($this->drain)()) {
+                        if ($generation === $this->driveGeneration) {
+                            break;
+                        }
+                        // A dispatch finished while the previous drain was returning.
+                        continue;
+                    }
+                    $messages = $this->nativeMessages ? $this->js->awaitMessages() : $this->js->drainMessages();
                     $transportClosed = false;
                     foreach ($messages as [$kind, $payload]) {
                         if ('close' === $kind) {
@@ -274,6 +316,9 @@ final class Client
                     }
                     if ($transportClosed) {
                         $this->stop(reason: 'Puppeteer requested transport close');
+                    }
+                    if ($this->nativeMessages && [] === $this->pending && $generation === $this->driveGeneration) {
+                        break;
                     }
                 }
             } catch (Throwable $error) {
@@ -288,6 +333,9 @@ final class Client
     {
         if ($this->closed) {
             return;
+        }
+        if ('bridgeError' === $kind || 'fatal' === $kind) {
+            throw $this->guestError($payload);
         }
         if ('send' === $kind) {
             $this->writes[] = $payload;
@@ -393,8 +441,6 @@ final class Client
                     $this->stop($e);
                 }
             })->ignore();
-        } elseif ('fatal' === $kind) {
-            throw $this->guestError($data);
         }
     }
 
@@ -477,6 +523,9 @@ final class Client
         }
         if (($value['$quickjs'] ?? null) === 'stream') {
             $id = $value['id'];
+            if (isset($value['lease'])) {
+                $this->streamLeases[$id] = $value['lease'];
+            }
             $stream = ($this->streams[$id] ?? null)?->get();
             if (null === $stream) {
                 $stream = new Internal\ReadableStream($this, $id);
@@ -487,6 +536,9 @@ final class Client
         }
         if (($value['$quickjs'] ?? null) === 'object') {
             $id = $value['id'];
+            if (isset($value['lease'])) {
+                $this->objectLeases[$id] = $value['lease'];
+            }
             $object = ($this->objects[$id] ?? null)?->get();
             if (null === $object) {
                 $object = RemoteObjectFactory::create($this, $id, $value['class']);
@@ -503,7 +555,7 @@ final class Client
         }
         if (isset($value['$quickjs'])) {
             return $value;
-        } // Explicit tagged special values in this prototype.
+        } // Preserve protocol tags not handled by generated wrappers.
 
         return array_map($this->decode(...), $value);
     }
@@ -511,27 +563,17 @@ final class Client
     /** @internal Schedule finalizer work outside native callbacks. */
     public function releaseFunctionLater(int $id): void
     {
-        if ($this->closed) {
-            return;
-        }
-        EventLoop::queue(function () use ($id): void {
-            try {
-                $this->deliver('releaseFunction', ['id' => $id]);
-            } catch (Throwable $error) {
-                $this->stop($error);
-            }
-        });
+        $this->deferFinalizer(fn () => $this->deliver('releaseFunction', ['id' => $id]));
     }
 
     /** @internal Schedule finalizer work outside native callbacks. */
     public function releaseLater(int $id): void
     {
-        if ($this->closed) {
-            return;
-        }
-        EventLoop::queue(function () use ($id): void {
+        $lease = $this->objectLeases[$id] ?? null;
+        $this->deferFinalizer(function () use ($id, $lease): void {
             if (($this->objects[$id] ?? null)?->get() === null) {
-                $this->release($id);
+                unset($this->objects[$id], $this->objectLeases[$id]);
+                $this->deliver('release', ['id' => $id, 'lease' => $lease]);
             }
         });
     }
@@ -549,20 +591,41 @@ final class Client
     /** @internal Stream finalizers must not re-enter QuickJS. */
     public function cancelStreamLater(int $id, bool $onlyIfUnreferenced = false): void
     {
-        if ($this->closed) {
-            return;
-        }
-        EventLoop::queue(function () use ($id, $onlyIfUnreferenced): void {
+        $lease = $this->streamLeases[$id] ?? null;
+        $this->deferFinalizer(function () use ($id, $onlyIfUnreferenced, $lease): void {
             if ($onlyIfUnreferenced && ($this->streams[$id] ?? null)?->get() !== null) {
                 return;
             }
-            $this->call($id, 'cancel', [], 'stream')->ignore();
+            unset($this->streamLeases[$id]);
+            $this->call($id, 'cancel', $onlyIfUnreferenced ? [$lease] : [], 'stream')->ignore();
+        });
+    }
+
+    private function deferFinalizer(Closure $release): void
+    {
+        if ($this->closed) {
+            return;
+        }
+        EventLoop::queue(function () use ($release): void {
+            try {
+                // A native dispatch can overtake a finalizer; a protocol request
+                // awaiting external I/O must not hold unrelated objects alive.
+                while ($this->dispatching > 0 && !$this->closed) {
+                    $this->dispatchIdle ??= new DeferredFuture();
+                    $this->dispatchIdle->getFuture()->await();
+                }
+                if (!$this->closed) {
+                    $release();
+                }
+            } catch (Throwable $error) {
+                $this->stop($error);
+            }
         });
     }
 
     public function release(int $id): void
     {
-        unset($this->objects[$id]);
+        unset($this->objects[$id], $this->objectLeases[$id]);
         if (!$this->closed) {
             try {
                 $this->deliver('release', ['id' => $id]);
@@ -612,6 +675,7 @@ final class Client
         $this->stop();
     }
 
+    /** @psalm-suppress RedundantPropertyInitializationCheck Unit fixtures may bypass the constructor. */
     private function stop(?Throwable $error = null, string $reason = 'Client::close() was called'): void
     {
         if ($this->closed) {
@@ -633,6 +697,7 @@ final class Client
         $this->filesystem?->closeAll();
         $this->http?->closeAll();
         $this->callbacks = [];
+        $this->objectLeases = $this->streamLeases = [];
         $this->functionIds = null;
         $this->functionReferences = null;
         $this->objects = [];
@@ -645,6 +710,9 @@ final class Client
         }
         $this->pending = [];
         $this->socket?->close();
+        if (isset($this->js) && method_exists($this->js, 'close')) {
+            $this->js->close();
+        }
     }
 
     /** @psalm-pure */

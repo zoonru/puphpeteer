@@ -43,6 +43,8 @@ const objects = new Map();
 const identities = new WeakMap();
 let nextObject = 0;
 let nextCallback = 0;
+const objectLeases = new Map();
+let nextLease = 0;
 const callbacks = new Map();
 const decodedFunctions = new Map();
 // This observation hook exists only in the dedicated integration-test bundle.
@@ -146,7 +148,9 @@ function encode(value, ancestors) {
   }
   // A released object can be encoded again. Re-pin it only in that case.
   if (!objects.has(id)) objects.set(id, value);
-  return {$quickjs: 'object', id, class: type === 'function' && !constructorNames.has(value) ? 'Function' : remoteClass(value)};
+  const lease = ++nextLease;
+  objectLeases.set(id, lease);
+  return {$quickjs: 'object', id, lease, class: type === 'function' && !constructorNames.has(value) ? 'Function' : remoteClass(value)};
 }
 function decodeRecord(value, pin, temporary) {
   const entries = Object.entries(value);
@@ -233,7 +237,7 @@ async function call(request) {
   }
   if (request.operation === 'stream') {
     if (method === 'read') return streams.read(request.object);
-    if (method === 'cancel') return streams.cancel(request.object);
+    if (method === 'cancel') return streams.cancel(request.object, request.args[0]);
     throw new Error('Unknown stream operation');
   }
   if (method === 'preparePlugins' && request.object === 0) return plugins.prepare(...request.args.map(item => decode(item)));
@@ -346,6 +350,7 @@ globalThis.__quickjsDispatch = (kind, payload) => {
     eventListeners.clear();
     temporaryCallbacks.clear();
     objects.clear();
+    objectLeases.clear();
     transport.onmessage = undefined;
     transport.onclose = undefined;
     return;
@@ -354,9 +359,11 @@ globalThis.__quickjsDispatch = (kind, payload) => {
   const request = payload;
   if (kind === 'releaseFunction') { decodedFunctions.delete(`function:${request.id}`); return; }
   if (kind === 'release') {
+    // A reference encoded since this finalizer was queued may still be in transit.
+    if (request.lease != null && objectLeases.get(request.id) !== request.lease) return;
     const object = objects.get(request.id);
     if (object instanceof ScreenRecording) background(recordings.discard(object).catch(error => emit('log', {level: 'warning', message: `Recording cleanup failed: ${error.message}`})));
-    clearEvents(request.id); objects.delete(request.id); return;
+    clearEvents(request.id); objects.delete(request.id); objectLeases.delete(request.id); return;
   }
   if (kind === 'callbackResult') {
     const pending = callbacks.get(request.id);

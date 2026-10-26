@@ -82,7 +82,9 @@ final class NpmModuleHost
         return $bytes;
     }
 
-    /** Node's zlib.crc32 accepts a previous checksum as the optional seed. */
+    /** Node's zlib.crc32 accepts a previous checksum as the optional seed.
+     * @psalm-external-mutation-free
+     */
     public function crc32(string $bytes, int $value = 0): int
     {
         if ($value < 0 || $value > 0xFFFFFFFF) {
