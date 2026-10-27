@@ -139,8 +139,8 @@ class HTTPRequest extends RemoteObject
     }
 
     /**
-     * @param array{status?: int|float, headers?: array<string, mixed>, contentType?: string, body?: string} $response
-     * @param (int|float)|null                                                                               $priority
+     * @param array{status?: int|float, headers?: array<string, string>|array<string, mixed>, contentType?: string, body?: string} $response
+     * @param (int|float)|null                                                                                                     $priority
      */
     public function respond(array $response, int|float|null $priority = null): void
     {
@@ -153,7 +153,7 @@ class HTTPRequest extends RemoteObject
     }
 
     /**
-     * @return array{status?: int|float, headers?: array<string, mixed>, contentType?: string, body?: string}|null
+     * @return array{status?: int|float, headers?: array<string, string>|array<string, mixed>, contentType?: string, body?: string}|null
      */
     public function responseForRequest(): ?array
     {

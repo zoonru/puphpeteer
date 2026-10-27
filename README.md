@@ -1,7 +1,7 @@
 # PuPHPeteer
 
-[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.12.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.12.0)
-[![Chrome](https://img.shields.io/badge/Chrome-154.0.8037.57-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
+[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.14.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.14.0)
+[![Chrome](https://img.shields.io/badge/Chrome-155.0.8059.79-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
 
 <img src="https://user-images.githubusercontent.com/817508/100672192-dd258500-3361-11eb-845f-e8b5109752e4.png" style="max-width:100%;" width="190px" align="right">
 
@@ -517,7 +517,7 @@ Linux ARM64, PHP 8.5.11, uv 0.3.0 (`UvDriver`), Chrome 154.0.8037.57;
 `sockets` is loaded in every run in the same container. Rialto and Native PHP
 are means of five trials; QuickJS 0.0.3 is the mean of ten paired trials from
 October 26, 2026. Worker `45e1617` is the mean of five trials from October 27 with
-the current client and Puppeteer 25.12.0 bundle; comparison with historical 0.0.3
+the client and Puppeteer 25.12.0 bundle used at the time; comparison with historical 0.0.3
 does not isolate the extension's contribution.
 
 - **Rialto** — PHP and a separate Node.js with Puppeteer 24.36.1; client source `89bb34b`.
@@ -547,7 +547,7 @@ the current client retains no compatibility with the old bridge.
 
 ## Development
 
-Commands in this section maintain the package and run from a repository checkout. API generation, builds and JS tests require Node.js **22+** and npm, which are included in the Docker images.
+Commands in this section maintain the package and run from a repository checkout. API generation, builds and JS tests require Node.js **24+** and npm, which are included in the Docker images.
 
 ### Development Docker environment
 

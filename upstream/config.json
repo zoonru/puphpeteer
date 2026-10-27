@@ -28,6 +28,10 @@
     "ScreenRecording"
   ],
   "types": {
+    "Headers": {
+      "native": "array",
+      "psalm": "array<string, string>"
+    },
     "ReadableStream<Uint8Array>": {
       "native": "\\Amp\\ByteStream\\ReadableStream",
       "psalm": "\\Amp\\ByteStream\\ReadableStream"

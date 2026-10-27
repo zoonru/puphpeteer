@@ -1,9 +1,9 @@
 ARG PHP_VERSION=8.5
-ARG PHP_QUICKJS_REF=45e1617e667afcaf258dbd13b2d4618b734db480
-ARG UV_REF=670a609efc36c9043be37bae4126f06ed30fde21
-FROM node:22-bookworm-slim AS node
+ARG PHP_QUICKJS_REF=8150c4b11a1df2fdd7d0892852bbce075827ed9a
+ARG UV_REF=e56d640371a5d99eea2e9437cf4739c82e82d99e
+FROM node:24-trixie-slim AS node
 FROM composer:2 AS composer
-FROM php:${PHP_VERSION}-cli-bookworm AS php-base
+FROM php:${PHP_VERSION}-cli-trixie AS php-base
 ARG UV_REF
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git unzip libicu-dev libuv1-dev libzip-dev time procps \

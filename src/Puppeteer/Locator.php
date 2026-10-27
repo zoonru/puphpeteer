@@ -13,7 +13,7 @@ use Nesk\Puphpeteer\RemoteObject;
 class Locator extends RemoteObject
 {
     /**
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"forward"|"back", signal?: never})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "back"|"left"|"right"|"middle"|"forward", signal?: never})|null $options
      */
     public function click(?array $options = null): void
     {

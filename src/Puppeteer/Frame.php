@@ -65,7 +65,7 @@ class Frame extends RemoteObject
     }
 
     /**
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "back"|"left"|"right"|"middle"|"forward"})|null $options
      */
     public function click(string $selector, ?array $options = null): void
     {

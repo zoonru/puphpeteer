@@ -18,10 +18,20 @@ class ConsoleMessage extends RemoteObject
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
 
+    public function frame(): ?Frame
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
     /**
      * @return array{columnNumber?: int|float, lineNumber?: int|float, url?: string}
      */
     public function location(): array
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
+    public function page(): ?Page
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }
@@ -40,9 +50,14 @@ class ConsoleMessage extends RemoteObject
     }
 
     /**
-     * @return "error"|"clear"|"table"|"dir"|"assert"|"info"|"warn"|"count"|"log"|"debug"|"dirxml"|"trace"|"startGroup"|"startGroupCollapsed"|"endGroup"|"profile"|"profileEnd"|"timeEnd"|"verbose"
+     * @return "error"|"count"|"clear"|"info"|"table"|"dir"|"assert"|"warn"|"log"|"debug"|"dirxml"|"trace"|"startGroup"|"startGroupCollapsed"|"endGroup"|"profile"|"profileEnd"|"timeEnd"|"verbose"
      */
     public function type(): string
+    {
+        return $this->invokeRemote(__FUNCTION__, func_get_args());
+    }
+
+    public function worker(): ?WebWorker
     {
         return $this->invokeRemote(__FUNCTION__, func_get_args());
     }

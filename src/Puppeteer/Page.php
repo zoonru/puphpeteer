@@ -94,7 +94,7 @@ class Page extends RemoteObject
     }
 
     /**
-     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "left"|"right"|"middle"|"forward"|"back"})|null $options
+     * @param (array{offset?: array{x: int|float, y: int|float}, debugHighlight?: bool, delay?: int|float, count?: int|float, button?: "back"|"left"|"right"|"middle"|"forward"})|null $options
      */
     public function click(string $selector, ?array $options = null): void
     {
@@ -201,7 +201,7 @@ class Page extends RemoteObject
     }
 
     /**
-     * @param array{download: int|float, latency: int|float, offline?: bool, upload: int|float}|null $networkConditions
+     * @param array{download?: int|float, latency?: int|float, offline?: bool, upload?: int|float}|null $networkConditions
      */
     public function emulateNetworkConditions(?array $networkConditions): void
     {

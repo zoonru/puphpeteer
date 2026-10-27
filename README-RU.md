@@ -1,7 +1,7 @@
 # PuPHPeteer
 
-[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.12.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.12.0)
-[![Chrome](https://img.shields.io/badge/Chrome-154.0.8037.57-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
+[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.14.0-40B5A4?logo=puppeteer)](https://github.com/puppeteer/puppeteer/releases/tag/puppeteer-v25.14.0)
+[![Chrome](https://img.shields.io/badge/Chrome-155.0.8059.79-4285F4?logo=googlechrome)](https://googlechromelabs.github.io/chrome-for-testing/)
 
 <img src="https://user-images.githubusercontent.com/817508/100672192-dd258500-3361-11eb-845f-e8b5109752e4.png" style="max-width:100%;" width="190px" align="right">
 
@@ -513,7 +513,7 @@ $function = new JsFunction('(element) => element.textContent');
 Linux ARM64, PHP 8.5.11, uv 0.3.0 (`UvDriver`), Chrome 154.0.8037.57;
 `sockets` загружен во всех прогонах одного контейнера. Rialto и Native PHP — средние
 пяти прогонов, QuickJS 0.0.3 — десяти парных прогонов от 26 октября 2026 года.
-Worker `45e1617` — средние пяти прогонов от 27 октября с текущими клиентом и bundle
+Worker `45e1617` — средние пяти прогонов от 27 октября с использованными тогда клиентом и bundle
 Puppeteer 25.12.0; сравнение с историческим 0.0.3 не изолирует влияние расширения.
 
 - **Rialto** — PHP и отдельный Node.js с Puppeteer 24.36.1; исходники клиента `89bb34b`.
@@ -543,7 +543,7 @@ Puppeteer 25.12.0; сравнение с историческим 0.0.3 не и�
 
 ## Разработка
 
-Команды этого раздела предназначены для разработки пакета и выполняются из checkout репозитория. Для генерации API, сборки и JS-тестов нужны Node.js **22+** и npm; они включены в Docker-образы.
+Команды этого раздела предназначены для разработки пакета и выполняются из checkout репозитория. Для генерации API, сборки и JS-тестов нужны Node.js **24+** и npm; они включены в Docker-образы.
 
 ### Docker для разработки
 
