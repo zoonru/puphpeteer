@@ -1,19 +1,13 @@
 ARG PHP_VERSION=8.5
 ARG PHP_QUICKJS_REF=8150c4b11a1df2fdd7d0892852bbce075827ed9a
-ARG UV_REF=e56d640371a5d99eea2e9437cf4739c82e82d99e
 FROM node:24-trixie-slim AS node
 FROM composer:2 AS composer
 FROM php:${PHP_VERSION}-cli-trixie AS php-base
-ARG UV_REF
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN --mount=type=bind,from=ghcr.io/php/pie:bin,source=/pie,target=/usr/local/bin/pie \
+    apt-get update && apt-get install -y --no-install-recommends \
     git unzip libicu-dev libuv1-dev libzip-dev time procps \
-    && mkdir -p /usr/src/php/ext/uv \
-    && cd /usr/src/php/ext/uv \
-    && git init \
-    && git remote add origin https://github.com/amphp/ext-uv.git \
-    && git fetch --depth=1 origin "$UV_REF" \
-    && git checkout --detach FETCH_HEAD \
-    && docker-php-ext-install -j2 intl zip pcntl sockets uv \
+    && docker-php-ext-install -j2 intl zip pcntl sockets \
+    && pie install --no-interaction --no-cache amphp/uv \
     && rm -rf /var/lib/apt/lists/*
 
 FROM php-base AS extension
