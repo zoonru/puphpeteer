@@ -13,6 +13,7 @@ Generated wrappers cover part of Puppeteer's API. npm plugins can be loaded from
 
 ## Contents
 
+- [How it works](#how-it-works)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -27,6 +28,82 @@ Generated wrappers cover part of Puppeteer's API. npm plugins can be loaded from
 - [Development](#development)
 - [License](#license)
 - [Logo attribution](#logo-attribution)
+
+## How it works
+
+```mermaid
+%%{init: {"theme":"base","themeCSS":".cluster-label text { fill:#c4c7c5 !important; } .edgeLabel .background { fill:#121212 !important; opacity:1 !important; }","htmlLabels":false,"markdownAutoWrap":false,"themeVariables":{"darkMode":true,"primaryTextColor":"#e6e1e5","textColor":"#e6e1e5","fontFamily":"system-ui, sans-serif","fontSize":"15px","lineColor":"#9aa0ab","edgeLabelBackground":"#121212","clusterBkg":"#1a1c20","clusterBorder":"#35383e"},"flowchart":{"htmlLabels":false,"curve":"linear","rankSpacing":45,"nodeSpacing":32}}}%%
+flowchart TB
+    subgraph Canvas[" "]
+        direction TB
+        subgraph PHPProcess["PHP PROCESS"]
+            direction TB
+            subgraph PHP["PHP THREAD"]
+                direction TB
+                API("PHP API")
+                Futures("Pending Futures")
+                Revolt("Revolt")
+                Client("PHP client")
+                Socket("Amp WebSocket")
+            end
+            Commands["Command queue"]
+            subgraph Worker["QUICKJS WORKER THREAD"]
+                direction TB
+                Dispatch("JS dispatch")
+                Puppeteer("Puppeteer")
+                Jobs("Promise jobs")
+                Dispatch -->|"invoke"| Puppeteer
+                Puppeteer -->|"Promise reactions"| Jobs
+            end
+            Messages["Message queue"]
+            Events["Event queue"]
+            API -->|"call ID"| Futures
+            API -->|"post call"| Commands
+            Commands -->|"JS callback · CDP message"| Dispatch
+            Puppeteer -->|"postMessage: send / result"| Messages
+            Puppeteer -->|"Messages"| Events
+            Events -->|"native notification"| Revolt
+            Revolt -->|"wake"| Client
+            Messages -->|"awaitMessages"| Client
+            Client -->|"result / error by ID"| Futures
+            Client -->|"CDP send"| Socket
+            Socket -->|"CDP message"| Commands
+        end
+        subgraph BrowserProcess["BROWSER PROCESS"]
+            direction TB
+            Browser("Chrome / Chromium")
+            Page("Web page")
+            Browser -->|"evaluate"| Page
+        end
+        Socket <-->|"CDP request / response"| Browser
+    end
+    style Canvas fill:#121212,stroke:#121212,stroke-width:80px,rx:12,ry:12
+    style PHPProcess fill:#15171c,stroke:#4b515e,rx:10,ry:10
+    style BrowserProcess fill:#211b2b,stroke:#685580,rx:10,ry:10
+    style PHP fill:#171e2b,stroke:#486185,rx:8,ry:8
+    style Worker fill:#1a1c20,stroke:#35383e,rx:8,ry:8
+    classDef host fill:#1e293b,stroke:#486185,color:#dbeafe,stroke-width:1.5px
+    classDef worker fill:#1c302c,stroke:#41685a,color:#d1fae5,stroke-width:1.5px
+    classDef queue fill:#302b23,stroke:#786746,color:#fef3c7,stroke-width:1.5px
+    classDef browser fill:#30263d,stroke:#685580,color:#ede9fe,stroke-width:1.5px
+    class API,Futures,Revolt,Client,Socket host
+    class Dispatch,Puppeteer,Jobs worker
+    class Commands,Messages,Events queue
+    class Browser,Page browser
+```
+
+1. The PHP client assigns each call an ID and a pending `Future`, then posts a
+   dispatch command to Puppeteer on the QuickJS worker. The worker runs JavaScript
+   and ready Promise jobs while Amp/Revolt can run other PHP Fibers.
+2. Puppeteer sends CDP requests through the message queue. The PHP client drains
+   messages and uses Amp's WebSocket to reach the local or remote browser. Browser
+   responses return to Puppeteer through the command queue.
+3. Puppeteer's result or error returns through the message queue; the client matches
+   its ID and completes the waiting `Future`. The extension's event queue also carries
+   worker results and PHP callback requests; native notifications wake Revolt.
+
+`evaluate()` executes JavaScript in the browser page. PHP callbacks run on the PHP
+thread; Puppeteer's own JavaScript runs on the worker.
 
 ## Requirements
 

@@ -13,6 +13,7 @@
 
 ## Содержание
 
+- [Как это работает](#как-это-работает)
 - [Требования](#требования)
 - [Установка](#установка)
 - [Использование](#использование)
@@ -27,6 +28,82 @@
 - [Разработка](#разработка)
 - [Лицензия](#лицензия)
 - [Авторы логотипа](#авторы-логотипа)
+
+## Как это работает
+
+```mermaid
+%%{init: {"theme":"base","themeCSS":".cluster-label text { fill:#c4c7c5 !important; } .edgeLabel .background { fill:#121212 !important; opacity:1 !important; }","htmlLabels":false,"markdownAutoWrap":false,"themeVariables":{"darkMode":true,"primaryTextColor":"#e6e1e5","textColor":"#e6e1e5","fontFamily":"system-ui, sans-serif","fontSize":"15px","lineColor":"#9aa0ab","edgeLabelBackground":"#121212","clusterBkg":"#1a1c20","clusterBorder":"#35383e"},"flowchart":{"htmlLabels":false,"curve":"linear","rankSpacing":45,"nodeSpacing":32}}}%%
+flowchart TB
+    subgraph Canvas[" "]
+        direction TB
+        subgraph PHPProcess["PHP-ПРОЦЕСС"]
+            direction TB
+            subgraph PHP["PHP-ПОТОК"]
+                direction TB
+                API("PHP API")
+                Futures("Ожидающие Futures")
+                Revolt("Revolt")
+                Client("PHP-клиент")
+                Socket("WebSocket Amp")
+            end
+            Commands["Очередь команд"]
+            subgraph Worker["РАБОЧИЙ ПОТОК QUICKJS"]
+                direction TB
+                Dispatch("JS диспетчер")
+                Puppeteer("Puppeteer")
+                Jobs("Promise jobs")
+                Dispatch -->|"вызов"| Puppeteer
+                Puppeteer -->|"реакции Promise"| Jobs
+            end
+            Messages["Очередь сообщений"]
+            Events["Очередь событий"]
+            API -->|"ID вызова"| Futures
+            API -->|"отправить вызов"| Commands
+            Commands -->|"JS callback · CDP сообщение"| Dispatch
+            Puppeteer -->|"postMessage: CDP / результат"| Messages
+            Puppeteer -->|"Messages"| Events
+            Events -->|"native-уведомление"| Revolt
+            Revolt -->|"пробуждение"| Client
+            Messages -->|"awaitMessages"| Client
+            Client -->|"результат / ошибка по ID"| Futures
+            Client -->|"запрос CDP"| Socket
+            Socket -->|"CDP сообщение"| Commands
+        end
+        subgraph BrowserProcess["ПРОЦЕСС БРАУЗЕРА"]
+            direction TB
+            Browser("Chrome / Chromium")
+            Page("Веб-страница")
+            Browser -->|"evaluate"| Page
+        end
+        Socket <-->|"CDP запрос / ответ"| Browser
+    end
+    style Canvas fill:#121212,stroke:#121212,stroke-width:80px,rx:12,ry:12
+    style PHPProcess fill:#15171c,stroke:#4b515e,rx:10,ry:10
+    style BrowserProcess fill:#211b2b,stroke:#685580,rx:10,ry:10
+    style PHP fill:#171e2b,stroke:#486185,rx:8,ry:8
+    style Worker fill:#1a1c20,stroke:#35383e,rx:8,ry:8
+    classDef host fill:#1e293b,stroke:#486185,color:#dbeafe,stroke-width:1.5px
+    classDef worker fill:#1c302c,stroke:#41685a,color:#d1fae5,stroke-width:1.5px
+    classDef queue fill:#302b23,stroke:#786746,color:#fef3c7,stroke-width:1.5px
+    classDef browser fill:#30263d,stroke:#685580,color:#ede9fe,stroke-width:1.5px
+    class API,Futures,Revolt,Client,Socket host
+    class Dispatch,Puppeteer,Jobs worker
+    class Commands,Messages,Events queue
+    class Browser,Page browser
+```
+
+1. PHP-клиент назначает вызову ID и ожидающий `Future`, затем отправляет команду
+   диспетчеру Puppeteer на worker. Worker выполняет JavaScript и готовые Promise jobs,
+   а Amp/Revolt продолжает работу других PHP Fibers.
+2. Puppeteer отправляет CDP-запросы через очередь сообщений. PHP-клиент читает её
+   и передаёт запросы в локальный или удалённый браузер через WebSocket Amp. Ответы
+   браузера возвращаются Puppeteer через очередь команд.
+3. Результат или ошибка Puppeteer приходит через очередь сообщений; клиент находит
+   ожидающий `Future` по ID и завершает его. Очередь событий расширения также передаёт
+   результаты worker и запросы PHP callbacks; native-уведомления пробуждают Revolt.
+
+`evaluate()` выполняет JavaScript внутри страницы браузера. PHP callbacks работают
+в PHP-потоке, а JavaScript Puppeteer — на worker.
 
 ## Требования
 
