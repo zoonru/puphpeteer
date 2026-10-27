@@ -17,7 +17,7 @@ final class CallbackLifetimeTest extends TestCase
     /**
      * @return iterable<string, array{string, bool}>
      *
-     * @psalm-mutation-free
+     * @psalm-pure
      */
     public static function operations(): iterable
     {

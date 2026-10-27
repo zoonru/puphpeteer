@@ -49,9 +49,9 @@ final class GenerateCommand extends ProcessCommand
                 return;
             }
             $step = json_decode(substr($line, 10), true, flags: JSON_THROW_ON_ERROR);
-            $progress?->setMessage($step['message']);
-            $progress?->setProgress($step['step'] - 1);
-            $progress?->display();
+            $progress->setMessage($step['message']);
+            $progress->setProgress($step['step'] - 1);
+            $progress->display();
         }, displayOutput: false);
         if (null !== $progress) {
             if (0 === $result['code']) {

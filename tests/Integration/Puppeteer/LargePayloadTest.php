@@ -13,7 +13,7 @@ use RuntimeException;
 
 final class LargePayloadTest extends TestCase
 {
-    /** @psalm-mutation-free */
+    /** @psalm-pure */
     public static function sizes(): iterable
     {
         foreach ([2097151, 2097153, 4194321, 8388639, 12582943] as $size) {

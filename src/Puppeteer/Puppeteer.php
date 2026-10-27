@@ -115,11 +115,7 @@ final class Puppeteer
         $this->queryHandlers = [];
     }
 
-    /**
-     * Enable a plugin from the current JsRuntime before launch or connect.
-     *
-     * @psalm-external-mutation-free
-     */
+    /** Enable a plugin from the current JsRuntime before launch or connect. */
     public function use(RemoteObject $plugin): self
     {
         if (null === $this->runtime || !$plugin->belongsTo($this->runtime->client())) {
