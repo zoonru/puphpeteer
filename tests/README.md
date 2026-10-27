@@ -94,10 +94,6 @@ remains unchanged for historical comparisons.
 The browser suite checks launch options, slowMo, WebSocket loss with concurrent requests,
 Chrome crashes, and preservation of a supplied user profile. Unit tests exercise forced
 process-tree shutdown; logging integration tests cover a slow, absent and closed stderr reader.
-The PHP integration test `Puppeteer/InstallationTest.php` creates an isolated Composer consumer
-without dev dependencies. It checks application install/update hooks, the autoloader, vendor CLI
-and the exact browser path under the application root. An executable fixture replaces an already
-installed Chrome; the test does not download or launch a browser. ENV handling is covered by unit tests.
 
 Browserless authentication and server session expiry are checked separately (also in CI):
 

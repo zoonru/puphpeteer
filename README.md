@@ -120,8 +120,11 @@ Node.js and npm are not required to run the package or install a browser. Applic
 Run from your application's root directory:
 
 ```sh
+composer config allow-plugins.cweagans/composer-patches true
 composer require zoon/puphpeteer
 ```
+
+PuPHPeteer uses Composer Patches to apply an [upstream fix](https://github.com/amphp/process/pull/86) for descriptor reuse and zombie processes to `amphp/process` 2.1.0. The permission above enables the plugin in your application; commit the generated `patches.lock.json`. If your project already uses Composer Patches, run `composer patches-relock` and `composer reinstall amphp/process` after updating PuPHPeteer to apply the patch to an existing installation. Reinstallation removes the package from `vendor`, so preserve any local changes first.
 
 If you need local Chrome, install the compatible version:
 
@@ -143,7 +146,7 @@ Composer does not run dependency scripts. For automatic installation, add hooks 
 }
 ```
 
-If hooks already exist, append the command to their arrays. Do not use `--no-scripts` for automatic execution; the explicit PHP command also works without hooks. npm approvals and Composer `allow-plugins` are not required.
+If hooks already exist, append the command to their arrays. Do not use `--no-scripts` for automatic execution; the explicit PHP command also works without hooks. npm approvals are not required.
 
 For Browserless, set `PUPPETEER_SKIP_DOWNLOAD=true`. `Dockerfile-chrome` already sets this flag and `PUPPETEER_EXECUTABLE_PATH`. A nonempty `PUPPETEER_EXECUTABLE_PATH` also disables downloading. These ENV variables must be available during dependency installation too.
 

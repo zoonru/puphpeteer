@@ -29,10 +29,11 @@
     "amphp/amp": "^3.1",
     "amphp/file": "^4.0",
     "amphp/websocket-client": "^2.0",
-    "amphp/process": "^2.1",
+    "amphp/process": "2.1.0",
     "amphp/sync": "^2.3",
     "amphp/http-client": "^5.3",
     "amphp/byte-stream": "^2.1",
+    "cweagans/composer-patches": "^2.0",
     "psr/log": "^3.0",
     "symfony/console": ">=7.4"
   },
@@ -98,6 +99,27 @@
     "cs:fix": "Apply Symfony coding style to all project PHP files."
   },
   "config": {
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "cweagans/composer-patches": true
+    }
+  },
+  "extra": {
+    "patches": {
+      "amphp/process": [
+        {
+          "description": "Fix POSIX pipe watcher lifetime and process reaping (amphp/process#86)",
+          "url": "https://github.com/amphp/process/compare/583959df17d00304ad7b0b32285373f985935643...bb3d54141d1e5c542c07bc9af8954fd28a8ebd6a.diff",
+          "sha256": "6605e5048baf9a1b929f51972cab4c72bb1c7e11b8c9ffd7f6e37c5b9cd2f580",
+          "extra": {
+            "freeform": {
+              "executable": "git",
+              "args": "-C %3$s --work-tree=%3$s apply --verbose -p%2$s --include=src/* %4$s",
+              "dry_run_args": "-C %3$s --work-tree=%3$s apply --check -p%2$s --include=src/* %4$s"
+            }
+          }
+        }
+      ]
+    }
   }
 }

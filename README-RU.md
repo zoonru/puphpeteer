@@ -120,8 +120,11 @@ flowchart TB
 В корне вашего приложения выполните:
 
 ```sh
+composer config allow-plugins.cweagans/composer-patches true
 composer require zoon/puphpeteer
 ```
+
+PuPHPeteer использует Composer Patches, чтобы применить к `amphp/process` 2.1.0 [исправление upstream](https://github.com/amphp/process/pull/86) для повторного использования дескрипторов и zombie-процессов. Команда выше разрешает плагин в вашем приложении; добавьте созданный `patches.lock.json` в систему контроля версий. Если проект уже использует Composer Patches, после обновления PuPHPeteer выполните `composer patches-relock` и `composer reinstall amphp/process`, чтобы применить патч к установленной зависимости. Переустановка удалит пакет из `vendor`, поэтому сначала сохраните его локальные изменения.
 
 Если нужен локальный Chrome, установите совместимую версию:
 
@@ -143,7 +146,7 @@ Composer не запускает scripts зависимостей. Для авт
 }
 ```
 
-Если hooks уже есть, добавьте команду в их массивы. Для автоматического запуска не используйте `--no-scripts`; явная PHP-команда работает и без hooks. Разрешения npm и Composer `allow-plugins` не требуются.
+Если hooks уже есть, добавьте команду в их массивы. Для автоматического запуска не используйте `--no-scripts`; явная PHP-команда работает и без hooks. Разрешения npm не требуются.
 
 Для Browserless задайте `PUPPETEER_SKIP_DOWNLOAD=true`. В `Dockerfile-chrome` уже заданы этот флаг и `PUPPETEER_EXECUTABLE_PATH`. Непустой `PUPPETEER_EXECUTABLE_PATH` также отключает скачивание. Эти ENV должны быть доступны и при установке зависимостей.
 
